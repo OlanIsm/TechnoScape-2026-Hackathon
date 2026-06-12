@@ -8,9 +8,11 @@ import {
   type ViewStyle,
 } from 'react-native-web';
 import { BrandMark } from '../components/BrandMark';
+import { KoperasiBottomNav } from '../components/KoperasiBottomNav';
 import { colors, fonts } from '../theme';
 
 type KoperasiDashboardScreenProps = {
+  onCollectivePress: () => void;
   onLogoutPress: () => void;
 };
 
@@ -18,7 +20,7 @@ const cardShadow = {
   boxShadow: '0 4px 12px rgba(27, 67, 50, 0.05)',
 } as unknown as ViewStyle;
 
-export function KoperasiDashboardScreen({ onLogoutPress }: KoperasiDashboardScreenProps) {
+export function KoperasiDashboardScreen({ onCollectivePress, onLogoutPress }: KoperasiDashboardScreenProps) {
   const { height } = useWindowDimensions();
 
   return (
@@ -66,14 +68,7 @@ export function KoperasiDashboardScreen({ onLogoutPress }: KoperasiDashboardScre
           <PoolActiveCard />
         </View>
 
-        <View style={styles.bottomNav}>
-          {['Beranda', 'Kolektif', 'Catat', 'Log'].map((item, index) => (
-            <View key={item} style={[styles.navItem, index === 0 && styles.navItemActive]}>
-              <NavIcon index={index} isActive={index === 0} />
-              <Text style={[styles.navText, index === 0 && styles.navTextActive]}>{item}</Text>
-            </View>
-          ))}
-        </View>
+        <KoperasiBottomNav activeTab="home" onCollectivePress={onCollectivePress} />
       </View>
     </SafeAreaView>
   );
@@ -197,50 +192,6 @@ function PoolActiveCard() {
           <Text style={styles.detailButtonText}>LIHAT DETAIL POOL</Text>
         </Pressable>
       </View>
-    </View>
-  );
-}
-
-type NavIconProps = {
-  index: number;
-  isActive: boolean;
-};
-
-function NavIcon({ index, isActive }: NavIconProps) {
-  const color = isActive ? colors.primary : colors.onSurfaceVariant;
-
-  if (index === 0) {
-    return (
-      <View style={styles.homeIcon}>
-        <View style={[styles.homeRoof, { borderBottomColor: color }]} />
-        <View style={[styles.homeBase, { backgroundColor: color }]} />
-      </View>
-    );
-  }
-
-  if (index === 1) {
-    return (
-      <View style={[styles.roundIcon, { borderColor: color }]}>
-        <View style={[styles.roundDot, { backgroundColor: color }]} />
-        <View style={[styles.roundDotSmall, { backgroundColor: color }]} />
-      </View>
-    );
-  }
-
-  if (index === 2) {
-    return (
-      <View style={styles.noteIcon}>
-        <View style={[styles.noteLine, { backgroundColor: color, width: 14 }]} />
-        <View style={[styles.noteLine, { backgroundColor: color, width: 10 }]} />
-        <View style={[styles.notePencil, { backgroundColor: color }]} />
-      </View>
-    );
-  }
-
-  return (
-    <View style={[styles.logIcon, { borderColor: color }]}>
-      <View style={[styles.logSlash, { backgroundColor: color }]} />
-      <View style={[styles.logLine, { backgroundColor: color }]} />
     </View>
   );
 }

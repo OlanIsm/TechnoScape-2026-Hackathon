@@ -1,12 +1,20 @@
 import { useState } from 'react';
 import { AdminApprovalScreen } from './screens/AdminApprovalScreen';
+import { CollectiveBuyScreen } from './screens/CollectiveBuyScreen';
 import { KoperasiDashboardScreen } from './screens/KoperasiDashboardScreen';
 import { LoginScreen } from './screens/LoginScreen';
 import { SupplierMenuScreen } from './screens/MenuScreen';
 import { RegisterScreen } from './screens/RegisterScreen';
 import { SplashScreen } from './screens/SplashScreen';
 
-type Screen = 'splash' | 'login' | 'register' | 'koperasi-dashboard' | 'supplier-menu' | 'admin';
+type Screen =
+  | 'splash'
+  | 'login'
+  | 'register'
+  | 'koperasi-dashboard'
+  | 'collective-buy'
+  | 'supplier-menu'
+  | 'admin';
 
 function getInitialScreen(): Screen {
   if (window.location.hash === '#login') {
@@ -19,6 +27,10 @@ function getInitialScreen(): Screen {
 
   if (window.location.hash === '#koperasi') {
     return 'koperasi-dashboard';
+  }
+
+  if (window.location.hash === '#kolektif') {
+    return 'collective-buy';
   }
 
   if (window.location.hash === '#supplier') {
@@ -50,6 +62,11 @@ export default function App() {
     setScreen('koperasi-dashboard');
   };
 
+  const goToCollectiveBuy = () => {
+    window.location.hash = 'kolektif';
+    setScreen('collective-buy');
+  };
+
   const goToSupplierMenu = () => {
     window.location.hash = 'supplier';
     setScreen('supplier-menu');
@@ -76,7 +93,11 @@ export default function App() {
   }
 
   if (screen === 'koperasi-dashboard') {
-    return <KoperasiDashboardScreen onLogoutPress={goToLogin} />;
+    return <KoperasiDashboardScreen onCollectivePress={goToCollectiveBuy} onLogoutPress={goToLogin} />;
+  }
+
+  if (screen === 'collective-buy') {
+    return <CollectiveBuyScreen onHomePress={goToKoperasiMenu} onLogoutPress={goToLogin} />;
   }
 
   if (screen === 'supplier-menu') {
