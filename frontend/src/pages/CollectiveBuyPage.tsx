@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { AppTopBar } from '../components/AppTopBar';
 import { MobileBottomNav } from '../components/MobileBottomNav';
 
 const pools = [
@@ -60,6 +61,8 @@ export function CollectiveBuyPage() {
     <main className="collective-page">
       <section className="collective-phone" aria-label="Borong Bareng VolumeMate">
         <div className="collective-content">
+          <AppTopBar eyebrow="4 pool aktif" />
+
           <header className="collective-header">
             <h1>Borong Bareng</h1>
           </header>
