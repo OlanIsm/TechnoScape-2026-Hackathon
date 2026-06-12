@@ -1,15 +1,13 @@
 import { useNavigate } from 'react-router-dom';
+import { BrandLogo } from './BrandLogo';
 import logoutIcon from '../assets/logout-icon.svg';
 
-type AppTopBarProps = {
-  eyebrow: string;
-};
-
-export function AppTopBar({ eyebrow }: AppTopBarProps) {
+export function AppTopBar() {
   const navigate = useNavigate();
 
   return (
     <div className="app-top-bar">
+      <BrandLogo className="app-top-logo" />
       <button
         aria-label="Logout"
         className="logout-button"
@@ -19,7 +17,6 @@ export function AppTopBar({ eyebrow }: AppTopBarProps) {
         <img alt="" src={logoutIcon} />
         <span>Keluar</span>
       </button>
-      <span className="top-context-chip">{eyebrow}</span>
     </div>
   );
 }

@@ -61,7 +61,7 @@ export function CollectiveBuyPage() {
     <main className="collective-page">
       <section className="collective-phone" aria-label="Borong Bareng VolumeMate">
         <div className="collective-content">
-          <AppTopBar eyebrow="4 pool aktif" />
+          <AppTopBar />
 
           <header className="collective-header">
             <h1>Borong Bareng</h1>

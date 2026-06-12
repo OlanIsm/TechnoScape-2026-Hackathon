@@ -31,7 +31,7 @@ export function DashboardPage() {
     <main className="dashboard-page">
       <section className="dashboard-phone" aria-label="Dashboard VolumeMate">
         <div className="dashboard-content">
-          <AppTopBar eyebrow="Koperasi Sumber Makmur" />
+          <AppTopBar />
 
           <header className="dashboard-header">
             <p>Hi,</p>
