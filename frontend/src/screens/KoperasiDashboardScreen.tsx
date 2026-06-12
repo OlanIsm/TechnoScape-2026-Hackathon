@@ -14,13 +14,18 @@ import { colors, fonts } from '../theme';
 type KoperasiDashboardScreenProps = {
   onCollectivePress: () => void;
   onLogoutPress: () => void;
+  onRecordPress: () => void;
 };
 
 const cardShadow = {
   boxShadow: '0 4px 12px rgba(27, 67, 50, 0.05)',
 } as unknown as ViewStyle;
 
-export function KoperasiDashboardScreen({ onCollectivePress, onLogoutPress }: KoperasiDashboardScreenProps) {
+export function KoperasiDashboardScreen({
+  onCollectivePress,
+  onLogoutPress,
+  onRecordPress,
+}: KoperasiDashboardScreenProps) {
   const { height } = useWindowDimensions();
 
   return (
@@ -68,7 +73,11 @@ export function KoperasiDashboardScreen({ onCollectivePress, onLogoutPress }: Ko
           <PoolActiveCard />
         </View>
 
-        <KoperasiBottomNav activeTab="home" onCollectivePress={onCollectivePress} />
+        <KoperasiBottomNav
+          activeTab="home"
+          onCollectivePress={onCollectivePress}
+          onRecordPress={onRecordPress}
+        />
       </View>
     </SafeAreaView>
   );

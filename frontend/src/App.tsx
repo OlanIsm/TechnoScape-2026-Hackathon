@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AdminApprovalScreen } from './screens/AdminApprovalScreen';
 import { CollectiveBuyScreen } from './screens/CollectiveBuyScreen';
 import { KoperasiDashboardScreen } from './screens/KoperasiDashboardScreen';
 import { LoginScreen } from './screens/LoginScreen';
 import { SupplierMenuScreen } from './screens/MenuScreen';
+import { RecordTransactionScreen } from './screens/RecordTransactionScreen';
 import { RegisterScreen } from './screens/RegisterScreen';
 import { SplashScreen } from './screens/SplashScreen';
 
@@ -13,6 +14,7 @@ type Screen =
   | 'register'
   | 'koperasi-dashboard'
   | 'collective-buy'
+  | 'record-transaction'
   | 'supplier-menu'
   | 'admin';
 
@@ -33,6 +35,10 @@ function getInitialScreen(): Screen {
     return 'collective-buy';
   }
 
+  if (window.location.hash === '#catat') {
+    return 'record-transaction';
+  }
+
   if (window.location.hash === '#supplier') {
     return 'supplier-menu';
   }
@@ -46,6 +52,14 @@ function getInitialScreen(): Screen {
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>(getInitialScreen);
+
+  useEffect(() => {
+    const syncScreenWithHash = () => setScreen(getInitialScreen());
+
+    window.addEventListener('hashchange', syncScreenWithHash);
+
+    return () => window.removeEventListener('hashchange', syncScreenWithHash);
+  }, []);
 
   const goToLogin = () => {
     window.location.hash = 'login';
@@ -65,6 +79,11 @@ export default function App() {
   const goToCollectiveBuy = () => {
     window.location.hash = 'kolektif';
     setScreen('collective-buy');
+  };
+
+  const goToRecordTransaction = () => {
+    window.location.hash = 'catat';
+    setScreen('record-transaction');
   };
 
   const goToSupplierMenu = () => {
@@ -93,11 +112,33 @@ export default function App() {
   }
 
   if (screen === 'koperasi-dashboard') {
-    return <KoperasiDashboardScreen onCollectivePress={goToCollectiveBuy} onLogoutPress={goToLogin} />;
+    return (
+      <KoperasiDashboardScreen
+        onCollectivePress={goToCollectiveBuy}
+        onLogoutPress={goToLogin}
+        onRecordPress={goToRecordTransaction}
+      />
+    );
   }
 
   if (screen === 'collective-buy') {
-    return <CollectiveBuyScreen onHomePress={goToKoperasiMenu} onLogoutPress={goToLogin} />;
+    return (
+      <CollectiveBuyScreen
+        onHomePress={goToKoperasiMenu}
+        onLogoutPress={goToLogin}
+        onRecordPress={goToRecordTransaction}
+      />
+    );
+  }
+
+  if (screen === 'record-transaction') {
+    return (
+      <RecordTransactionScreen
+        onCollectivePress={goToCollectiveBuy}
+        onHomePress={goToKoperasiMenu}
+        onLogoutPress={goToLogin}
+      />
+    );
   }
 
   if (screen === 'supplier-menu') {

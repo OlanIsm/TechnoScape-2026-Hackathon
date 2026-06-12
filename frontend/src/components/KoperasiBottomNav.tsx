@@ -7,6 +7,7 @@ type KoperasiBottomNavProps = {
   activeTab: KoperasiTab;
   onCollectivePress?: () => void;
   onHomePress?: () => void;
+  onRecordPress?: () => void;
 };
 
 const items: Array<{ key: KoperasiTab; label: string }> = [
@@ -16,7 +17,12 @@ const items: Array<{ key: KoperasiTab; label: string }> = [
   { key: 'log', label: 'Log' },
 ];
 
-export function KoperasiBottomNav({ activeTab, onCollectivePress, onHomePress }: KoperasiBottomNavProps) {
+export function KoperasiBottomNav({
+  activeTab,
+  onCollectivePress,
+  onHomePress,
+  onRecordPress,
+}: KoperasiBottomNavProps) {
   const handlePress = (key: KoperasiTab) => {
     if (key === 'home') {
       onHomePress?.();
@@ -24,6 +30,10 @@ export function KoperasiBottomNav({ activeTab, onCollectivePress, onHomePress }:
 
     if (key === 'collective') {
       onCollectivePress?.();
+    }
+
+    if (key === 'record') {
+      onRecordPress?.();
     }
   };
 
