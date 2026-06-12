@@ -6,7 +6,7 @@ import joblib
 import os
 
 app = FastAPI(
-    title="🌿 VolumeMind AI Engine API",
+    title="VolumeMind AI Engine API",
     description="Microservice untuk demand forecasting & optimasi pembelian pupuk berdasarkan volume tiers.",
     version="1.0.0"
 )
@@ -123,7 +123,7 @@ def recommend_buy(request: RecommendRequest):
     best_option = None
     
     for supplier in request.suppliers:
-        # Cari harga jika membeli tepat sesuai kebutuhan (exact demand)
+        # Cari harga jika membeli tepat sesuai kebutuhan
         exact_price = None
         for tier in supplier.tiers:
             max_vol = tier.max_volume if tier.max_volume is not None else float('inf')
@@ -136,7 +136,7 @@ def recommend_buy(request: RecommendRequest):
             
         exact_cost = demand * exact_price
         
-        # Opsi Default (beli pas sesuai kebutuhan)
+        # Opsi Default (beli sesuai kebutuhan pas)
         supplier_options = [{
             'supplier': supplier.name,
             'volume': demand,
@@ -148,15 +148,14 @@ def recommend_buy(request: RecommendRequest):
             'explanation': f"Membeli pas sesuai kebutuhan ({demand:.1f} kg) dari {supplier.name} dengan harga Rp {exact_price:.2f}/kg."
         }]
         
-        # Mengecek "Volume Hack" (apakah beli lebih banyak agar masuk ke tier berikutnya justru lebih murah?)
+        # Mengecek "Volume Hack" (apakah membeli lebih banyak agar masuk ke tier berikutnya justru lebih murah)
         for tier in supplier.tiers:
-            # Cari tier dengan min_volume di atas demand saat ini
             if tier.min_volume > demand:
                 hack_volume = tier.min_volume
                 hack_price = tier.price_per_kg
                 hack_cost = hack_volume * hack_price
                 
-                # Jika total biaya untuk membeli volume lebih banyak ternyata lebih murah!
+                # Jika total biaya untuk membeli volume lebih banyak ternyata lebih murah
                 if hack_cost < exact_cost:
                     savings = exact_cost - hack_cost
                     extra_vol = hack_volume - demand
@@ -171,13 +170,11 @@ def recommend_buy(request: RecommendRequest):
                         'explanation': f"VOLUME HACK! Beli lebih banyak ({hack_volume:.1f} kg) dari {supplier.name} untuk menembus tier harga murah Rp {hack_price:.2f}/kg (Hemat Rp {savings:.2f} dan mendapat bonus +{extra_vol:.1f} kg pupuk)."
                     })
         
-        # Cari opsi terbaik (biaya terendah) dari supplier ini
+        # Cari opsi terbaik dari supplier ini
         best_supplier_option = min(supplier_options, key=lambda x: x['total_cost'])
         
         if best_option is None or best_supplier_option['total_cost'] < best_option['total_cost']:
             best_option = best_supplier_option
-            
-            # Khusus untuk baseline pembanding penghematan lintas supplier
             best_option['baseline_cost'] = exact_cost
             
     if best_option is None:
@@ -208,8 +205,8 @@ def recommend_buy(request: RecommendRequest):
         target_month_name = month_names.get(target_month, "")
         purchase_month_name = month_names.get(recommended_month, "")
         
-        # Tambahan heuristic pintar berdasarkan volume/hack:
-        # Jika volume besar (>= 10 ton / 10000 kg) atau terpicu volume hack, rekomendasikan beli 1.5 - 2 bulan lebih cepat
+        # Tambahan heuristic berdasarkan volume:
+        # Jika volume besar (>= 10 ton) atau terpicu volume hack, rekomendasikan beli 1.5 - 2 bulan lebih cepat
         if best_option['is_volume_hack'] or best_option['volume'] >= 10000:
             early_month = target_month - 2
             if early_month <= 0:
@@ -228,7 +225,6 @@ def recommend_buy(request: RecommendRequest):
                 f"untuk mengantisipasi waktu pengiriman supplier dan memastikan stok tersedia tepat waktu."
             )
             
-        # Gabungkan timeline ke penjelasan
         best_option['explanation'] += f" Waktu Pemesanan Terbaik: {timeline_desc}"
         
     return RecommendResponse(

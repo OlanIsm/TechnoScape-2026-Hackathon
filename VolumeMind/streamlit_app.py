@@ -3,10 +3,10 @@ import pandas as pd
 import joblib
 import os
 
-# 1. Konfigurasi Halaman (Biar UI-nya luas dan rapi)
+# Konfigurasi Halaman utama Streamlit
 st.set_page_config(page_title="VolumeMind AI", page_icon="🌿", layout="centered")
 
-# Custom CSS for modern premium look
+# Custom CSS styling untuk UI premium
 st.markdown("""
 <style>
     .reportview-container {
@@ -61,7 +61,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# 2. Load Model (Pake path aman)
+# Memuat model forecasting dari disk
 @st.cache_resource
 def load_model():
     model_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'demand_forecasting_model.joblib')
@@ -69,7 +69,7 @@ def load_model():
 
 model = load_model()
 
-# Define mock suppliers catalog
+# Katalog Mock Supplier
 MOCK_SUPPLIERS = {
     "PT Pupuk Sriwidjaja (Pusri)": [
         (0, 5000, 9500),      # min_vol, max_vol, price_per_kg
@@ -88,12 +88,12 @@ MOCK_SUPPLIERS = {
     ]
 }
 
-# 3. Header UI
+# Header Utama UI
 st.title("🌿 VolumeMind AI Engine")
 st.subheader("Smart Demand Forecasting & Optimal Procurement System")
 st.markdown("---")
 
-# Collapsible Supplier Catalog
+# Kolom Informasi Katalog Supplier
 with st.expander("📊 Katalog & Tier Harga Supplier (Negosiasi Offline)"):
     for name, tiers in MOCK_SUPPLIERS.items():
         st.markdown(f"**🏢 {name}**")
@@ -107,7 +107,7 @@ with st.expander("📊 Katalog & Tier Harga Supplier (Negosiasi Offline)"):
             })
         st.table(pd.DataFrame(data))
 
-# 4. Layout Form Input
+# Form Input Data Koperasi
 col1, col2 = st.columns(2)
 
 with col1:
@@ -126,11 +126,11 @@ with col2:
 
 st.markdown("---")
 
-# 5. Recommendation Engine Function
+# Fungsi Logika Rekomendasi Pengadaan & Volume Hack
 def recommend_buy(demand, suppliers, target_month):
     best_option = None
     for name, tiers in suppliers.items():
-        # Find price for exact demand
+        # Hitung harga untuk volume kebutuhan pas
         exact_price = None
         for min_v, max_v, price in tiers:
             max_v = max_v if max_v is not None else float('inf')
@@ -141,6 +141,7 @@ def recommend_buy(demand, suppliers, target_month):
             continue
         exact_cost = demand * exact_price
         
+        # Opsi dasar (beli pas sesuai kebutuhan)
         supplier_options = [{
             'supplier': name,
             'volume': demand,
@@ -152,7 +153,7 @@ def recommend_buy(demand, suppliers, target_month):
             'explanation': f"Membeli pas sesuai kebutuhan ({demand:,.1f} kg) dari {name} dengan harga Rp {exact_price:,.2f}/kg."
         }]
         
-        # Check volume hack
+        # Evaluasi opsi Volume Hack (beli lebih banyak demi diskon tier)
         for min_v, max_v, price in tiers:
             if min_v > demand:
                 hack_volume = min_v
@@ -172,11 +173,13 @@ def recommend_buy(demand, suppliers, target_month):
                         'explanation': f"VOLUME HACK! Beli lebih banyak ({hack_volume:,.1f} kg) dari {name} untuk menembus tier harga murah Rp {hack_price:,.2f}/kg (Hemat Rp {savings:,.2f} dan mendapat bonus +{extra_vol:,.1f} kg pupuk)."
                     })
         
+        # Pilih opsi biaya terendah dari supplier ini
         best_supplier_option = min(supplier_options, key=lambda x: x['total_cost'])
         if best_option is None or best_supplier_option['total_cost'] < best_option['total_cost']:
             best_option = best_supplier_option
             best_option['baseline_cost'] = exact_cost
             
+    # Hitung waktu pemesanan terbaik (timing)
     if best_option is not None and target_month is not None:
         recommended_month = target_month - 1
         if recommended_month == 0:
@@ -191,6 +194,7 @@ def recommend_buy(demand, suppliers, target_month):
         target_month_name = month_names[target_month]
         purchase_month_name = month_names[recommended_month]
         
+        # Logika heuristic timing berdasarkan volume
         if best_option['is_volume_hack'] or best_option['volume'] >= 10000:
             early_month = target_month - 2
             if early_month <= 0:
@@ -214,11 +218,11 @@ def recommend_buy(demand, suppliers, target_month):
         
     return best_option
 
-# 6. Tombol Eksekusi
+# Event handler ketika tombol diklik
 if st.button("🔮 Analisis & Hitung Pengadaan Optimal", use_container_width=True):
     with st.spinner('VolumeMind sedang menganalisis data historis & penawaran supplier...'):
         
-        # Susun dataframe input
+        # Susun dataframe input untuk model ML
         input_data = pd.DataFrame([{
             'tahun': tahun,
             'bulan': bulan,
@@ -229,29 +233,28 @@ if st.button("🔮 Analisis & Hitung Pengadaan Optimal", use_container_width=Tru
             'luas_lahan_hektar': luas_lahan
         }])
         
-        # 1. Eksekusi Prediksi
+        # 1. Jalankan prediksi demand
         prediksi = model.predict(input_data)[0]
         predicted_demand_kg = round(max(0.0, float(prediksi)), 1)
         
         st.success("Analisis Selesai!")
         
-        # Tampilkan Prediksi Demand
+        # Tampilkan hasil prediksi
         st.markdown('<div class="section-header">🧠 Hasil Prediksi Kebutuhan (Demand Forecasting)</div>', unsafe_allow_html=True)
         st.metric(label=f"Prediksi Kebutuhan {pupuk} ({koperasi}) - Target Penggunaan Bulan {bulan}", value=f"{predicted_demand_kg:,.1f} kg")
         
-        # 2. Eksekusi Rekomendasi
+        # 2. Jalankan rekomendasi supplier optimal
         recommendation = recommend_buy(predicted_demand_kg, MOCK_SUPPLIERS, bulan)
         
         if recommendation:
             st.markdown('<div class="section-header">🤝 Rekomendasi Pembelian Optimal (Optimal Buy Engine)</div>', unsafe_allow_html=True)
             
-            # Tentukan tipe card berdasarkan is_volume_hack
             card_class = "hack-card" if recommendation['is_volume_hack'] else "card"
             
             if recommendation['is_volume_hack']:
                 st.warning(f"⚠️ **VOLUME HACK TERDETEKSI!** Membeli lebih banyak dari kebutuhan riil ternyata lebih murah karena menembus tier diskon harga supplier!")
             
-            # HTML Card View
+            # Render visualisasi kartu rekomendasi
             html_content = f"""
             <div class="{card_class}">
                 <h4><b>🏢 Supplier Terpilih: {recommendation['supplier']}</b></h4>
@@ -276,7 +279,7 @@ if st.button("🔮 Analisis & Hitung Pengadaan Optimal", use_container_width=Tru
             """
             st.markdown(html_content, unsafe_allow_html=True)
             
-            # Detail Penghematan
+            # Tampilkan metrik penghematan
             col_save1, col_save2 = st.columns(2)
             with col_save1:
                 st.metric("Total Hemat (Savings)", f"Rp {recommendation['savings']:,.0f}")
@@ -284,7 +287,7 @@ if st.button("🔮 Analisis & Hitung Pengadaan Optimal", use_container_width=Tru
                 bonus_vol = recommendation['extra_volume']
                 st.metric("Volume Bonus / Lebih", f"+{bonus_vol:,.1f} kg" if bonus_vol > 0 else "0 kg")
                 
-            # Waktu Pemesanan Terbaik
+            # Tampilkan waktu pemesanan terbaik
             st.markdown('<div class="section-header">📅 Jadwal Pemesanan Rekomendasi (Timing)</div>', unsafe_allow_html=True)
             st.info(f"💡 {recommendation['recommended_purchase_timeline']}")
         else:
