@@ -26,25 +26,6 @@ const cardShadow = {
   boxShadow: '0 4px 12px rgba(27, 67, 50, 0.05)',
 } as unknown as ViewStyle;
 
-const koperasiItems: MenuItem[] = [
-  {
-    description: 'Ringkasan pengadaan dan metrik transaksi koperasi.',
-    label: 'Beranda',
-  },
-  {
-    description: 'Lihat, buat, dan ikuti pembelian pupuk bersama.',
-    label: 'Kolektif Beli',
-  },
-  {
-    description: 'Catat pembelian pupuk manual atau offline.',
-    label: 'Catat Transaksi',
-  },
-  {
-    description: 'Lihat transaksi final dan riwayat pool selesai.',
-    label: 'Audit Log',
-  },
-];
-
 const supplierItems: MenuItem[] = [
   {
     description: 'Tinjau proposal pool yang menunggu keputusan.',
@@ -59,17 +40,6 @@ const supplierItems: MenuItem[] = [
     label: 'Audit Log',
   },
 ];
-
-export function KoperasiMenuScreen({ onLogoutPress }: Pick<MenuScreenProps, 'onLogoutPress'>) {
-  return (
-    <MenuScreen
-      items={koperasiItems}
-      onLogoutPress={onLogoutPress}
-      subtitle="Masuk sebagai koperasi. Pilih menu yang ingin dikerjakan."
-      title="Menu Koperasi"
-    />
-  );
-}
 
 export function SupplierMenuScreen({ onLogoutPress }: Pick<MenuScreenProps, 'onLogoutPress'>) {
   return (

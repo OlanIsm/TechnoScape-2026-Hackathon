@@ -13,6 +13,7 @@ import { BrandMark } from '../components/BrandMark';
 import { colors, fonts } from '../theme';
 
 type LoginScreenProps = {
+  onAdminLogin?: () => void;
   onKoperasiLogin?: () => void;
   onRegisterPress?: () => void;
   onSupplierLogin?: () => void;
@@ -23,6 +24,7 @@ const cardShadow = {
 } as unknown as ViewStyle;
 
 export function LoginScreen({
+  onAdminLogin,
   onKoperasiLogin,
   onRegisterPress,
   onSupplierLogin,
@@ -46,7 +48,12 @@ export function LoginScreen({
       return;
     }
 
-    setNotice('Masukkan email dummy 1 untuk Koperasi atau 2 untuk Supplier.');
+    if (loginCode === '3') {
+      onAdminLogin?.();
+      return;
+    }
+
+    setNotice('Masukkan email dummy 1 untuk Koperasi, 2 untuk Supplier, atau 3 untuk Admin.');
   };
 
   return (

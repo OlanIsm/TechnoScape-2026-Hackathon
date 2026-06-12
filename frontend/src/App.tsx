@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { AdminApprovalScreen } from './screens/AdminApprovalScreen';
+import { KoperasiDashboardScreen } from './screens/KoperasiDashboardScreen';
 import { LoginScreen } from './screens/LoginScreen';
-import { KoperasiMenuScreen, SupplierMenuScreen } from './screens/MenuScreen';
+import { SupplierMenuScreen } from './screens/MenuScreen';
 import { RegisterScreen } from './screens/RegisterScreen';
 import { SplashScreen } from './screens/SplashScreen';
 
-type Screen = 'splash' | 'login' | 'register' | 'koperasi-menu' | 'supplier-menu';
+type Screen = 'splash' | 'login' | 'register' | 'koperasi-dashboard' | 'supplier-menu' | 'admin';
 
 function getInitialScreen(): Screen {
   if (window.location.hash === '#login') {
@@ -16,11 +18,15 @@ function getInitialScreen(): Screen {
   }
 
   if (window.location.hash === '#koperasi') {
-    return 'koperasi-menu';
+    return 'koperasi-dashboard';
   }
 
   if (window.location.hash === '#supplier') {
     return 'supplier-menu';
+  }
+
+  if (window.location.hash === '#admin') {
+    return 'admin';
   }
 
   return 'splash';
@@ -41,7 +47,7 @@ export default function App() {
 
   const goToKoperasiMenu = () => {
     window.location.hash = 'koperasi';
-    setScreen('koperasi-menu');
+    setScreen('koperasi-dashboard');
   };
 
   const goToSupplierMenu = () => {
@@ -49,9 +55,15 @@ export default function App() {
     setScreen('supplier-menu');
   };
 
+  const goToAdmin = () => {
+    window.location.hash = 'admin';
+    setScreen('admin');
+  };
+
   if (screen === 'login') {
     return (
       <LoginScreen
+        onAdminLogin={goToAdmin}
         onKoperasiLogin={goToKoperasiMenu}
         onRegisterPress={goToRegister}
         onSupplierLogin={goToSupplierMenu}
@@ -63,12 +75,16 @@ export default function App() {
     return <RegisterScreen onBackPress={goToLogin} onLoginPress={goToLogin} />;
   }
 
-  if (screen === 'koperasi-menu') {
-    return <KoperasiMenuScreen onLogoutPress={goToLogin} />;
+  if (screen === 'koperasi-dashboard') {
+    return <KoperasiDashboardScreen onLogoutPress={goToLogin} />;
   }
 
   if (screen === 'supplier-menu') {
     return <SupplierMenuScreen onLogoutPress={goToLogin} />;
+  }
+
+  if (screen === 'admin') {
+    return <AdminApprovalScreen onLogoutPress={goToLogin} />;
   }
 
   return <SplashScreen onStartPress={goToLogin} />;
