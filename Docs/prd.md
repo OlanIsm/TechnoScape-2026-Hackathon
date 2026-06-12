@@ -65,6 +65,7 @@ Fitur agregasi kebutuhan antar-koperasi untuk meningkatkan daya tawar (*network 
 * **F-06: Shared Purchase Pools**: Kemampuan membuat atau bergabung ke dalam kelompok pembelian bersama (Cooperative Pool) untuk suatu jenis pupuk.
 * **F-07: Collective Volume Aggregator**: Sistem secara otomatis menjumlahkan kuantitas dari beberapa koperasi dalam satu pool untuk menembus tier harga supplier yang lebih rendah.
 * **F-08: Split Billing & Distribution Guidance**: Rekomendasi pembagian biaya secara proporsional berdasarkan kontribusi volume masing-masing koperasi.
+* **F-08a: Unfulfilled Pool Handling (Negative Flow)**: Mekanisme otomatis jika target volume pool tidak terpenuhi pada deadline. Sistem menyediakan opsi bagi partisipan untuk memperpanjang batas waktu (Extend), melakukan penyesuaian harga ke tier volume terdekat yang berhasil dicapai (Adjust to Nearest Tier), atau melakukan pembatalan otomatis tanpa denda (Auto-Cancel).
 
 ### 4.4. Security & Compliance: Supplier Audit Log
 Menjaga integritas data transaksi dan transparansi pengurus terhadap anggota koperasi.
@@ -79,15 +80,17 @@ Optimasi antarmuka untuk konektivitas pedesaan yang terbatas.
 
 ---
 
-## 5. Model Bisnis (SaaS Subscription)
+## 5. Model Bisnis (Freemium & Transaction Fee)
 
-Sistem akan ditawarkan sebagai B2B Software-as-a-Service (SaaS) dengan tiga pilihan paket:
+VolumeMate menggunakan model bisnis **Freemium** untuk mempercepat adopsi platform oleh koperasi desa dengan rincian pendapatan sebagai berikut:
 
-| Paket | Target Pengguna | Biaya bulanan | Fitur yang Didapatkan |
-|-------|-----------------|---------------|-----------------------|
-| **Starter** | Koperasi kecil ($\le 50$ anggota) | Rp 150.000 | Volume Price Tracker + Supplier Audit Log |
-| **Growth** | Koperasi menengah (51-200 anggota) | Rp 350.000 | Semua fitur Starter + **VolumeMind AI Engine** |
-| **Network** | Koperasi skala kluster / gabungan | Rp 500.000 | Semua fitur Growth + **Collective Buying Power** |
+1. **Transaction Fee (Komisi Transaksi Borongan)**:
+   * **Deskripsi**: Fitur *Collective Buying* (patungan belanja) gratis digunakan untuk koordinasi. Namun, saat transaksi patungan berhasil dieksekusi, platform mengenakan biaya administrasi/komisi transaksi yang terjangkau (misal: 0.5% - 1% dari total nilai transaksi) sebagai kontribusi biaya operasional server. Tarif dijaga tetap rendah untuk menghindari transaksi di luar aplikasi (platform leakage).
+   
+2. **Subscription Fee (Langganan AI VolumeMind)**:
+   * **Deskripsi**: Fitur *VolumeMind AI Engine* (prediksi kebutuhan pupuk & rekomendasi belanja optimal) ditawarkan sebagai layanan tambahan berbayar (SaaS Add-on).
+   * **Tarif**: Rp 150.000 / bulan per koperasi. Tarif ini dirancang agar terjangkau bagi koperasi menengah-ke-atas namun mampu menutup biaya komputasi server AI.
+
 
 ---
 
