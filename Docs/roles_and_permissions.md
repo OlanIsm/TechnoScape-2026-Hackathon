@@ -2,6 +2,13 @@
 
 This document defines the final role behavior for VolumeMate after the latest revision.
 
+Product UI direction:
+
+- VolumeMate MVP is mobile-only.
+- Role menus must be designed for phone-sized screens and bottom navigation.
+- Desktop-specific menus, sidebars, and wide-screen dashboards are not part of MVP.
+- Desktop browsers may be used for development/testing, but they should not define a separate product experience.
+
 Roles:
 
 1. Koperasi
@@ -47,6 +54,7 @@ can use app features.
 Koperasi uses VolumeMate to:
 
 - monitor procurement dashboard,
+- request VolumeMind AI procurement recommendation,
 - create collective buying pool proposals,
 - join open collective buying pools,
 - input manual procurement transactions,
@@ -56,9 +64,10 @@ Koperasi uses VolumeMate to:
 
 ```text
 Menu 1: Home
-Menu 2: Collective Buy
-Menu 3: Pencatatan Transaksi
-Menu 4: Audit Log
+Menu 2: VolumeMind Recommendation
+Menu 3: Collective Buy
+Menu 4: Pencatatan Transaksi
+Menu 5: Audit Log
 ```
 
 ---
@@ -84,7 +93,51 @@ Those belong to Audit Log.
 
 ---
 
-### Menu 2 — Collective Buy
+### Menu 2 — VolumeMind Recommendation
+
+This menu helps Koperasi generate an AI-assisted procurement plan with minimal user input.
+
+Koperasi inputs only:
+
+```text
+Jenis Pupuk
+Tanggal Penggunaan / Bulan Target
+Luas Lahan Aktif (Hektar)
+```
+
+The system automatically prepares:
+
+```text
+Curah hujan dari API cuaca
+Musim tanam berdasarkan bulan target
+Tier harga supplier
+Histori transaksi koperasi
+Lokasi koperasi
+```
+
+VolumeMind then:
+
+1. predicts fertilizer demand,
+2. compares supplier price tiers,
+3. recommends the best purchase quantity,
+4. estimates savings from volume-tier optimization,
+5. suggests the best ordering window before the usage month.
+
+Recommended output:
+
+```text
+Supplier Terpilih
+Jumlah yang Harus Dibeli
+Total Biaya
+Potensi Hemat
+Waktu Pemesanan Terbaik
+Alasan Rekomendasi
+Konfirmasi Pemesanan
+```
+
+---
+
+### Menu 3 — Collective Buy
 
 This menu is for all collective buying activity.
 
@@ -133,7 +186,7 @@ If the amount exceeds remaining target, the system rejects the join request.
 
 ---
 
-### Menu 3 — Pencatatan Transaksi
+### Menu 4 — Pencatatan Transaksi
 
 This menu is for recording manual/offline purchases.
 
@@ -163,7 +216,7 @@ the system:
 
 ---
 
-### Menu 4 — Audit Log
+### Menu 5 — Audit Log
 
 Koperasi Audit Log displays final records only.
 
@@ -363,6 +416,7 @@ Admin should not be required to manage every pool manually. Pool process is hand
 | View koperasi audit log | Yes | No | Optional |
 | View supplier audit log | No | Yes | Optional |
 | Export audit records | Yes | Yes | Optional |
+| Request VolumeMind recommendation | Yes | No | Optional |
 
 ---
 
@@ -425,6 +479,10 @@ supplier_payout = total_collected_payment - platform_tax_or_fee
 ---
 
 ## 7. Important Product Decisions
+
+### 7.0 Mobile-Only MVP
+
+VolumeMate MVP is built as a mobile-only web/PWA app. The product should not require or imply a desktop dashboard, desktop sidebar, or wide-screen workflow. All important features must work comfortably on a phone.
 
 ### 7.1 Supplier Does Not Create Offers
 

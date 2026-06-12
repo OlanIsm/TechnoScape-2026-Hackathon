@@ -3,7 +3,14 @@
 
 ## 1. Executive Summary
 
-VolumeMate is a web/PWA-based procurement platform for agricultural cooperatives that manage fertilizer purchasing. The system helps cooperatives compare procurement needs, create collective buying pools, record offline/manual transactions, and maintain clean audit history for completed procurement activities.
+VolumeMate is a **mobile-only web/PWA procurement app** for agricultural cooperatives that manage fertilizer purchasing. The product is designed primarily for Android/mobile browser usage in field conditions, not for desktop workflows. The system helps cooperatives compare procurement needs, create collective buying pools, record offline/manual transactions, and maintain clean audit history for completed procurement activities.
+
+Product direction:
+
+- The MVP interface must be designed and tested as a mobile app experience.
+- Desktop-specific dashboards, sidebars, and wide-screen workflows are out of MVP scope.
+- Desktop browsers may open the app for testing, but they should render the same mobile-first experience or a simple centered mobile shell, not a separate desktop product.
+- All core flows must remain usable on small screens and low-end devices.
 
 The latest product flow uses three active roles:
 
@@ -20,6 +27,7 @@ Koperasi often buys fertilizer without knowing the optimal volume, timing, and s
 VolumeMate solves this by supporting:
 
 - verified cooperative and supplier registration,
+- AI-assisted procurement recommendation through VolumeMind,
 - pool proposal and supplier approval,
 - collective fund raising across cooperatives,
 - transaction recording,
@@ -34,6 +42,7 @@ VolumeMate solves this by supporting:
 Koperasi is the main buyer-side user. Koperasi can:
 
 - view dashboard summary,
+- request AI procurement recommendation with a simple mobile form,
 - browse open collective buying pools,
 - propose a new collective buying pool,
 - join an existing pool with a fund amount,
@@ -120,9 +129,70 @@ Suggested dashboard contents:
 - total fertilizer volume recorded,
 - current active/open pool summary,
 - procurement insight summary,
+- latest VolumeMind recommendation summary,
 - simple chart based on transaction records.
 
 Final pool history and transaction details belong to Audit Log, not the main dashboard.
+
+### Menu 1a â€” VolumeMind Procurement Recommendation
+
+VolumeMind is the AI-assisted purchase recommendation flow. The goal is to keep cooperative input minimal and let the system enrich the calculation automatically.
+
+#### Koperasi Inputs
+
+Admin Koperasi only needs to input three main fields:
+
+1. **Fertilizer type**  
+   Example: Urea Granul, NPK Phonska, or SP-36 Super.
+2. **Usage date / target month**  
+   Example: October 2026, when the fertilizer will be distributed to farmers.
+3. **Active planted land area in hectares**  
+   Example: 500 hectares. In the real app, this value can be prefilled from member land profile data if available.
+
+#### Automatically Filled by the System
+
+Koperasi should not manually input complex agronomic or weather data. The system automatically prepares:
+
+- **Rainfall forecast** from BMKG/OpenWeather or equivalent weather API based on cooperative location.
+- **Planting season detection** based on target month. Example: October is detected as Rendengan/rainy planting season.
+- **Supplier price tiers** from verified supplier/product pricing data stored in the system.
+- **Historical transaction demand** from saved manual procurement transactions and previous pool outcomes.
+
+#### VolumeMind Processing
+
+After the user submits the form, VolumeMind performs two calculations:
+
+1. **Demand prediction**  
+   Estimate fertilizer demand using fertilizer type, target month, active land area, planting season, rainfall forecast, and historical demand data.
+2. **Price-tier optimization**  
+   Compare predicted demand against supplier volume-pricing tiers. The AI may recommend rounding the purchase volume upward when a higher volume triggers a cheaper tier and lowers total cost.
+
+Example reasoning:
+
+```text
+Predicted demand: 9,500 kg NPK for October 2026.
+Best optimized buy: 10,000 kg because the supplier discount tier starts at 10,000 kg.
+Estimated saving: Rp 2,400,000 compared with buying only 9,500 kg at the normal tier.
+```
+
+#### Output Shown to Koperasi
+
+The mobile screen should show a ready-to-use procurement plan:
+
+- selected supplier,
+- recommended quantity to buy,
+- estimated total cost,
+- estimated saving from volume-tier optimization,
+- best order window, such as 1-2 months before usage date,
+- main reason behind the recommendation.
+
+The Koperasi can then tap:
+
+```text
+Konfirmasi Pemesanan
+```
+
+For MVP, confirmation can create a draft order/proposal using mock API data until the backend contract is finalized.
 
 ### Menu 2 — Collective Buy
 

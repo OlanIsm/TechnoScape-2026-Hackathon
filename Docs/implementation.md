@@ -2,9 +2,13 @@
 
 This implementation plan reflects the revised role and pool lifecycle:
 
+- VolumeMate MVP is a mobile-only web/PWA app.
+- No separate desktop UI, desktop sidebar, or desktop dashboard is planned for MVP.
+- Desktop browsers are only acceptable as development/test hosts for the same mobile-first app shell.
 - Koperasi and Supplier must be manually approved by Admin.
 - Supplier is an active account.
 - Koperasi can propose pools to verified suppliers.
+- Koperasi can request VolumeMind AI procurement recommendation from a simple mobile form.
 - Supplier accepts/rejects pool proposals.
 - Supplier sets deadline after accepting.
 - Other cooperatives can join only after supplier acceptance.
@@ -18,7 +22,7 @@ This implementation plan reflects the revised role and pool lifecycle:
 
 ```text
 volumemate/
-├── frontend/              # React + Vite + Tailwind
+├── frontend/              # React + Vite mobile-only PWA
 ├── backend/               # NestJS + Prisma
 ├── ai-engine/             # Python + scikit-learn service
 ├── docs/
@@ -81,6 +85,7 @@ Responsibilities:
 
 - manage koperasi profile,
 - show dashboard metrics,
+- submit VolumeMind recommendation requests,
 - create pool proposals,
 - join open pools,
 - input manual transactions,
@@ -132,7 +137,50 @@ Responsibilities:
 - provide historical data for VolumeMind,
 - expose transaction audit records.
 
-### 2.8 Audit Log Module
+### 2.8 VolumeMind Recommendation Module
+
+Responsibilities:
+
+- receive a lightweight recommendation request from Koperasi,
+- validate fertilizer type, target usage month, and active land area,
+- fetch cooperative location/profile data needed for weather lookup,
+- fetch rainfall forecast from BMKG/OpenWeather or a mock provider during MVP,
+- detect planting season from the target month,
+- read supplier price tiers and historical transaction demand,
+- predict recommended fertilizer demand,
+- optimize purchase volume against supplier price tiers,
+- return a ready-to-use procurement recommendation.
+
+Required Koperasi input:
+
+```text
+fertilizer_type
+usage_month
+active_land_area_hectare
+```
+
+Automatically prepared system inputs:
+
+```text
+rainfall_forecast_mm
+planting_season
+supplier_price_tiers
+historical_transaction_demand
+cooperative_location
+```
+
+Recommended output:
+
+```text
+selected_supplier
+recommended_purchase_quantity_kg
+estimated_total_cost
+estimated_saving_amount
+best_order_window
+recommendation_reason
+```
+
+### 2.9 Audit Log Module
 
 Responsibilities:
 
@@ -426,12 +474,23 @@ Old participants are not automatically carried over.
 
 ---
 
-## 5. Frontend Menus
+## 5. Frontend Menus and UI Target
+
+The frontend is **mobile-only** for MVP.
+
+Rules:
+
+- Build screens for phone-sized viewports first.
+- Use bottom navigation and mobile app patterns.
+- Do not design or implement separate desktop dashboards, desktop sidebars, or wide-screen-only workflows.
+- On desktop browsers, center or constrain the same mobile app shell for development/testing.
+- Keep the interface lightweight for low-end phones and unstable network conditions.
 
 ## 5.1 Koperasi Navigation
 
 ```text
 Home
+VolumeMind Recommendation
 Collective Buy
 Pencatatan Transaksi
 Audit Log
@@ -442,6 +501,37 @@ Audit Log
 - dashboard metrics only,
 - do not show final pool history,
 - do not show latest transaction table.
+
+### VolumeMind Recommendation
+
+Mobile form inputs:
+
+```text
+Jenis Pupuk
+Tanggal Penggunaan / Bulan Target
+Luas Lahan Aktif (Hektar)
+```
+
+Automatic system enrichment:
+
+```text
+Curah hujan dari API cuaca
+Musim tanam berdasarkan bulan target
+Tier harga supplier
+Histori transaksi koperasi
+```
+
+Output screen:
+
+```text
+Supplier Terpilih
+Jumlah yang Harus Dibeli
+Total Biaya
+Potensi Hemat
+Waktu Pemesanan Terbaik
+Alasan Rekomendasi
+Konfirmasi Pemesanan
+```
 
 ### Collective Buy
 
@@ -529,6 +619,8 @@ User Detail
 ### Phase 2 — Koperasi Dashboard & Transaction Recording
 
 - create Home dashboard,
+- create mobile-only VolumeMind recommendation form,
+- connect recommendation form to mock AI/service data until API contract is finalized,
 - create Pencatatan Transaksi form,
 - store manual transactions,
 - update dashboard metrics.
@@ -566,6 +658,8 @@ User Detail
 
 Test:
 
+- mobile viewport usability for all core flows,
+- no required desktop-only interaction exists,
 - unapproved accounts cannot access core menus,
 - supplier cannot approve another supplier's pool,
 - pool auto-declines after 7 days,

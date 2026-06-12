@@ -2,8 +2,10 @@
 
 This document describes the updated VolumeMate flow with:
 
+- mobile-only web/PWA MVP direction,
 - Admin manual approval for Koperasi and Supplier registration,
 - Supplier active account,
+- VolumeMind AI procurement recommendation,
 - Koperasi pool proposal,
 - Supplier accept/reject,
 - Supplier deadline setting,
@@ -39,6 +41,41 @@ flowchart TD
     S --> I[Input Pool Details: Product, Target Volume, Target Fund, Initial Fund]
     I --> PP[Pool Status: PENDING_SUPPLIER_APPROVAL]
     PP --> SM[Appears in Supplier Pending Menu]
+```
+
+---
+
+## 2a. VolumeMind AI Recommendation Flow
+
+```mermaid
+flowchart TD
+    K[Verified Koperasi Opens Mobile VolumeMind Form] --> INPUT[Input 3 Fields: Fertilizer Type, Usage Month, Active Land Area]
+    INPUT --> WEATHER[System Fetches Rainfall Forecast by Cooperative Location]
+    INPUT --> SEASON[System Detects Planting Season from Usage Month]
+    INPUT --> HISTORY[System Reads Historical Transactions and Demand]
+    INPUT --> TIERS[System Reads Supplier Price Tiers]
+
+    WEATHER --> AI[VolumeMind AI Engine]
+    SEASON --> AI
+    HISTORY --> AI
+    TIERS --> AI
+    AI --> PREDICT[Predict Fertilizer Demand]
+    PREDICT --> OPTIMIZE[Optimize Purchase Volume Against Supplier Price Tiers]
+    OPTIMIZE --> OUTPUT[Show Recommended Procurement Plan]
+    OUTPUT --> CONFIRM{Koperasi Confirms Order?}
+    CONFIRM -->|Yes| DRAFT[Create Draft Order or Pool Proposal]
+    CONFIRM -->|No| EDIT[User Edits Input or Leaves Recommendation]
+```
+
+Recommended output fields:
+
+```text
+Selected supplier
+Recommended quantity
+Estimated total cost
+Potential saving
+Best order window
+Recommendation reason
 ```
 
 ---
