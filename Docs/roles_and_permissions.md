@@ -8,6 +8,7 @@ Product UI direction:
 - Role menus must be designed for phone-sized screens and bottom navigation.
 - Desktop-specific menus, sidebars, and wide-screen dashboards are not part of MVP.
 - Desktop browsers may be used for development/testing, but they should not define a separate product experience.
+- All user-facing UI copy must be written in Bahasa Indonesia.
 
 Roles:
 
@@ -23,10 +24,14 @@ Koperasi and Supplier cannot directly use the system after registration.
 
 They must submit:
 
+- Gmail/email,
+- password,
+- role selection: `KOPERASI` or `SUPPLIER`,
+- Terms of Service acceptance,
 - official organization/business name,
 - responsible person name,
 - KTP photo,
-- legal/proof document,
+- legal/proof PDF document,
 - phone/contact information.
 
 After registration:
@@ -36,6 +41,8 @@ status = PENDING_ADMIN_APPROVAL
 ```
 
 Admin must manually approve them before they become active.
+
+Admin must be able to review every submitted registration input except password. Passwords must never be displayed to Admin.
 
 Only users with:
 
@@ -54,7 +61,7 @@ can use app features.
 Koperasi uses VolumeMate to:
 
 - monitor procurement dashboard,
-- request VolumeMind AI procurement recommendation,
+- view VolumeMind AI forecast and recommended buy on Dashboard,
 - create collective buying pool proposals,
 - join open collective buying pools,
 - input manual procurement transactions,
@@ -64,10 +71,9 @@ Koperasi uses VolumeMate to:
 
 ```text
 Menu 1: Home
-Menu 2: VolumeMind Recommendation
-Menu 3: Collective Buy
-Menu 4: Pencatatan Transaksi
-Menu 5: Audit Log
+Menu 2: Collective Buy
+Menu 3: Pencatatan Transaksi
+Menu 4: Audit Log
 ```
 
 ---
@@ -80,6 +86,7 @@ Allowed contents:
 
 - total procurement spending,
 - total fertilizer volume recorded,
+- VolumeMind forecast and recommended-buy section,
 - chart/insight from transaction data,
 - active/open pool summary.
 
@@ -93,39 +100,28 @@ Those belong to Audit Log.
 
 ---
 
-### Menu 2 — VolumeMind Recommendation
+### Dashboard VolumeMind Section
 
-This menu helps Koperasi generate an AI-assisted procurement plan with minimal user input.
+VolumeMind is only shown inside Home / Dashboard. It is not a separate menu and it does not have a manual AI input form.
 
-Koperasi inputs only:
-
-```text
-Jenis Pupuk
-Tanggal Penggunaan / Bulan Target
-Luas Lahan Aktif (Hektar)
-```
-
-The system automatically prepares:
+VolumeMind reads the Koperasi's own database records and supporting system data:
 
 ```text
-Curah hujan dari API cuaca
-Musim tanam berdasarkan bulan target
-Tier harga supplier
-Histori transaksi koperasi
+Profil koperasi
 Lokasi koperasi
+Data lahan anggota jika tersedia
+Histori transaksi koperasi
+Histori hasil pool
+Data supplier terverifikasi
+Tier harga supplier
+Curah hujan dari API cuaca
+Musim tanam
 ```
 
-VolumeMind then:
-
-1. predicts fertilizer demand,
-2. compares supplier price tiers,
-3. recommends the best purchase quantity,
-4. estimates savings from volume-tier optimization,
-5. suggests the best ordering window before the usage month.
-
-Recommended output:
+Dashboard VolumeMind output:
 
 ```text
+Prediksi kebutuhan pupuk
 Supplier Terpilih
 Jumlah yang Harus Dibeli
 Total Biaya
@@ -137,7 +133,7 @@ Konfirmasi Pemesanan
 
 ---
 
-### Menu 3 — Collective Buy
+### Menu 2 — Collective Buy
 
 This menu is for all collective buying activity.
 
@@ -186,7 +182,7 @@ If the amount exceeds remaining target, the system rejects the join request.
 
 ---
 
-### Menu 4 — Pencatatan Transaksi
+### Menu 3 — Pencatatan Transaksi
 
 This menu is for recording manual/offline purchases.
 
@@ -216,7 +212,7 @@ the system:
 
 ---
 
-### Menu 5 — Audit Log
+### Menu 4 — Audit Log
 
 Koperasi Audit Log displays final records only.
 
@@ -367,28 +363,35 @@ PAYMENT_WAITING
 
 Admin maintains platform trust and verifies users.
 
-### 4.2 Admin Menus
-
-Suggested menus:
+Admin accounts are not registered through the public registration UI. Admin users must be manually created directly in the database by the technical team:
 
 ```text
-Verification Requests
-Approved Users
-Rejected Users
-User Detail
+role = ADMIN
+status = ACTIVE
+```
+
+### 4.2 Admin Menus
+
+Admin has only one MVP menu:
+
+```text
+Pending Account Approval
 ```
 
 ### 4.3 Admin Permissions
 
 Admin can:
 
-- view new Koperasi registration requests,
-- view new Supplier registration requests,
-- open uploaded KTP and legal documents,
+- view all pending Koperasi registration requests,
+- view all pending Supplier registration requests,
+- open all submitted registration data except password,
+- open uploaded KTP photo,
+- open uploaded legal/proof PDF document,
 - approve accounts,
 - reject accounts,
-- view verification history,
-- suspend abusive or invalid accounts if needed.
+- view selected role,
+- view Terms of Service acceptance status and timestamp,
+- view registration submission timestamp.
 
 Admin should not be required to manage every pool manually. Pool process is handled by Koperasi and Supplier after they are verified.
 
@@ -399,8 +402,14 @@ Admin should not be required to manage every pool manually. Pool process is hand
 | Feature | Koperasi | Supplier | Admin |
 |---|---:|---:|---:|
 | Register account | Yes | Yes | No |
+| Public login after manual DB creation | No | No | Yes |
+| Select role during registration | Yes | Yes | No |
+| Accept Terms of Service | Yes | Yes | No |
 | Upload KTP/legal proof | Yes | Yes | No |
 | Approve/reject account | No | No | Yes |
+| View pending account list | No | No | Yes |
+| View submitted registration data except password | No | No | Yes |
+| View submitted KTP photo/PDF proof | No | No | Yes |
 | View dashboard | Yes | Limited/no | Optional |
 | Propose pool | Yes | No | No |
 | Select supplier for pool | Yes | No | No |
@@ -416,7 +425,7 @@ Admin should not be required to manage every pool manually. Pool process is hand
 | View koperasi audit log | Yes | No | Optional |
 | View supplier audit log | No | Yes | Optional |
 | Export audit records | Yes | Yes | Optional |
-| Request VolumeMind recommendation | Yes | No | Optional |
+| View Dashboard VolumeMind forecast/recommended buy | Yes | No | Optional |
 
 ---
 

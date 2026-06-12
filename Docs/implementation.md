@@ -5,10 +5,12 @@ This implementation plan reflects the revised role and pool lifecycle:
 - VolumeMate MVP is a mobile-only web/PWA app.
 - No separate desktop UI, desktop sidebar, or desktop dashboard is planned for MVP.
 - Desktop browsers are only acceptable as development/test hosts for the same mobile-first app shell.
+- All user-facing UI copy must use Bahasa Indonesia.
 - Koperasi and Supplier must be manually approved by Admin.
+- Admin accounts are manually created in the database, not through public registration.
 - Supplier is an active account.
 - Koperasi can propose pools to verified suppliers.
-- Koperasi can request VolumeMind AI procurement recommendation from a simple mobile form.
+- Koperasi sees VolumeMind AI forecast and recommended buy directly on the Dashboard.
 - Supplier accepts/rejects pool proposals.
 - Supplier sets deadline after accepting.
 - Other cooperatives can join only after supplier acceptance.
@@ -44,6 +46,7 @@ Responsibilities:
 - register user,
 - login user,
 - store role,
+- require Gmail/email, password, selected role, and Terms of Service acceptance for Koperasi/Supplier registration,
 - block unapproved users from core features,
 - allow only `ACTIVE` accounts to use protected routes.
 
@@ -70,13 +73,15 @@ Responsibilities:
 
 - receive KTP photo and legal proof document,
 - store uploaded document metadata,
-- allow Admin to approve/reject account,
+- allow Admin to view all pending registration submissions except password,
+- allow Admin to open uploaded KTP photo and legal/proof PDF,
+- allow Admin to approve/reject account from the pending account list,
 - record verification decision in audit table.
 
 Required uploaded documents:
 
 - KTP photo,
-- cooperative/supplier proof document,
+- cooperative/supplier proof PDF document,
 - optional supporting document.
 
 ### 2.3 Koperasi Module
@@ -85,7 +90,7 @@ Responsibilities:
 
 - manage koperasi profile,
 - show dashboard metrics,
-- submit VolumeMind recommendation requests,
+- receive Dashboard VolumeMind forecast and recommended-buy output,
 - create pool proposals,
 - join open pools,
 - input manual transactions,
@@ -137,41 +142,38 @@ Responsibilities:
 - provide historical data for VolumeMind,
 - expose transaction audit records.
 
-### 2.8 VolumeMind Recommendation Module
+### 2.8 VolumeMind Dashboard Recommendation Module
 
 Responsibilities:
 
-- receive a lightweight recommendation request from Koperasi,
-- validate fertilizer type, target usage month, and active land area,
+- run when the Koperasi Dashboard is opened/refreshed or from a scheduled background job,
+- read Koperasi/user records from the database,
 - fetch cooperative location/profile data needed for weather lookup,
 - fetch rainfall forecast from BMKG/OpenWeather or a mock provider during MVP,
-- detect planting season from the target month,
-- read supplier price tiers and historical transaction demand,
-- predict recommended fertilizer demand,
+- detect planting season from month and location data,
+- read supplier price tiers, manual transactions, pool history, and profile data,
+- predict recommended fertilizer demand for the Dashboard,
 - optimize purchase volume against supplier price tiers,
-- return a ready-to-use procurement recommendation.
+- return a ready-to-use procurement recommendation for the Dashboard.
 
-Required Koperasi input:
-
-```text
-fertilizer_type
-usage_month
-active_land_area_hectare
-```
-
-Automatically prepared system inputs:
+Input sources from database/system:
 
 ```text
+Koperasi profile
+Koperasi location
+member/active land profile data if available
+manual procurement transactions
+previous collective-buy pool outcomes
+verified supplier data
+supplier price tiers
 rainfall_forecast_mm
 planting_season
-supplier_price_tiers
-historical_transaction_demand
-cooperative_location
 ```
 
 Recommended output:
 
 ```text
+forecasted_fertilizer_demand_kg
 selected_supplier
 recommended_purchase_quantity_kg
 estimated_total_cost
@@ -179,6 +181,8 @@ estimated_saving_amount
 best_order_window
 recommendation_reason
 ```
+
+VolumeMind must not be exposed as a separate menu or standalone input form in the MVP.
 
 ### 2.9 Audit Log Module
 
@@ -201,8 +205,16 @@ email
 password_hash
 role: KOPERASI | SUPPLIER | ADMIN
 status: PENDING_ADMIN_APPROVAL | ACTIVE | REJECTED | SUSPENDED
+terms_accepted_at nullable
 created_at
 updated_at
+```
+
+Admin creation rule:
+
+```text
+Admin users are inserted manually into the database with role = ADMIN and status = ACTIVE.
+Admin cannot register through the public registration form.
 ```
 
 ### 3.2 VerificationDocument
@@ -218,6 +230,8 @@ reviewed_at
 reviewed_by_admin_id
 rejection_reason
 ```
+
+Admin review screen must show document file metadata and preview/open links for KTP image and PDF proof document. It must not show raw password or password hash.
 
 ### 3.3 KoperasiProfile
 
@@ -490,7 +504,6 @@ Rules:
 
 ```text
 Home
-VolumeMind Recommendation
 Collective Buy
 Pencatatan Transaksi
 Audit Log
@@ -499,31 +512,28 @@ Audit Log
 ### Home
 
 - dashboard metrics only,
+- VolumeMind forecast and recommended-buy section,
+- no separate AI input form,
 - do not show final pool history,
 - do not show latest transaction table.
 
-### VolumeMind Recommendation
-
-Mobile form inputs:
+VolumeMind data is read from the user's database records and supporting services:
 
 ```text
-Jenis Pupuk
-Tanggal Penggunaan / Bulan Target
-Luas Lahan Aktif (Hektar)
-```
-
-Automatic system enrichment:
-
-```text
-Curah hujan dari API cuaca
-Musim tanam berdasarkan bulan target
-Tier harga supplier
+Profil koperasi
+Lokasi koperasi
+Data lahan anggota jika tersedia
 Histori transaksi koperasi
+Histori hasil pool
+Curah hujan dari API cuaca
+Musim tanam
+Tier harga supplier
 ```
 
-Output screen:
+Dashboard VolumeMind output:
 
 ```text
+Prediksi kebutuhan pupuk
 Supplier Terpilih
 Jumlah yang Harus Dibeli
 Total Biaya
@@ -599,11 +609,31 @@ Final outcomes only:
 ## 5.3 Admin Navigation
 
 ```text
-Verification Requests
-Approved Users
-Rejected Users
-User Detail
+Pending Account Approval
 ```
+
+Admin MVP has only one menu. The screen lists all accounts with:
+
+```text
+status = PENDING_ADMIN_APPROVAL
+role in KOPERASI, SUPPLIER
+```
+
+Admin can open each pending account and review:
+
+```text
+Gmail/email
+Selected role
+Terms of Service acceptance status and timestamp
+Official organization/business name
+Responsible person name
+Phone/contact information
+KTP photo
+Legal/proof PDF document
+Registration timestamp
+```
+
+Password and password hash must never be shown.
 
 ---
 
@@ -612,15 +642,18 @@ User Detail
 ### Phase 1 — Auth & Verification
 
 - implement role-based registration,
+- require Gmail/email, password, selected role, and Terms of Service acceptance,
 - upload KTP and legal proof,
-- create Admin approval page,
+- create one Admin pending account approval page,
+- ensure Admin can review all registration inputs except password,
+- seed or manually insert Admin account in database,
 - block unapproved accounts.
 
 ### Phase 2 — Koperasi Dashboard & Transaction Recording
 
 - create Home dashboard,
-- create mobile-only VolumeMind recommendation form,
-- connect recommendation form to mock AI/service data until API contract is finalized,
+- create Dashboard VolumeMind forecast and recommended-buy section,
+- connect Dashboard recommendation section to mock AI/service data until API contract is finalized,
 - create Pencatatan Transaksi form,
 - store manual transactions,
 - update dashboard metrics.

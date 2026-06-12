@@ -4,8 +4,9 @@ This document describes the updated VolumeMate flow with:
 
 - mobile-only web/PWA MVP direction,
 - Admin manual approval for Koperasi and Supplier registration,
+- Admin account manually created in database,
 - Supplier active account,
-- VolumeMind AI procurement recommendation,
+- VolumeMind AI forecast and recommended buy shown only on Dashboard,
 - Koperasi pool proposal,
 - Supplier accept/reject,
 - Supplier deadline setting,
@@ -20,12 +21,25 @@ This document describes the updated VolumeMate flow with:
 
 ```mermaid
 flowchart TD
-    A[User Registers as Koperasi or Supplier] --> B[Input Name, KTP Photo, Legal Proof Document]
-    B --> C[Account Status: PENDING_ADMIN_APPROVAL]
-    C --> D[Admin Reviews Documents]
-    D -->|Approve| E[Account Status: ACTIVE]
-    D -->|Reject| F[Account Status: REJECTED]
+    A[User Registers as Koperasi or Supplier] --> B[Input Gmail, Password, Role, Accept Terms of Service]
+    B --> B2[Input Organization Name, Responsible Person, Phone, KTP Photo, Legal Proof PDF]
+    B2 --> C[Account Status: PENDING_ADMIN_APPROVAL]
+    C --> D[Admin Opens Pending Account Approval Menu]
+    D --> D2[Admin Reviews All Registration Inputs Except Password]
+    D2 --> D3[Admin Opens KTP Photo and Legal Proof PDF]
+    D3 -->|Approve| E[Account Status: ACTIVE]
+    D3 -->|Reject| F[Account Status: REJECTED]
     E --> G[User Can Access Role-Based App Features]
+```
+
+Admin account setup:
+
+```mermaid
+flowchart TD
+    TECH[Technical Team] --> DB[Insert Admin User Directly in Database]
+    DB --> ROLE[role = ADMIN]
+    DB --> ACTIVE[status = ACTIVE]
+    ACTIVE --> ADMIN[Admin Can Login to Pending Account Approval Menu]
 ```
 
 ---
@@ -45,31 +59,33 @@ flowchart TD
 
 ---
 
-## 2a. VolumeMind AI Recommendation Flow
+## 2a. Dashboard VolumeMind AI Recommendation Flow
 
 ```mermaid
 flowchart TD
-    K[Verified Koperasi Opens Mobile VolumeMind Form] --> INPUT[Input 3 Fields: Fertilizer Type, Usage Month, Active Land Area]
-    INPUT --> WEATHER[System Fetches Rainfall Forecast by Cooperative Location]
-    INPUT --> SEASON[System Detects Planting Season from Usage Month]
-    INPUT --> HISTORY[System Reads Historical Transactions and Demand]
-    INPUT --> TIERS[System Reads Supplier Price Tiers]
+    K[Verified Koperasi Opens Dashboard] --> DB[System Reads Koperasi Database Records]
+    DB --> PROFILE[Profile, Location, Member Land Data]
+    DB --> HISTORY[Manual Transactions and Pool History]
+    DB --> TIERS[Supplier Price Tiers]
+    PROFILE --> WEATHER[System Fetches Rainfall Forecast by Location]
+    PROFILE --> SEASON[System Detects Planting Season]
 
     WEATHER --> AI[VolumeMind AI Engine]
     SEASON --> AI
     HISTORY --> AI
     TIERS --> AI
-    AI --> PREDICT[Predict Fertilizer Demand]
-    PREDICT --> OPTIMIZE[Optimize Purchase Volume Against Supplier Price Tiers]
-    OPTIMIZE --> OUTPUT[Show Recommended Procurement Plan]
-    OUTPUT --> CONFIRM{Koperasi Confirms Order?}
+    AI --> PREDICT[Forecast Fertilizer Demand]
+    PREDICT --> OPTIMIZE[Recommend Buy Quantity, Supplier, Timing, Saving]
+    OPTIMIZE --> OUTPUT[Show Forecast and Recommended Buy on Dashboard]
+    OUTPUT --> CONFIRM{Koperasi Confirms Recommendation?}
     CONFIRM -->|Yes| DRAFT[Create Draft Order or Pool Proposal]
-    CONFIRM -->|No| EDIT[User Edits Input or Leaves Recommendation]
+    CONFIRM -->|No| IDLE[Keep Dashboard Recommendation Visible]
 ```
 
 Recommended output fields:
 
 ```text
+Forecasted fertilizer demand
 Selected supplier
 Recommended quantity
 Estimated total cost
