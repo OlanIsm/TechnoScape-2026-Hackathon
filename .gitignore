@@ -1,2 +1,7 @@
 AGENTS.md
 image/
+
+# Vite cache
+frontend/.vite/
+frontend/node_modules/
+frontend/dist/
