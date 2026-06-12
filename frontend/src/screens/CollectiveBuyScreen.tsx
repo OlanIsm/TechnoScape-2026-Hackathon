@@ -16,6 +16,7 @@ import { colors, fonts } from '../theme';
 
 type CollectiveBuyScreenProps = {
   onHomePress: () => void;
+  onLogPress: () => void;
   onLogoutPress: () => void;
   onRecordPress: () => void;
 };
@@ -80,7 +81,12 @@ const cardShadow = {
   boxShadow: '0 4px 12px rgba(27, 67, 50, 0.05)',
 } as unknown as ViewStyle;
 
-export function CollectiveBuyScreen({ onHomePress, onLogoutPress, onRecordPress }: CollectiveBuyScreenProps) {
+export function CollectiveBuyScreen({
+  onHomePress,
+  onLogPress,
+  onLogoutPress,
+  onRecordPress,
+}: CollectiveBuyScreenProps) {
   const { height } = useWindowDimensions();
   const [activeTab, setActiveTab] = useState<'open' | 'mine'>('open');
   const [notice, setNotice] = useState('');
@@ -183,6 +189,7 @@ export function CollectiveBuyScreen({ onHomePress, onLogoutPress, onRecordPress 
         <KoperasiBottomNav
           activeTab="collective"
           onHomePress={onHomePress}
+          onLogPress={onLogPress}
           onRecordPress={onRecordPress}
         />
       </View>

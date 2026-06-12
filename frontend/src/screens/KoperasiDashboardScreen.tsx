@@ -13,6 +13,7 @@ import { colors, fonts } from '../theme';
 
 type KoperasiDashboardScreenProps = {
   onCollectivePress: () => void;
+  onLogPress: () => void;
   onLogoutPress: () => void;
   onRecordPress: () => void;
 };
@@ -23,6 +24,7 @@ const cardShadow = {
 
 export function KoperasiDashboardScreen({
   onCollectivePress,
+  onLogPress,
   onLogoutPress,
   onRecordPress,
 }: KoperasiDashboardScreenProps) {
@@ -76,6 +78,7 @@ export function KoperasiDashboardScreen({
         <KoperasiBottomNav
           activeTab="home"
           onCollectivePress={onCollectivePress}
+          onLogPress={onLogPress}
           onRecordPress={onRecordPress}
         />
       </View>

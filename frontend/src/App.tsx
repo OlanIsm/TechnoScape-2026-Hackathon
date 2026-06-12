@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { AdminApprovalScreen } from './screens/AdminApprovalScreen';
+import { AuditLogScreen } from './screens/AuditLogScreen';
 import { CollectiveBuyScreen } from './screens/CollectiveBuyScreen';
 import { KoperasiDashboardScreen } from './screens/KoperasiDashboardScreen';
 import { LoginScreen } from './screens/LoginScreen';
@@ -15,6 +16,7 @@ type Screen =
   | 'koperasi-dashboard'
   | 'collective-buy'
   | 'record-transaction'
+  | 'audit-log'
   | 'supplier-menu'
   | 'admin';
 
@@ -37,6 +39,10 @@ function getInitialScreen(): Screen {
 
   if (window.location.hash === '#catat') {
     return 'record-transaction';
+  }
+
+  if (window.location.hash === '#log') {
+    return 'audit-log';
   }
 
   if (window.location.hash === '#supplier') {
@@ -86,6 +92,11 @@ export default function App() {
     setScreen('record-transaction');
   };
 
+  const goToAuditLog = () => {
+    window.location.hash = 'log';
+    setScreen('audit-log');
+  };
+
   const goToSupplierMenu = () => {
     window.location.hash = 'supplier';
     setScreen('supplier-menu');
@@ -115,6 +126,7 @@ export default function App() {
     return (
       <KoperasiDashboardScreen
         onCollectivePress={goToCollectiveBuy}
+        onLogPress={goToAuditLog}
         onLogoutPress={goToLogin}
         onRecordPress={goToRecordTransaction}
       />
@@ -125,6 +137,7 @@ export default function App() {
     return (
       <CollectiveBuyScreen
         onHomePress={goToKoperasiMenu}
+        onLogPress={goToAuditLog}
         onLogoutPress={goToLogin}
         onRecordPress={goToRecordTransaction}
       />
@@ -136,7 +149,19 @@ export default function App() {
       <RecordTransactionScreen
         onCollectivePress={goToCollectiveBuy}
         onHomePress={goToKoperasiMenu}
+        onLogPress={goToAuditLog}
         onLogoutPress={goToLogin}
+      />
+    );
+  }
+
+  if (screen === 'audit-log') {
+    return (
+      <AuditLogScreen
+        onCollectivePress={goToCollectiveBuy}
+        onHomePress={goToKoperasiMenu}
+        onLogoutPress={goToLogin}
+        onRecordPress={goToRecordTransaction}
       />
     );
   }

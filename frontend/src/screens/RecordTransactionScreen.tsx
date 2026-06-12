@@ -17,6 +17,7 @@ import { colors, fonts } from '../theme';
 type RecordTransactionScreenProps = {
   onCollectivePress: () => void;
   onHomePress: () => void;
+  onLogPress: () => void;
   onLogoutPress: () => void;
 };
 
@@ -29,6 +30,7 @@ const cardShadow = {
 export function RecordTransactionScreen({
   onCollectivePress,
   onHomePress,
+  onLogPress,
   onLogoutPress,
 }: RecordTransactionScreenProps) {
   const { height } = useWindowDimensions();
@@ -159,6 +161,7 @@ export function RecordTransactionScreen({
           activeTab="record"
           onCollectivePress={onCollectivePress}
           onHomePress={onHomePress}
+          onLogPress={onLogPress}
         />
       </View>
     </SafeAreaView>
