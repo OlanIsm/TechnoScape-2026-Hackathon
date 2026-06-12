@@ -33,6 +33,20 @@ type RunningPool = {
   value: string;
 };
 
+type SupplierMenu = 'proposal' | 'audit';
+
+type SupplierAuditLog = {
+  amount: string;
+  cooperative: string;
+  date: string;
+  id: string;
+  note?: string;
+  product: string;
+  status: 'SUCCESS' | 'DECLINED' | 'FUNDING CANCELED' | 'AUTO DECLINED';
+  statusTone: 'success' | 'error' | 'warning' | 'muted';
+  total: string;
+};
+
 const pendingProposals: PendingProposal[] = [
   {
     cooperative: 'Koperasi Tani Makmur',
@@ -76,6 +90,50 @@ const runningPools: RunningPool[] = [
   },
 ];
 
+const supplierAuditLogs: SupplierAuditLog[] = [
+  {
+    amount: '5.000 Sak',
+    cooperative: 'KUD Tani Makmur Jaya',
+    date: '24 Okt 2026, 14:30',
+    id: 'PO-20261024-001',
+    product: 'NPK Phonska (50kg)',
+    status: 'SUCCESS',
+    statusTone: 'success',
+    total: 'Rp 875.000.000',
+  },
+  {
+    amount: '2.000 Sak',
+    cooperative: 'Koperasi Mekar Sari',
+    date: '22 Okt 2026, 09:15',
+    id: 'PO-20261022-042',
+    note: 'Alasan: stok tidak mencukupi untuk deadline.',
+    product: 'Urea Daun Buah',
+    status: 'DECLINED',
+    statusTone: 'error',
+    total: 'Rp 320.000.000',
+  },
+  {
+    amount: '1.000 Sak',
+    cooperative: 'Gapoktan Lembang',
+    date: '20 Okt 2026, 23:59',
+    id: 'PO-20261020-112',
+    product: 'ZA Petrokimia',
+    status: 'FUNDING CANCELED',
+    statusTone: 'warning',
+    total: '-',
+  },
+  {
+    amount: '500 Sak',
+    cooperative: 'KUD Setia',
+    date: '19 Okt 2026, 08:00',
+    id: 'PO-20261018-055',
+    product: 'KCL Mahkota',
+    status: 'AUTO DECLINED',
+    statusTone: 'muted',
+    total: '-',
+  },
+];
+
 const cardShadow = {
   boxShadow: '0 4px 12px rgba(27, 67, 50, 0.05)',
 } as unknown as ViewStyle;
@@ -83,6 +141,7 @@ const cardShadow = {
 export function SupplierMenuScreen({ onLogoutPress }: SupplierMenuScreenProps) {
   const { height } = useWindowDimensions();
   const [activeTab, setActiveTab] = useState<'pending' | 'running'>('pending');
+  const [activeMenu, setActiveMenu] = useState<SupplierMenu>('proposal');
   const [notice, setNotice] = useState('');
 
   const showNotice = (message: string) => {
@@ -110,84 +169,216 @@ export function SupplierMenuScreen({ onLogoutPress }: SupplierMenuScreenProps) {
           showsVerticalScrollIndicator={false}
           style={styles.content}
         >
-          <View style={styles.heroCard}>
-            <Text style={styles.eyebrow}>Supplier Utama</Text>
-            <Text style={styles.title}>Manajemen Kolektif</Text>
-            <Text style={styles.subtitle}>Kelola proposal dan progress pool pesanan dari berbagai koperasi.</Text>
-          </View>
-
-          <View style={styles.tabs}>
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => setActiveTab('pending')}
-              style={[styles.tabButton, activeTab === 'pending' && styles.tabButtonActive]}
-            >
-              <Text style={[styles.tabText, activeTab === 'pending' && styles.tabTextActive]}>
-                Menunggu <Text style={styles.tabCount}>3</Text>
-              </Text>
-            </Pressable>
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => setActiveTab('running')}
-              style={[styles.tabButton, activeTab === 'running' && styles.tabButtonActive]}
-            >
-              <Text style={[styles.tabText, activeTab === 'running' && styles.tabTextActive]}>
-                Berjalan <Text style={styles.tabCountMuted}>2</Text>
-              </Text>
-            </Pressable>
-          </View>
-
           {notice ? (
             <View style={styles.notice}>
               <Text style={styles.noticeText}>{notice}</Text>
             </View>
           ) : null}
 
-          {activeTab === 'pending' ? (
-            <View style={styles.section}>
-              <View>
-                <Text style={styles.sectionTitle}>Proposal Baru</Text>
-                <Text style={styles.sectionSubtitle}>Menunggu persetujuan Anda untuk membuka pool.</Text>
-              </View>
-              {pendingProposals.map((proposal) => (
-                <PendingProposalCard key={proposal.cooperative} onAction={showNotice} proposal={proposal} />
-              ))}
-            </View>
+          {activeMenu === 'proposal' ? (
+            <ProposalManagementContent
+              activeTab={activeTab}
+              onAction={showNotice}
+              onTabChange={setActiveTab}
+            />
           ) : (
-            <View style={styles.section}>
-              <View>
-                <Text style={styles.sectionTitle}>Pool Aktif</Text>
-                <Text style={styles.sectionSubtitle}>Pantau progress pool yang sedang berjalan.</Text>
-              </View>
-              {runningPools.map((pool) => (
-                <RunningPoolCard key={pool.id} onAction={showNotice} pool={pool} />
-              ))}
-            </View>
+            <SupplierAuditLogContent onAction={showNotice} />
           )}
         </ScrollView>
 
         <View style={styles.bottomNav}>
-          {['Beranda', 'Kolektif', 'Catat', 'Log'].map((item, index) => (
+          {[
+            { key: 'proposal', label: 'Proposal' },
+            { key: 'audit', label: 'Audit Log' },
+          ].map((item, index) => {
+            const isActive = item.key === activeMenu;
+
+            return (
             <Pressable
               accessibilityRole="button"
-              key={item}
-              onPress={() =>
-                showNotice(
-                  index === 1
-                    ? 'Kamu sedang berada di Manajemen Kolektif Supplier.'
-                    : `${item} supplier masih dummy untuk sekarang.`,
-                )
-              }
+              key={item.key}
+              onPress={() => setActiveMenu(item.key as SupplierMenu)}
               style={styles.navItem}
             >
-              {index === 1 ? <View style={styles.activeDot} /> : null}
-              <SupplierNavIcon index={index} isActive={index === 1} />
-              <Text style={[styles.navText, index === 1 && styles.navTextActive]}>{item}</Text>
+              {isActive ? <View style={styles.activeDot} /> : null}
+              <SupplierNavIcon index={index} isActive={isActive} />
+              <Text style={[styles.navText, isActive && styles.navTextActive]}>{item.label}</Text>
             </Pressable>
-          ))}
+            );
+          })}
         </View>
       </View>
     </SafeAreaView>
+  );
+}
+
+type SupplierAuditLogContentProps = {
+  onAction: (message: string) => void;
+};
+
+function SupplierAuditLogContent({ onAction }: SupplierAuditLogContentProps) {
+  return (
+    <>
+      <View style={styles.auditHeader}>
+        <View>
+          <Text style={styles.title}>Log Audit Supplier</Text>
+          <Text style={styles.subtitle}>Riwayat pool final dan keputusan supplier.</Text>
+        </View>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => onAction('Dummy: ekspor CSV supplier akan tersedia setelah API siap.')}
+          style={styles.exportButton}
+        >
+          <Text style={styles.exportText}>Ekspor</Text>
+        </Pressable>
+      </View>
+
+      <View style={styles.filterCard}>
+        <Text style={styles.filterLabel}>Periode</Text>
+        <Text style={styles.filterValue}>Semua Waktu</Text>
+      </View>
+
+      <View style={styles.summaryGrid}>
+        <AuditSummaryCard label="Total Final" value="142" />
+        <AuditSummaryCard isSuccess label="Sukses" value="118" />
+        <AuditSummaryCard isError label="Ditolak" value="12" />
+        <AuditSummaryCard isWarning label="Batal/Gagal" value="12" />
+      </View>
+
+      <View style={styles.auditList}>
+        {supplierAuditLogs.map((log) => (
+          <SupplierAuditLogCard key={log.id} log={log} />
+        ))}
+      </View>
+
+      <Pressable
+        accessibilityRole="button"
+        onPress={() => onAction('Dummy: memuat histori supplier berikutnya.')}
+        style={styles.loadMoreButton}
+      >
+        <Text style={styles.loadMoreText}>Muat Lebih Banyak</Text>
+      </Pressable>
+    </>
+  );
+}
+
+function AuditSummaryCard({
+  isError = false,
+  isSuccess = false,
+  isWarning = false,
+  label,
+  value,
+}: {
+  isError?: boolean;
+  isSuccess?: boolean;
+  isWarning?: boolean;
+  label: string;
+  value: string;
+}) {
+  const valueStyle = [
+    styles.summaryValue,
+    isSuccess && styles.summarySuccess,
+    isError && styles.summaryError,
+    isWarning && styles.summaryWarning,
+  ];
+
+  return (
+    <View style={styles.summaryCard}>
+      <Text style={styles.summaryLabel}>{label}</Text>
+      <Text style={valueStyle}>{value}</Text>
+    </View>
+  );
+}
+
+function SupplierAuditLogCard({ log }: { log: SupplierAuditLog }) {
+  return (
+    <View style={[styles.auditCard, log.statusTone === 'warning' && styles.auditCardMuted]}>
+      <View style={styles.auditIconWrap}>
+        <View style={[styles.auditStatusIcon, getAuditIconStyle(log.statusTone)]}>
+          <Text style={[styles.auditStatusIconText, getAuditIconTextStyle(log.statusTone)]}>
+            {getAuditIconText(log.statusTone)}
+          </Text>
+        </View>
+      </View>
+      <View style={styles.auditBody}>
+        <View style={styles.auditTitleRow}>
+          <Text style={styles.auditProduct}>{log.product}</Text>
+          <View style={[styles.auditBadge, getAuditBadgeStyle(log.statusTone)]}>
+            <Text style={styles.auditBadgeText}>{log.status}</Text>
+          </View>
+        </View>
+        <Text style={styles.auditCoop}>{log.cooperative}</Text>
+        <Text style={styles.auditMeta}>
+          ID: {log.id} - Vol: {log.amount}
+        </Text>
+        {log.note ? <Text style={styles.auditNote}>{log.note}</Text> : null}
+        <View style={styles.auditFooter}>
+          <Text style={[styles.auditTotal, log.total === '-' && styles.auditTotalMuted]}>{log.total}</Text>
+          <Text style={styles.auditDate}>{log.date}</Text>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+type ProposalManagementContentProps = {
+  activeTab: 'pending' | 'running';
+  onAction: (message: string) => void;
+  onTabChange: (tab: 'pending' | 'running') => void;
+};
+
+function ProposalManagementContent({ activeTab, onAction, onTabChange }: ProposalManagementContentProps) {
+  return (
+    <>
+      <View style={styles.heroCard}>
+        <Text style={styles.eyebrow}>Supplier Utama</Text>
+        <Text style={styles.title}>Manajemen Proposal</Text>
+        <Text style={styles.subtitle}>Kelola proposal dan progress pool pesanan dari berbagai koperasi.</Text>
+      </View>
+
+      <View style={styles.tabs}>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => onTabChange('pending')}
+          style={[styles.tabButton, activeTab === 'pending' && styles.tabButtonActive]}
+        >
+          <Text style={[styles.tabText, activeTab === 'pending' && styles.tabTextActive]}>
+            Menunggu <Text style={styles.tabCount}>3</Text>
+          </Text>
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => onTabChange('running')}
+          style={[styles.tabButton, activeTab === 'running' && styles.tabButtonActive]}
+        >
+          <Text style={[styles.tabText, activeTab === 'running' && styles.tabTextActive]}>
+            Berjalan <Text style={styles.tabCountMuted}>2</Text>
+          </Text>
+        </Pressable>
+      </View>
+
+      {activeTab === 'pending' ? (
+        <View style={styles.section}>
+          <View>
+            <Text style={styles.sectionTitle}>Proposal Baru</Text>
+            <Text style={styles.sectionSubtitle}>Menunggu persetujuan Anda untuk membuka pool.</Text>
+          </View>
+          {pendingProposals.map((proposal) => (
+            <PendingProposalCard key={proposal.cooperative} onAction={onAction} proposal={proposal} />
+          ))}
+        </View>
+      ) : (
+        <View style={styles.section}>
+          <View>
+            <Text style={styles.sectionTitle}>Pool Aktif</Text>
+            <Text style={styles.sectionSubtitle}>Pantau progress pool yang sedang berjalan.</Text>
+          </View>
+          {runningPools.map((pool) => (
+            <RunningPoolCard key={pool.id} onAction={onAction} pool={pool} />
+          ))}
+        </View>
+      )}
+    </>
   );
 }
 
@@ -298,29 +489,10 @@ function SupplierNavIcon({ index, isActive }: { index: number; isActive: boolean
 
   if (index === 0) {
     return (
-      <View style={styles.homeIcon}>
-        <View style={[styles.homeRoof, { borderBottomColor: color }]} />
-        <View style={[styles.homeBase, { backgroundColor: color }]} />
-      </View>
-    );
-  }
-
-  if (index === 1) {
-    return (
       <View style={[styles.collectiveIcon, { borderColor: color }]}>
         <View style={[styles.collectiveDot, { backgroundColor: color, left: 3, top: 5 }]} />
         <View style={[styles.collectiveDot, { backgroundColor: color, right: 3, top: 5 }]} />
         <View style={[styles.collectiveDotLarge, { backgroundColor: color }]} />
-      </View>
-    );
-  }
-
-  if (index === 2) {
-    return (
-      <View style={styles.noteIcon}>
-        <View style={[styles.noteLine, { backgroundColor: color, width: 14 }]} />
-        <View style={[styles.noteLine, { backgroundColor: color, width: 10 }]} />
-        <View style={[styles.notePencil, { backgroundColor: color }]} />
       </View>
     );
   }
@@ -331,6 +503,70 @@ function SupplierNavIcon({ index, isActive }: { index: number; isActive: boolean
       <View style={[styles.logLine, { backgroundColor: color }]} />
     </View>
   );
+}
+
+function getAuditIconText(tone: SupplierAuditLog['statusTone']) {
+  if (tone === 'success') {
+    return 'OK';
+  }
+
+  if (tone === 'error') {
+    return '!';
+  }
+
+  if (tone === 'warning') {
+    return 'T';
+  }
+
+  return 'A';
+}
+
+function getAuditIconStyle(tone: SupplierAuditLog['statusTone']) {
+  if (tone === 'success') {
+    return styles.auditStatusSuccess;
+  }
+
+  if (tone === 'error') {
+    return styles.auditStatusError;
+  }
+
+  if (tone === 'warning') {
+    return styles.auditStatusWarning;
+  }
+
+  return styles.auditStatusMuted;
+}
+
+function getAuditIconTextStyle(tone: SupplierAuditLog['statusTone']) {
+  if (tone === 'success') {
+    return styles.auditTextSuccess;
+  }
+
+  if (tone === 'error') {
+    return styles.auditTextError;
+  }
+
+  if (tone === 'warning') {
+    return styles.auditTextWarning;
+  }
+
+  return styles.auditTextMuted;
+}
+
+function getAuditBadgeStyle(tone: SupplierAuditLog['statusTone']) {
+  if (tone === 'success') {
+    return styles.auditBadgeSuccess;
+  }
+
+  if (tone === 'error') {
+    return styles.auditBadgeError;
+  }
+
+  if (tone === 'warning') {
+    return styles.auditBadgeWarning;
+  }
+
+  return styles.auditBadgeMuted;
 }
 
 const styles = StyleSheet.create({
@@ -749,6 +985,266 @@ const styles = StyleSheet.create({
   },
   outlineButtonText: {
     color: colors.textMain,
+    fontFamily: fonts.body,
+    fontSize: 12,
+    fontWeight: '800',
+    lineHeight: 16,
+  },
+  auditHeader: {
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    gap: 12,
+    justifyContent: 'space-between',
+  },
+  exportButton: {
+    minHeight: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.surfaceCard,
+    borderColor: colors.primary,
+    borderRadius: 8,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    ...cardShadow,
+  },
+  exportText: {
+    color: colors.primary,
+    fontFamily: fonts.body,
+    fontSize: 12,
+    fontWeight: '800',
+    lineHeight: 16,
+  },
+  filterCard: {
+    minHeight: 46,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    backgroundColor: colors.surfaceCard,
+    borderColor: colors.outlineVariant,
+    borderRadius: 8,
+    borderWidth: 1,
+    paddingHorizontal: 13,
+    ...cardShadow,
+  },
+  filterLabel: {
+    color: colors.outline,
+    fontFamily: fonts.body,
+    fontSize: 12,
+    fontWeight: '700',
+    lineHeight: 16,
+  },
+  filterValue: {
+    color: colors.primary,
+    fontFamily: fonts.body,
+    fontSize: 13,
+    fontWeight: '800',
+    lineHeight: 18,
+  },
+  summaryGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  summaryCard: {
+    width: '48.5%',
+    minHeight: 94,
+    justifyContent: 'center',
+    backgroundColor: colors.surfaceCard,
+    borderColor: 'rgba(193, 200, 194, 0.48)',
+    borderRadius: 10,
+    borderWidth: 1,
+    padding: 14,
+    ...cardShadow,
+  },
+  summaryLabel: {
+    color: colors.onSurfaceVariant,
+    fontFamily: fonts.body,
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+    lineHeight: 13,
+    marginBottom: 7,
+    textTransform: 'uppercase',
+  },
+  summaryValue: {
+    color: colors.textMain,
+    fontFamily: fonts.heading,
+    fontSize: 24,
+    fontWeight: '700',
+    lineHeight: 32,
+  },
+  summarySuccess: {
+    color: colors.successGreen,
+  },
+  summaryError: {
+    color: colors.errorRed,
+  },
+  summaryWarning: {
+    color: colors.warningAmber,
+  },
+  auditList: {
+    gap: 10,
+  },
+  auditCard: {
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    gap: 12,
+    backgroundColor: colors.surfaceCard,
+    borderColor: 'rgba(193, 200, 194, 0.48)',
+    borderRadius: 10,
+    borderWidth: 1,
+    padding: 14,
+    ...cardShadow,
+  },
+  auditCardMuted: {
+    opacity: 0.82,
+  },
+  auditIconWrap: {
+    paddingTop: 2,
+  },
+  auditStatusIcon: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 20,
+  },
+  auditStatusSuccess: {
+    backgroundColor: 'rgba(43, 147, 72, 0.1)',
+  },
+  auditStatusError: {
+    backgroundColor: 'rgba(208, 0, 0, 0.1)',
+  },
+  auditStatusWarning: {
+    backgroundColor: 'rgba(255, 183, 3, 0.14)',
+  },
+  auditStatusMuted: {
+    backgroundColor: 'rgba(193, 200, 194, 0.35)',
+  },
+  auditStatusIconText: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    fontWeight: '900',
+    lineHeight: 14,
+  },
+  auditTextSuccess: {
+    color: colors.successGreen,
+  },
+  auditTextError: {
+    color: colors.errorRed,
+  },
+  auditTextWarning: {
+    color: colors.warningAmber,
+  },
+  auditTextMuted: {
+    color: colors.outline,
+  },
+  auditBody: {
+    flex: 1,
+    minWidth: 0,
+  },
+  auditTitleRow: {
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 7,
+    marginBottom: 4,
+  },
+  auditProduct: {
+    color: colors.textMain,
+    flexShrink: 1,
+    fontFamily: fonts.heading,
+    fontSize: 17,
+    fontWeight: '700',
+    lineHeight: 23,
+  },
+  auditBadge: {
+    borderRadius: 5,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+  },
+  auditBadgeSuccess: {
+    backgroundColor: colors.successGreen,
+  },
+  auditBadgeError: {
+    backgroundColor: colors.errorRed,
+  },
+  auditBadgeWarning: {
+    backgroundColor: colors.warningAmber,
+  },
+  auditBadgeMuted: {
+    backgroundColor: colors.surfaceContainerHigh,
+  },
+  auditBadgeText: {
+    color: colors.onPrimary,
+    fontFamily: fonts.body,
+    fontSize: 9,
+    fontWeight: '900',
+    lineHeight: 11,
+  },
+  auditCoop: {
+    color: colors.onSurfaceVariant,
+    fontFamily: fonts.body,
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  auditMeta: {
+    color: colors.outline,
+    fontFamily: fonts.body,
+    fontSize: 11,
+    lineHeight: 14,
+    marginTop: 3,
+  },
+  auditNote: {
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(208, 0, 0, 0.06)',
+    borderRadius: 5,
+    color: colors.errorRed,
+    fontFamily: fonts.body,
+    fontSize: 11,
+    fontWeight: '600',
+    lineHeight: 15,
+    marginTop: 6,
+    paddingHorizontal: 7,
+    paddingVertical: 5,
+  },
+  auditFooter: {
+    alignItems: 'center',
+    borderTopColor: colors.surfaceVariant,
+    borderTopWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10,
+    paddingTop: 10,
+  },
+  auditTotal: {
+    color: colors.textMain,
+    fontFamily: fonts.body,
+    fontSize: 13,
+    fontWeight: '800',
+    lineHeight: 18,
+  },
+  auditTotalMuted: {
+    color: colors.outline,
+  },
+  auditDate: {
+    color: colors.outline,
+    fontFamily: fonts.body,
+    fontSize: 11,
+    lineHeight: 14,
+  },
+  loadMoreButton: {
+    minHeight: 42,
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
+    borderColor: colors.primary,
+    borderRadius: 8,
+    borderWidth: 1,
+    paddingHorizontal: 20,
+  },
+  loadMoreText: {
+    color: colors.primary,
     fontFamily: fonts.body,
     fontSize: 12,
     fontWeight: '800',
