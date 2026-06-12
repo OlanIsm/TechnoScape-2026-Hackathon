@@ -836,10 +836,10 @@ a {
   background: #d9d9d9;
 }
 
-.mobile-bottom-nav svg {
+.mobile-bottom-nav img {
   width: 25px;
   height: 25px;
-  fill: currentColor;
+  object-fit: contain;
 }
 
 .collective-page {

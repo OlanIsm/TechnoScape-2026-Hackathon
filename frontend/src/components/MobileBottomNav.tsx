@@ -1,4 +1,7 @@
 import { useNavigate } from 'react-router-dom';
+import groupIcon from '../assets/nav-group.svg';
+import homeIcon from '../assets/nav-home.svg';
+import noteIcon from '../assets/nav-note.svg';
 
 type ActiveTab = 'dashboard' | 'collective' | 'audit';
 
@@ -8,14 +11,14 @@ type MobileBottomNavProps = {
 };
 
 const navItems = [
-  { id: 'dashboard', label: 'Dashboard', path: '/dashboard', icon: HomeIcon },
-  { id: 'collective', label: 'Borong Bareng', path: '/collective-buy', icon: UsersIcon },
-  { id: 'audit', label: 'Audit', path: '', icon: NoteIcon },
+  { id: 'dashboard', label: 'Dashboard', path: '/dashboard', icon: homeIcon },
+  { id: 'collective', label: 'Borong Bareng', path: '/collective-buy', icon: groupIcon },
+  { id: 'audit', label: 'Audit', path: '', icon: noteIcon },
 ] satisfies Array<{
   id: ActiveTab;
   label: string;
   path: string;
-  icon: () => JSX.Element;
+  icon: string;
 }>;
 
 export function MobileBottomNav({ activeTab, onUnavailable }: MobileBottomNavProps) {
@@ -24,7 +27,6 @@ export function MobileBottomNav({ activeTab, onUnavailable }: MobileBottomNavPro
   return (
     <nav className="mobile-bottom-nav" aria-label="Navigasi aplikasi">
       {navItems.map((item) => {
-        const Icon = item.icon;
         const isActive = item.id === activeTab;
 
         return (
@@ -47,34 +49,10 @@ export function MobileBottomNav({ activeTab, onUnavailable }: MobileBottomNavPro
               onUnavailable?.(`${item.label} belum tersedia di versi dummy.`);
             }}
           >
-            <Icon />
+            <img alt="" src={item.icon} />
           </button>
         );
       })}
     </nav>
-  );
-}
-
-function HomeIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24">
-      <path d="M3.8 10.5 12 3.6l8.2 6.9v9.1a1.9 1.9 0 0 1-1.9 1.9h-3.8v-6.2h-5v6.2H5.7a1.9 1.9 0 0 1-1.9-1.9v-9.1Z" />
-    </svg>
-  );
-}
-
-function UsersIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24">
-      <path d="M8.5 12.2a4 4 0 1 1 0-8 4 4 0 0 1 0 8Zm7.7.2a3.4 3.4 0 1 1 0-6.8 3.4 3.4 0 0 1 0 6.8ZM2.7 20.5c.4-3.5 2.7-5.8 5.8-5.8s5.4 2.3 5.8 5.8H2.7Zm10.7 0a7.5 7.5 0 0 0-1.1-3.1 4.9 4.9 0 0 1 3.9-1.9c2.8 0 4.8 2 5.1 5H13.4Z" />
-    </svg>
-  );
-}
-
-function NoteIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24">
-      <path d="M6.2 3h9.3l3.3 3.3v14.1c0 1-.8 1.6-1.7 1.6H6.2c-1 0-1.8-.7-1.8-1.6V4.6c0-.9.8-1.6 1.8-1.6Zm8.5 1.8v2.4h2.4l-2.4-2.4ZM8 10h8v1.8H8V10Zm0 4h8v1.8H8V14Zm0 4h5.2v1.8H8V18Z" />
-    </svg>
   );
 }
