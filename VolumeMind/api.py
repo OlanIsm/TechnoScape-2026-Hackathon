@@ -30,8 +30,7 @@ def load_model():
 
 # Schema Input untuk Prediksi Kebutuhan
 class PredictRequest(BaseModel):
-    tahun: int
-    bulan: int
+    tanggal: str  # Format: YYYY-MM-DD atau YYYY-MM-01
     id_koperasi: str
     jenis_pupuk: str
     curah_hujan_mm: float
@@ -57,7 +56,7 @@ class Supplier(BaseModel):
 class RecommendRequest(BaseModel):
     predicted_demand_kg: float
     suppliers: List[Supplier]
-    target_month: Optional[int] = None  # 1-12
+    target_date: Optional[str] = None  # Format: YYYY-MM-DD
 
 # Schema Output Rekomendasi
 class RecommendResponse(BaseModel):
@@ -84,10 +83,18 @@ def predict_demand(request: PredictRequest):
         raise HTTPException(status_code=503, detail="Model belum siap atau tidak ditemukan di server.")
     
     try:
+        # Parse tanggal kronologis ke tahun & bulan untuk model ML
+        try:
+            parsed_date = pd.to_datetime(request.tanggal)
+            tahun = parsed_date.year
+            bulan = parsed_date.month
+        except Exception:
+            raise HTTPException(status_code=400, detail="Format tanggal salah. Gunakan format YYYY-MM-DD.")
+            
         # Buat dataframe dari request input
         input_data = pd.DataFrame([{
-            'tahun': request.tahun,
-            'bulan': request.bulan,
+            'tahun': tahun,
+            'bulan': bulan,
             'id_koperasi': request.id_koperasi,
             'jenis_pupuk': request.jenis_pupuk,
             'curah_hujan_mm': request.curah_hujan_mm,
@@ -179,9 +186,16 @@ def recommend_buy(request: RecommendRequest):
     recommended_month = None
     timeline_desc = None
     
-    if request.target_month is not None:
+    target_month = None
+    if request.target_date is not None:
+        try:
+            target_month = pd.to_datetime(request.target_date).month
+        except Exception:
+            pass
+            
+    if target_month is not None:
         # Menghitung bulan pembelian (1 bulan sebelum penggunaan)
-        recommended_month = request.target_month - 1
+        recommended_month = target_month - 1
         if recommended_month == 0:
             recommended_month = 12
             
@@ -191,13 +205,13 @@ def recommend_buy(request: RecommendRequest):
             9: "September", 10: "Oktober", 11: "November", 12: "Desember"
         }
         
-        target_month_name = month_names.get(request.target_month, "")
+        target_month_name = month_names.get(target_month, "")
         purchase_month_name = month_names.get(recommended_month, "")
         
         # Tambahan heuristic pintar berdasarkan volume/hack:
         # Jika volume besar (>= 10 ton / 10000 kg) atau terpicu volume hack, rekomendasikan beli 1.5 - 2 bulan lebih cepat
         if best_option['is_volume_hack'] or best_option['volume'] >= 10000:
-            early_month = request.target_month - 2
+            early_month = target_month - 2
             if early_month <= 0:
                 early_month += 12
             early_month_name = month_names.get(early_month, "")

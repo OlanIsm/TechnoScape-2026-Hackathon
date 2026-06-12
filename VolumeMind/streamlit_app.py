@@ -112,13 +112,14 @@ col1, col2 = st.columns(2)
 
 with col1:
     st.markdown("**📝 Detail Koperasi & Waktu**")
-    koperasi = st.selectbox("Pilih Koperasi", ["kop-sumber-makmur", "kop-tunas-tani", "kop-padiwangi", "kop-melati-jaya"])
-    tahun = st.number_input("Tahun Prediksi", min_value=2025, max_value=2030, value=2026)
-    bulan = st.slider("Bulan (1-12)", 1, 12, 10)
+    koperasi = st.selectbox("Pilih Koperasi", ["Koperasi Sumber Makmur", "Koperasi Tani Jaya"])
+    selected_date = st.date_input("Tanggal Prediksi", value=pd.to_datetime("2026-10-01"))
+    tahun = selected_date.year
+    bulan = selected_date.month
 
 with col2:
     st.markdown("**🌱 Parameter Pertanian**")
-    pupuk = st.selectbox("Jenis Pupuk", ["Urea", "NPK", "SP-36"])
+    pupuk = st.selectbox("Jenis Pupuk", ["Pupuk Urea Granul", "Pupuk NPK Phonska", "Pupuk SP-36 Super"])
     musim = st.selectbox("Musim Tanam", ["Rendengan", "Gadu", "Paceklik"])
     curah_hujan = st.number_input("Curah Hujan (mm)", min_value=0, max_value=600, value=300)
     luas_lahan = st.number_input("Luas Lahan (Hektar)", min_value=10, max_value=5000, value=500)

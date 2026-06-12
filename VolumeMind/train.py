@@ -18,6 +18,11 @@ print("=== 🌿 VolumeMind: Menjalankan Pelatihan Model AI (Anti-Overfitting) ==
 print(" Membaca dataset 'volumemate_dataset_final.csv'...")
 df = pd.read_csv('volumemate_dataset_final.csv')
 
+# Extract tahun and bulan from tanggal for training
+df['tanggal'] = pd.to_datetime(df['tanggal'])
+df['tahun'] = df['tanggal'].dt.year
+df['bulan'] = df['tanggal'].dt.month
+
 # 2. Clean curah_hujan_mm (-1 values)
 print(" Membersihkan data curah hujan (-1 values)...")
 monthly_rain = df[df['curah_hujan_mm'] != -1].groupby('bulan')['curah_hujan_mm'].mean()
