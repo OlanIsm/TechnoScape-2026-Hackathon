@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { BrandLogo } from '../components/BrandLogo';
-import { PhoneStatusBar } from '../components/PhoneStatusBar';
 
 export function LoginPlaceholderPage() {
   const [message, setMessage] = useState('');
@@ -9,7 +8,6 @@ export function LoginPlaceholderPage() {
 
   return (
     <main className="login-page">
-      <PhoneStatusBar />
       <section className="login-panel" aria-labelledby="login-title">
         <BrandLogo className="login-logo" />
         <h1 id="login-title">Masuk ke akun anda</h1>

@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { MobileBottomNav } from '../components/MobileBottomNav';
-import { PhoneStatusBar } from '../components/PhoneStatusBar';
 
 const metrics = [
   {
@@ -30,8 +29,6 @@ export function DashboardPage() {
   return (
     <main className="dashboard-page">
       <section className="dashboard-phone" aria-label="Dashboard VolumeMate">
-        <PhoneStatusBar />
-
         <div className="dashboard-content">
           <header className="dashboard-header">
             <p>Hi,</p>

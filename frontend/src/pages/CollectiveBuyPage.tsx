@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import { MobileBottomNav } from '../components/MobileBottomNav';
-import { PhoneStatusBar } from '../components/PhoneStatusBar';
 
 const pools = [
   {
@@ -60,8 +59,6 @@ export function CollectiveBuyPage() {
   return (
     <main className="collective-page">
       <section className="collective-phone" aria-label="Borong Bareng VolumeMate">
-        <PhoneStatusBar />
-
         <div className="collective-content">
           <header className="collective-header">
             <h1>Borong Bareng</h1>
@@ -109,7 +106,6 @@ export function CollectiveBuyPage() {
                   <p>{pool.supplier}</p>
                 </div>
                 <div className="pool-meta">
-                  <ClockIcon />
                   <p>{pool.dueDate}</p>
                 </div>
 
@@ -155,14 +151,6 @@ function BoxIcon() {
   return (
     <svg aria-hidden="true" viewBox="0 0 24 24">
       <path d="m12 3 8 4.2v9.6L12 21l-8-4.2V7.2L12 3Zm0 2.3L7.2 7.8 12 10.4l4.8-2.6L12 5.3ZM6 9.5v6.1l5 2.6v-6.1L6 9.5Zm12 0-5 2.6v6.1l5-2.6V9.5Z" />
-    </svg>
-  );
-}
-
-function ClockIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24">
-      <path d="M12 3.4a8.6 8.6 0 1 1 0 17.2 8.6 8.6 0 0 1 0-17.2Zm0 2a6.6 6.6 0 1 0 0 13.2 6.6 6.6 0 0 0 0-13.2Zm1 2.6v4.1l3 1.8-1 1.6-4-2.4V8h2Z" />
     </svg>
   );
 }

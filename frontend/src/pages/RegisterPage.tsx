@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { BrandLogo } from '../components/BrandLogo';
-import { PhoneStatusBar } from '../components/PhoneStatusBar';
 
 export function RegisterPage() {
   const [message, setMessage] = useState('');
@@ -9,7 +8,6 @@ export function RegisterPage() {
 
   return (
     <main className="login-page register-page">
-      <PhoneStatusBar />
       <section className="login-panel register-panel" aria-labelledby="register-title">
         <BrandLogo className="login-logo" />
         <h1 id="register-title">Daftar akun</h1>
