@@ -1,117 +1,106 @@
-import { useMemo, useState } from 'react';
-import { Calculator, PackageSearch, TrendingDown } from 'lucide-react';
-import { PriceTierChart } from '../components/PriceTierChart';
-import { dummySuppliers } from '../data/dummySuppliers';
-import { estimateSupplierPrice } from '../services/priceEstimator';
+import { useState } from 'react';
+import { AlertBanner } from '../components/dashboard/AlertBanner';
+import { BottomNavBar } from '../components/dashboard/BottomNavBar';
+import { CollectiveProgress } from '../components/dashboard/CollectiveProgress';
+import {
+  DashboardModal,
+  type ModalContent,
+} from '../components/dashboard/DashboardModal';
+import { FloatingActionButton } from '../components/dashboard/FloatingActionButton';
+import { MetricCard } from '../components/dashboard/MetricCard';
+import { MobileTopBar } from '../components/dashboard/MobileTopBar';
+import { RecentTransactionsTable } from '../components/dashboard/RecentTransactionsTable';
+import { RecommendationsPanel } from '../components/dashboard/RecommendationsPanel';
+import { SupplierPricePanel } from '../components/dashboard/SupplierPricePanel';
+import { dashboardMetrics } from '../data/dashboardData';
 
 export function DashboardPage() {
-  const [supplierId, setSupplierId] = useState(dummySuppliers[0].id);
-  const [volumeTon, setVolumeTon] = useState(4);
+  const [modalContent, setModalContent] = useState<ModalContent | null>(null);
 
-  const supplier = useMemo(
-    () =>
-      dummySuppliers.find((currentSupplier) => currentSupplier.id === supplierId) ??
-      dummySuppliers[0],
-    [supplierId],
-  );
-  const estimate = useMemo(
-    () => estimateSupplierPrice(supplier, volumeTon),
-    [supplier, volumeTon],
-  );
+  const openModal = (content: ModalContent) => {
+    setModalContent(content);
+  };
+
+  const openPlaceholder = (title: string, body: string) => {
+    openModal({ title, body });
+  };
 
   return (
-    <section className="dashboard">
-      <div className="page-heading">
-        <p className="eyebrow">Koperasi Sumber Makmur</p>
-        <h1>Volume Price Tracker</h1>
-        <p>
-          Pantau posisi order terhadap tier harga supplier dan hitung estimasi
-          biaya pengadaan secara real-time.
-        </p>
-      </div>
-
-      <div className="dashboard-grid">
-        <section className="panel tracker-panel">
-          <div className="panel-heading">
-            <PackageSearch size={20} aria-hidden="true" />
-            <h2>Supplier & Price Tiers</h2>
-          </div>
-          <label className="field">
-            <span>Supplier</span>
-            <select
-              value={supplierId}
-              onChange={(event) => setSupplierId(event.target.value)}
-            >
-              {dummySuppliers.map((currentSupplier) => (
-                <option key={currentSupplier.id} value={currentSupplier.id}>
-                  {currentSupplier.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <div className="supplier-summary">
-            <strong>{supplier.productName}</strong>
-            <span>{supplier.location}</span>
-          </div>
-          <div className="chart-frame">
-            <PriceTierChart supplier={supplier} />
-          </div>
+    <div className="dashboard-screen">
+      <MobileTopBar
+        onOpenMenu={() =>
+          openPlaceholder(
+            'Menu dashboard',
+            'Navigasi samping belum dibuat karena screen ini masih fokus ke dashboard. Untuk sementara, pakai menu bawah untuk melihat area utama VolumeMate.',
+          )
+        }
+        onOpenNotifications={() =>
+          openPlaceholder(
+            'Notifikasi',
+            'Ada rekomendasi VolumeMind baru: collective buying Padiwangi dan Melati Jaya sudah mendekati threshold 78%.',
+          )
+        }
+      />
+      <main className="dashboard-content">
+        <AlertBanner
+          onViewDetail={() =>
+            openPlaceholder(
+              'Detail rekomendasi',
+              'Jika gabung dengan Padiwangi dan Melati Jaya minggu ini, estimasi penghematan mencapai Rp 2.400.000 karena volume kolektif mendekati tier supplier berikutnya.',
+            )
+          }
+        />
+        <section className="metrics-grid" aria-label="Ringkasan koperasi">
+          {dashboardMetrics.map((metric) => (
+            <MetricCard metric={metric} key={metric.label} />
+          ))}
         </section>
-
-        <section className="panel">
-          <div className="panel-heading">
-            <Calculator size={20} aria-hidden="true" />
-            <h2>Kalkulator Biaya</h2>
-          </div>
-          <label className="field">
-            <span>Volume order: {volumeTon} ton</span>
-            <input
-              type="range"
-              min="1"
-              max="16"
-              step="1"
-              value={volumeTon}
-              onChange={(event) => setVolumeTon(Number(event.target.value))}
-            />
-          </label>
-          <div className="estimate-card">
-            <span>Estimasi total</span>
-            <strong>Rp {estimate.totalPrice.toLocaleString('id-ID')}</strong>
-            <small>
-              Rp {estimate.activeTier.pricePerKg.toLocaleString('id-ID')} / kg
-            </small>
-          </div>
-          <div className="progress-block">
-            <div className="progress-copy">
-              <span>Progress menuju tier berikutnya</span>
-              <strong>{Math.round(estimate.progressToNextTier)}%</strong>
-            </div>
-            <div className="progress-track">
-              <div
-                className="progress-fill"
-                style={{ width: `${estimate.progressToNextTier}%` }}
-              />
-            </div>
-            <p>
-              {estimate.nextTier
-                ? `Butuh ${estimate.remainingToNextTierTon} ton lagi untuk harga Rp ${estimate.nextTier.pricePerKg.toLocaleString('id-ID')} / kg.`
-                : 'Sudah berada di tier harga terbaik supplier ini.'}
-            </p>
-          </div>
-        </section>
-
-        <section className="panel insight-panel">
-          <div className="panel-heading">
-            <TrendingDown size={20} aria-hidden="true" />
-            <h2>Rekomendasi Dummy</h2>
-          </div>
-          <p>
-            Untuk menekan biaya, kumpulkan pesanan anggota sampai minimal{' '}
-            {estimate.nextTier?.minVolumeTon ?? estimate.activeTier.minVolumeTon}{' '}
-            ton sebelum konfirmasi pembelian.
-          </p>
-        </section>
-      </div>
-    </section>
+        <RecommendationsPanel
+          onExecute={() =>
+            openModal({
+              title: 'Rekomendasi disiapkan',
+              body: 'Dummy action: sistem akan menyiapkan draft pembelian 3 ton Urea dari Agro Mandiri dan menghubungkannya ke pool collective buying aktif.',
+              actionLabel: 'Oke, lanjut nanti',
+            })
+          }
+        />
+        <CollectiveProgress />
+        <SupplierPricePanel
+          onViewAll={() =>
+            openPlaceholder(
+              'Daftar supplier',
+              'Halaman supplier lengkap belum dibuat. Panel ini sudah bisa dipakai untuk membandingkan harga dummy per produk.',
+            )
+          }
+        />
+        <RecentTransactionsTable
+          onOpenMenu={() =>
+            openPlaceholder(
+              'Menu transaksi',
+              'Aksi export PDF/Excel dan filter transaksi akan masuk saat modul audit log dikerjakan.',
+            )
+          }
+        />
+      </main>
+      <FloatingActionButton
+        onClick={() =>
+          openPlaceholder(
+            'Tambah transaksi',
+            'Form tambah transaksi belum dibuat di screen ini. Nanti aksi ini akan membuka alur input order atau offline queue.',
+          )
+        }
+      />
+      <BottomNavBar
+        onNavigate={(label) =>
+          label === 'Beranda'
+            ? openPlaceholder('Beranda aktif', 'Kamu sedang berada di dashboard utama.')
+            : openPlaceholder(
+                `${label} belum tersedia`,
+                'Screen ini belum diimplementasi. Untuk sekarang tombol ini memakai popup dummy agar flow navigasi tetap bisa dites.',
+              )
+        }
+      />
+      <DashboardModal content={modalContent} onClose={() => setModalContent(null)} />
+    </div>
   );
 }
