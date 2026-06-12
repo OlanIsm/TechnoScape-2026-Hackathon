@@ -57,6 +57,7 @@ class Supplier(BaseModel):
 class RecommendRequest(BaseModel):
     predicted_demand_kg: float
     suppliers: List[Supplier]
+    target_month: Optional[int] = None  # 1-12
 
 # Schema Output Rekomendasi
 class RecommendResponse(BaseModel):
@@ -68,6 +69,8 @@ class RecommendResponse(BaseModel):
     extra_volume_gained_kg: float
     savings_rp: float
     explanation: str
+    recommended_purchase_month: Optional[int] = None
+    recommended_purchase_timeline: Optional[str] = None
 
 @app.get("/")
 def home():
@@ -173,6 +176,47 @@ def recommend_buy(request: RecommendRequest):
     if best_option is None:
         raise HTTPException(status_code=400, detail="Tidak ada kecocokan tier harga dari supplier yang diberikan.")
         
+    recommended_month = None
+    timeline_desc = None
+    
+    if request.target_month is not None:
+        # Menghitung bulan pembelian (1 bulan sebelum penggunaan)
+        recommended_month = request.target_month - 1
+        if recommended_month == 0:
+            recommended_month = 12
+            
+        month_names = {
+            1: "Januari", 2: "Februari", 3: "Maret", 4: "April",
+            5: "Mei", 6: "Juni", 7: "Juli", 8: "Agustus",
+            9: "September", 10: "Oktober", 11: "November", 12: "Desember"
+        }
+        
+        target_month_name = month_names.get(request.target_month, "")
+        purchase_month_name = month_names.get(recommended_month, "")
+        
+        # Tambahan heuristic pintar berdasarkan volume/hack:
+        # Jika volume besar (>= 10 ton / 10000 kg) atau terpicu volume hack, rekomendasikan beli 1.5 - 2 bulan lebih cepat
+        if best_option['is_volume_hack'] or best_option['volume'] >= 10000:
+            early_month = request.target_month - 2
+            if early_month <= 0:
+                early_month += 12
+            early_month_name = month_names.get(early_month, "")
+            timeline_desc = (
+                f"Disarankan memesan antara bulan {early_month_name} hingga {purchase_month_name} "
+                f"(1-2 bulan sebelum target penggunaan di bulan {target_month_name}). "
+                f"Hal ini dikarenakan volume pengadaan besar ({best_option['volume']:.1f} kg) sehingga membutuhkan waktu "
+                f"persiapan logistik lebih awal untuk menghindari antrean pengiriman."
+            )
+        else:
+            timeline_desc = (
+                f"Disarankan memesan pada bulan {purchase_month_name} "
+                f"(1 bulan sebelum target penggunaan di bulan {target_month_name}) "
+                f"untuk mengantisipasi waktu pengiriman supplier dan memastikan stok tersedia tepat waktu."
+            )
+            
+        # Gabungkan timeline ke penjelasan
+        best_option['explanation'] += f" Waktu Pemesanan Terbaik: {timeline_desc}"
+        
     return RecommendResponse(
         recommended_supplier=best_option['supplier'],
         recommended_volume_kg=best_option['volume'],
@@ -181,5 +225,7 @@ def recommend_buy(request: RecommendRequest):
         is_volume_hack=best_option['is_volume_hack'],
         extra_volume_gained_kg=best_option['extra_volume'],
         savings_rp=best_option['savings'],
-        explanation=best_option['explanation']
+        explanation=best_option['explanation'],
+        recommended_purchase_month=recommended_month,
+        recommended_purchase_timeline=timeline_desc
     )
