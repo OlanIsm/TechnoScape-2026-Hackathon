@@ -1,0 +1,134 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN_KOPERASI
+  ANGGOTA
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PoolStatus {
+  ACTIVE
+  CLOSED
+  COMPLETED
+  CANCELLED
+}
+
+model Koperasi {
+  id        String   @id @default(uuid())
+  name      String
+  address   String
+  users     User[]
+  orders    Order[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model User {
+  id         String     @id @default(uuid())
+  email      String     @unique
+  password   String
+  name       String
+  role       Role       @default(ANGGOTA)
+  koperasiId String?
+  koperasi   Koperasi?  @relation(fields: [koperasiId], references: [id])
+  auditLogs  AuditLog[]
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+}
+
+model Supplier {
+  id        String    @id @default(uuid())
+  name      String
+  address   String
+  phone     String
+  email     String?
+  products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Product {
+  id          String           @id @default(uuid())
+  name        String
+  description String?
+  supplierId  String
+  supplier    Supplier         @relation(fields: [supplierId], references: [id])
+  priceTiers  PriceTier[]
+  orderItems  OrderItem[]
+  pools       CollectivePool[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+}
+
+model PriceTier {
+  id         String   @id @default(uuid())
+  minVolume  Float    // Minimal volume (kg/ton)
+  maxVolume  Float?   // Maksimal volume (nullable untuk tier tertinggi)
+  pricePerKg Float    // Harga per kg pada tier ini
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Order {
+  id               String          @id @default(uuid())
+  status           OrderStatus     @default(PENDING)
+  totalPrice       Float
+  koperasiId       String
+  koperasi         Koperasi        @relation(fields: [koperasiId], references: [id])
+  orderItems       OrderItem[]
+  collectivePoolId String?
+  collectivePool   CollectivePool? @relation(fields: [collectivePoolId], references: [id])
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+}
+
+model OrderItem {
+  id              String   @id @default(uuid())
+  quantity        Float    // Kuantitas pemesanan (kg)
+  priceAtPurchase Float    // Harga per kg saat transaksi
+  orderId         String
+  order           Order    @relation(fields: [orderId], references: [id])
+  productId       String
+  product         Product  @relation(fields: [productId], references: [id])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model CollectivePool {
+  id        String     @id @default(uuid())
+  name      String
+  status    PoolStatus @default(ACTIVE)
+  productId String
+  product   Product    @relation(fields: [productId], references: [id])
+  deadline  DateTime
+  orders    Order[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  action    String   // Aksi yang dilakukan (e.g. CREATE_ORDER, CONFIRM_ORDER, dll.)
+  details   String   // Detail detail perubahan data (format JSON String)
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+}

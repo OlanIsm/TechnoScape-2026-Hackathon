@@ -10,42 +10,77 @@ Berikut adalah diagram flowchart yang menggambarkan interaksi pengguna dan prose
 
 ```mermaid
 graph TD
+    %% Define Nodes and Labels
+    U["Admin Koperasi"]
+    M["Anggota Koperasi / Petani"]
+    SUP["Supplier dan Price Tiers"]
+    KOP_VOL["Volume Pesanan Koperasi"]
+    TRK["Volume Price Tracker Dashboard"]
+    CALC["Kalkulator Biaya Real-time"]
+    HIST[("Histori Transaksi")]
+    AI_FC["Demand Forecasting Model"]
+    AI_REC["Optimal Buy Recommendation"]
+    POOL["Collective Purchase Pool"]
+    AGG["Volume Aggregator"]
+    UNFULFILLED{"Target Volume Tercapai?"}
+    NEG_FLOW{"Pilih Opsi Tindakan"}
+    CANCEL_POOL["Pool: CANCELLED"]
+    SPLIT["Split Billing dan Distribution"]
+    CONN_CHECK{"Koneksi Internet?"}
+    TX["Order: CONFIRMED"]
+    DB_LOC[("IndexedDB Browser")]
+    SYNC["Auto Sync saat Online"]
+    AUD[("Audit Log Append-Only")]
+    EXP["Ekspor Laporan PDF dan Excel"]
+
+    %% Define Node Classes
+    class U,M admin;
+    class AI_FC,AI_REC ai;
+    class POOL,AGG,UNFULFILLED,NEG_FLOW,CANCEL_POOL,SPLIT collb;
+    class HIST,AUD db;
+    class CONN_CHECK,DB_LOC,SYNC offline;
+
+    %% Styling Classes
     classDef admin fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1;
     classDef ai fill:#f3e5f5,stroke:#4a148c,stroke-width:2px,color:#4a148c;
     classDef collb fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20;
     classDef db fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#e65100;
     classDef offline fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#b71c1c;
 
-    U[Admin Koperasi]:::admin
-    M[Anggota Koperasi / Petani]:::admin
-
-    U -->|Input Manual Data Offline| SUP[Supplier dan Price Tiers]
-    M -->|Pesan Pupuk Eceran| KOP_VOL[Volume Pesanan Koperasi]
-    KOP_VOL --> TRK[Volume Price Tracker Dashboard]
+    %% Connections
+    U -->|Input Manual Data Offline| SUP
+    M -->|Pesan Pupuk Eceran| KOP_VOL
+    KOP_VOL --> TRK
     SUP --> TRK
-    TRK -->|Progress Bar dan Estimasi Harga| CALC[Kalkulator Biaya Real-time]
+    TRK -->|Progress Bar dan Estimasi Harga| CALC
 
-    HIST[(Histori Transaksi)]:::db
-    HIST --> AI_FC[Demand Forecasting Model]:::ai
-    AI_FC -->|Prediksi Kebutuhan Musim Depan| AI_REC[Optimal Buy Recommendation]:::ai
+    HIST --> AI_FC
+    AI_FC -->|Prediksi Kebutuhan Musim Depan| AI_REC
     SUP --> AI_REC
     AI_REC -->|Rekomendasi: Waktu, Volume, dan Supplier Terbaik| U
 
-    U -->|Buat / Gabung Pool| POOL[Collective Purchase Pool]:::collb
-    POOL -->|Agregasi Volume Otomatis| AGG[Volume Aggregator]:::collb
+    U -->|Buat / Gabung Pool| POOL
+    POOL -->|Agregasi Volume Otomatis| AGG
     AGG -->|Cek Tier Harga Lebih Murah| SUP
-    POOL -->|Deadline Tercapai| SPLIT[Split Billing dan Distribution]:::collb
+    POOL -->|Deadline Tercapai| UNFULFILLED
 
-    TRK -->|Konfirmasi Pesanan| CONN_CHECK{Koneksi Internet?}:::offline
+    UNFULFILLED -->|Ya| SPLIT
+    UNFULFILLED -->|Tidak| NEG_FLOW
+
+    NEG_FLOW -->|Extend Deadline| POOL
+    NEG_FLOW -->|Adjust to Nearest Tier| SPLIT
+    NEG_FLOW -->|Cancel Pool| CANCEL_POOL
+
+    TRK -->|Konfirmasi Pesanan| CONN_CHECK
     SPLIT -->|Konfirmasi Pesanan Pool| CONN_CHECK
 
-    CONN_CHECK -->|Online| TX[Order: CONFIRMED]
-    CONN_CHECK -->|Offline| DB_LOC[(IndexedDB Browser)]:::offline
-    DB_LOC -->|Offline Queue| SYNC[Auto Sync saat Online]:::offline
+    CONN_CHECK -->|Online| TX
+    CONN_CHECK -->|Offline| DB_LOC
+    DB_LOC -->|Offline Queue| SYNC
     SYNC --> TX
 
-    TX -->|Immutable Ledger| AUD[(Audit Log Append-Only)]:::db
-    AUD --> EXP[Ekspor Laporan PDF dan Excel]
+    TX -->|Immutable Ledger| AUD
+    AUD --> EXP
 ```
 
 ---
