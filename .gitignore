@@ -5,3 +5,9 @@ image/
 frontend/.vite/
 frontend/node_modules/
 frontend/dist/
+
+# Local tool/cache
+.playwright-mcp/
+
+# VS Code local settings
+.vscode/
