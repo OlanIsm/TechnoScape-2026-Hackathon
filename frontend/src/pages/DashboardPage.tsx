@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { AppTopBar } from '../components/AppTopBar';
+import { DesktopSidebar } from '../components/DesktopSidebar';
 import { MobileBottomNav } from '../components/MobileBottomNav';
 
 const metrics = [
@@ -20,6 +21,39 @@ const metrics = [
   },
 ];
 
+const desktopMetrics = [
+  {
+    title: 'Hemat bulan ini',
+    value: 'Rp. 2.430.000',
+    helper: 'dibanding bulan lalu',
+  },
+  {
+    title: 'Stock Pupuk (Kg)',
+    value: '8.750',
+    helper: 'dibanding bulan lalu',
+  },
+  {
+    title: 'Akurasi Prediksi',
+    value: '86%',
+    helper: 'dibanding bulan lalu',
+  },
+  {
+    title: 'Estimasi Order',
+    value: '12.000 kg',
+    helper: 'target pembelian berikutnya',
+  },
+  {
+    title: 'Pool Aktif',
+    value: '4',
+    helper: 'borong bareng berjalan',
+  },
+  {
+    title: 'Audit Tercatat',
+    value: '128',
+    helper: 'transaksi append-only',
+  },
+];
+
 export function DashboardPage() {
   const [message, setMessage] = useState('');
 
@@ -29,6 +63,28 @@ export function DashboardPage() {
 
   return (
     <main className="dashboard-page">
+      <section className="desktop-app-layout" aria-label="Dashboard desktop VolumeMate">
+        <DesktopSidebar activeSection="dashboard" />
+        <div className="desktop-main">
+          <section className="desktop-metric-grid" aria-label="Ringkasan desktop">
+            {desktopMetrics.map((metric) => (
+              <article className="desktop-metric-card" key={metric.title}>
+                <h2>{metric.title}</h2>
+                <strong>{metric.value}</strong>
+                <p>{metric.helper}</p>
+              </article>
+            ))}
+          </section>
+          <section className="desktop-wide-panel" aria-label="Area analitik dashboard">
+            <h2>Rekomendasi VolumeMind</h2>
+            <p>
+              Pantau kebutuhan pupuk, rekomendasi pembelian, dan aktivitas pool
+              koperasi dalam satu area kerja desktop.
+            </p>
+          </section>
+        </div>
+      </section>
+
       <section className="dashboard-phone" aria-label="Dashboard VolumeMate">
         <div className="dashboard-content">
           <AppTopBar />

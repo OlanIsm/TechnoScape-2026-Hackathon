@@ -632,6 +632,10 @@ a {
     linear-gradient(180deg, #f8fbf5 0%, #ffffff 46%, #f3f8ee 100%);
 }
 
+.desktop-app-layout {
+  display: none;
+}
+
 .dashboard-phone {
   position: relative;
   width: min(100%, 430px);
@@ -1069,6 +1073,167 @@ a {
   color: #1c7f3c;
   font-size: 12px;
   font-weight: 800;
+}
+
+@media (min-width: 900px) {
+  .dashboard-page,
+  .collective-page {
+    display: block;
+    min-height: 100vh;
+    background: #ffffff;
+  }
+
+  .dashboard-phone,
+  .collective-phone {
+    display: none;
+  }
+
+  .desktop-app-layout {
+    display: grid;
+    width: 100%;
+    min-width: 100vw;
+    min-height: 100vh;
+    grid-template-columns: 328px minmax(0, 1fr);
+    background: #ffffff;
+  }
+
+  .desktop-sidebar {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+    align-items: center;
+    gap: 51px;
+    padding: 40px 29px;
+    background: #1c7f3c;
+  }
+
+  .desktop-sidebar-logo {
+    width: 227px;
+    height: 57px;
+    object-fit: contain;
+  }
+
+  .desktop-menu {
+    display: grid;
+    width: 100%;
+    gap: 42px;
+  }
+
+  .desktop-menu button {
+    width: 100%;
+    min-height: 58px;
+    border: 0;
+    border-radius: 20px;
+    background: transparent;
+    color: #ffffff;
+    font-size: 19.42px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .desktop-menu button.is-active {
+    background: #8ec43a;
+    color: #000000;
+  }
+
+  .desktop-main {
+    min-width: 0;
+    padding: 30px 20px;
+    overflow: auto;
+    background: #ffffff;
+  }
+
+  .desktop-metric-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .desktop-metric-card,
+  .desktop-pool-card,
+  .desktop-wide-panel {
+    border: 1px solid #275300;
+    border-radius: 20px;
+    background: #ffffff;
+  }
+
+  .desktop-metric-card {
+    min-height: 252px;
+    padding: 17px;
+  }
+
+  .desktop-metric-card h2,
+  .desktop-wide-panel h2,
+  .desktop-pool-card h2 {
+    margin: 0;
+    color: #000000;
+    font-size: clamp(24px, 1.65vw, 31.42px);
+    font-weight: 800;
+    line-height: 1.15;
+  }
+
+  .desktop-metric-card strong {
+    display: flex;
+    min-height: 142px;
+    align-items: center;
+    color: #000000;
+    font-size: clamp(36px, 2.7vw, 50.83px);
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .desktop-metric-card p,
+  .desktop-wide-panel p,
+  .desktop-page-header p {
+    margin: 0;
+    color: #000000;
+    font-size: 19.42px;
+    line-height: 1.45;
+  }
+
+  .desktop-wide-panel {
+    min-height: 238px;
+    margin-top: 40px;
+    padding: 28px;
+  }
+
+  .desktop-wide-panel h2 {
+    margin-bottom: 14px;
+  }
+
+  .desktop-page-header {
+    margin-bottom: 20px;
+  }
+
+  .desktop-page-header h1 {
+    margin: 0 0 8px;
+    color: #000000;
+    font-size: 50.83px;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .desktop-pool-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .desktop-pool-card {
+    min-height: 238px;
+    padding: 20px;
+    box-shadow: none;
+  }
+
+  .desktop-pool-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 16px;
+    color: #000000;
+    font-size: 14px;
+    font-weight: 700;
+  }
 }
 
 @media (min-width: 720px) {

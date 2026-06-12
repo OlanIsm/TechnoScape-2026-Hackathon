@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { AppTopBar } from '../components/AppTopBar';
+import { DesktopSidebar } from '../components/DesktopSidebar';
 import { MobileBottomNav } from '../components/MobileBottomNav';
 
 const pools = [
@@ -59,6 +60,51 @@ export function CollectiveBuyPage() {
 
   return (
     <main className="collective-page">
+      <section className="desktop-app-layout" aria-label="Borong Bareng desktop VolumeMate">
+        <DesktopSidebar activeSection="collective" />
+        <div className="desktop-main">
+          <header className="desktop-page-header">
+            <h1>Borong Bareng</h1>
+            <p>Kelola pool pembelian bersama untuk menembus tier harga supplier.</p>
+          </header>
+          <section className="desktop-pool-grid" aria-label="Pool collective buy desktop">
+            {pools.map((pool) => (
+              <article className="desktop-pool-card" key={pool.product}>
+                <div className="pool-title-row">
+                  <h2>{pool.product}</h2>
+                  <span>{pool.deadline}</span>
+                </div>
+                <p className="pool-progress-label">Progress Collective Buy</p>
+                <div
+                  aria-label={`${pool.volume} dari ${pool.target} kg terpenuhi`}
+                  className="pool-progress-track"
+                  role="progressbar"
+                  aria-valuemax={pool.target}
+                  aria-valuemin={0}
+                  aria-valuenow={pool.volume}
+                >
+                  <i style={{ width: `${Math.min((pool.volume / pool.target) * 100, 100)}%` }} />
+                </div>
+                <p className="pool-progress-text">
+                  {pool.volume}/{pool.target} kg sudah terpenuhi
+                </p>
+                <div className="desktop-pool-meta">
+                  <span>{pool.supplier}</span>
+                  <span>{pool.dueDate}</span>
+                </div>
+              </article>
+            ))}
+          </section>
+          <section className="desktop-wide-panel" aria-label="Panduan distribusi">
+            <h2>Distribusi & Split Billing</h2>
+            <p>
+              Area ini disiapkan untuk rekomendasi pembagian biaya proporsional
+              saat backend collective pool sudah tersedia.
+            </p>
+          </section>
+        </div>
+      </section>
+
       <section className="collective-phone" aria-label="Borong Bareng VolumeMate">
         <div className="collective-content">
           <AppTopBar />
