@@ -1,6 +1,7 @@
 import {
   Pressable,
   SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
   useWindowDimensions,
@@ -32,7 +33,7 @@ export function KoperasiDashboardScreen({
 
   return (
     <SafeAreaView style={[styles.safeArea, { minHeight: height }]}>
-      <View style={styles.shell}>
+      <View style={[styles.shell, { height }]}>
         <View style={styles.topBar}>
           <View style={styles.profileRow}>
             <BrandMark size={34} />
@@ -42,7 +43,11 @@ export function KoperasiDashboardScreen({
           </Pressable>
         </View>
 
-        <View style={styles.content}>
+        <ScrollView
+          contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={false}
+          style={styles.contentScroll}
+        >
           <View style={styles.hero}>
             <Text style={styles.title}>Beranda</Text>
             <Text style={styles.subtitle}>
@@ -67,7 +72,7 @@ export function KoperasiDashboardScreen({
 
           <VolumeMindCard />
           <PoolActiveCard />
-        </View>
+        </ScrollView>
 
         <KoperasiBottomNav
           activeTab="home"
@@ -207,11 +212,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   shell: {
-    minHeight: '100%',
     width: '100%',
     maxWidth: 430,
     alignSelf: 'center',
-    paddingBottom: 84,
+    paddingBottom: 72,
+    position: 'relative',
   },
   topBar: {
     minHeight: 72,
@@ -242,8 +247,12 @@ const styles = StyleSheet.create({
   },
   content: {
     gap: 16,
+    paddingBottom: 96,
     paddingHorizontal: 16,
     paddingTop: 8,
+  },
+  contentScroll: {
+    flex: 1,
   },
   hero: {
     gap: 6,
