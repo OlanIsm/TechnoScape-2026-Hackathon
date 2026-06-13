@@ -1,4 +1,13 @@
-import { Controller, Post, Get, Body, Param, Query, UseGuards, Request, Response } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Param,
+  UseGuards,
+  Request,
+  Response,
+} from '@nestjs/common';
 import { OrderService } from './order.service';
 import { Prisma } from '@prisma/client';
 import type { Response as ExpressResponse } from 'express';
@@ -16,14 +25,14 @@ export class OrderController {
   @UseGuards(AuthGuard)
   @Post('manual')
   async createManual(
-    @Request() req,
+    @Request() req: { user: { sub: string } },
     @Body('jenisPupuk') jenisPupuk: string,
     @Body('quantity') quantity: number,
     @Body('supplierName') supplierName: string,
     @Body('tanggal') tanggal: string,
     @Body('totalPrice') totalPrice: number,
   ) {
-    const userId = req.user.sub;
+    const userId: string = req.user.sub;
     return this.orderService.createManualTransaction(
       userId,
       jenisPupuk,
@@ -34,11 +43,31 @@ export class OrderController {
     );
   }
 
-  @Post(':id/confirm')
-  async confirmOrder(
-    @Param('id') id: string,
-    @Body('userId') userId?: string,
+  @UseGuards(AuthGuard)
+  @Post('distribution')
+  async createDistribution(
+    @Request() req: { user: { sub: string } },
+    @Body('jenisPupuk') jenisPupuk: string,
+    @Body('quantity') quantity: number,
+    @Body('buyerName') buyerName: string,
+    @Body('tanggal') tanggal: string,
+    @Body('pricePerKg') pricePerKg: number,
+    @Body('notes') notes?: string,
   ) {
+    const userId: string = req.user.sub;
+    return this.orderService.createDistribution(
+      userId,
+      jenisPupuk,
+      Number(quantity),
+      buyerName,
+      tanggal,
+      Number(pricePerKg),
+      notes,
+    );
+  }
+
+  @Post(':id/confirm')
+  async confirmOrder(@Param('id') id: string, @Body('userId') userId?: string) {
     return this.orderService.confirmOrder(id, userId);
   }
 
@@ -67,7 +96,7 @@ export class OrderController {
   }
 
   @Post('pools/:poolId/finalize')
-  async finalizePool(@Param('poolId') poolId: string) {
+  async finalizePool(@Param('poolId') poolId: string): Promise<any> {
     return this.orderService.finalizePool(poolId);
   }
 
@@ -78,11 +107,17 @@ export class OrderController {
 
   @UseGuards(AuthGuard)
   @Get('export-csv')
-  async exportCsv(@Request() req, @Response() res: ExpressResponse) {
-    const userId = req.user.sub;
+  async exportCsv(
+    @Request() req: { user: { sub: string } },
+    @Response() res: ExpressResponse,
+  ) {
+    const userId: string = req.user.sub;
     const csvData = await this.orderService.exportOrdersToCsv(userId);
     res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', 'attachment; filename=laporan_transaksi.csv');
+    res.setHeader(
+      'Content-Disposition',
+      'attachment; filename=laporan_transaksi.csv',
+    );
     return res.status(200).send(csvData);
   }
 }

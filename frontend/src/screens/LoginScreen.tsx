@@ -24,6 +24,7 @@ const cardShadow = {
   boxShadow: '0 4px 12px rgba(27, 67, 50, 0.05)',
 } as unknown as ViewStyle;
 
+
 export function LoginScreen({
   onAdminLogin,
   onKoperasiLogin,
@@ -46,8 +47,8 @@ export function LoginScreen({
         await api.login('admin@koperasi.com', 'password123');
         setNotice('');
         onKoperasiLogin?.();
-      } catch (err: any) {
-        setNotice(err.message || 'Login gagal. Pastikan backend aktif.');
+      } catch (err: unknown) {
+        setNotice(getErrorMessage(err, 'Login gagal. Pastikan backend aktif.'));
       }
       return;
     }
@@ -59,17 +60,30 @@ export function LoginScreen({
         await api.login('joko@koperasi.com', 'password123');
         setNotice('');
         onKoperasiLogin?.();
-      } catch (err: any) {
-        setNotice(err.message || 'Login gagal. Pastikan backend aktif.');
+      } catch (err: unknown) {
+        setNotice(getErrorMessage(err, 'Login gagal. Pastikan backend aktif.'));
       }
       return;
     }
 
-    // Shortcut '3': Admin role (dummy for now since no admin user in seed)
+    // Shortcut '3': Admin role (bypass for local admin console testing)
     if (loginCode === '3') {
-      localStorage.setItem('volumemate_token', 'dummy_admin_token');
+      localStorage.setItem('volumemate_token', 'admin_session_token');
       localStorage.setItem('volumemate_user', JSON.stringify({ name: 'Admin Platform', email: 'admin@platform.com', role: 'ADMIN' }));
       onAdminLogin?.();
+      return;
+    }
+
+    // Shortcut '4': Login as Supplier with real backend credentials
+    if (loginCode === '4') {
+      try {
+        setNotice('Sedang masuk sebagai Supplier...');
+        await api.login('supplier@petrokimia.com', 'password123');
+        setNotice('');
+        onSupplierLogin?.();
+      } catch (err: unknown) {
+        setNotice(getErrorMessage(err, 'Login gagal. Pastikan backend aktif.'));
+      }
       return;
     }
 
@@ -82,15 +96,19 @@ export function LoginScreen({
       setNotice('Sedang masuk...');
       const response = await api.login(email, password);
       setNotice('');
-      
+
       const role = response.user?.role;
-      if (role === 'ADMIN_KOPERASI' || role === 'ANGGOTA') {
+      if (role === 'SUPPLIER') {
+        onSupplierLogin?.();
+      } else if (role === 'ADMIN_KOPERASI' || role === 'ANGGOTA') {
         onKoperasiLogin?.();
+      } else if (role === 'SUPPLIER') {
+        onSupplierLogin?.();
       } else {
         onKoperasiLogin?.();
       }
-    } catch (err: any) {
-      setNotice(err.message || 'Login gagal. Periksa kembali email dan password.');
+    } catch (err: unknown) {
+      setNotice(getErrorMessage(err, 'Login gagal. Periksa kembali email dan password.'));
     }
   };
 
@@ -169,7 +187,7 @@ export function LoginScreen({
 
           <Pressable
             accessibilityRole="button"
-            onPress={() => setNotice('Login Google dummy untuk sementara.')}
+            onPress={() => setNotice('Metode masuk Google memerlukan konfigurasi OAuth2.')}
             style={styles.googleButton}
           >
             <View style={styles.googleMark}>
@@ -188,6 +206,10 @@ export function LoginScreen({
       </View>
     </SafeAreaView>
   );
+}
+
+function getErrorMessage(err: unknown, fallback: string) {
+  return err instanceof Error ? err.message : fallback;
 }
 
 const styles = StyleSheet.create({

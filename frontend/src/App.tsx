@@ -2,12 +2,16 @@ import { useEffect, useState } from 'react';
 import { AdminApprovalScreen } from './screens/AdminApprovalScreen';
 import { AuditLogScreen } from './screens/AuditLogScreen';
 import { CollectiveBuyScreen } from './screens/CollectiveBuyScreen';
+import { pools, type ProcurementPool } from './data/pools';
+import { JoinPoolScreen } from './screens/JoinPoolScreen';
 import { KoperasiDashboardScreen } from './screens/KoperasiDashboardScreen';
 import { LoginScreen } from './screens/LoginScreen';
 import { SupplierMenuScreen } from './screens/MenuScreen';
 import { RecordTransactionScreen } from './screens/RecordTransactionScreen';
 import { RegisterScreen } from './screens/RegisterScreen';
 import { SplashScreen } from './screens/SplashScreen';
+import { api } from './services/api';
+
 
 type Screen =
   | 'splash'
@@ -15,59 +19,145 @@ type Screen =
   | 'register'
   | 'koperasi-dashboard'
   | 'collective-buy'
+  | 'join-pool'
   | 'record-transaction'
   | 'audit-log'
   | 'supplier-menu'
   | 'admin';
 
-function getInitialScreen(): Screen {
-  if (window.location.hash === '#login') {
-    return 'login';
+function getCurrentUser() {
+  const userJson = localStorage.getItem('volumemate_user');
+  if (!userJson) return null;
+  try {
+    return JSON.parse(userJson);
+  } catch {
+    return null;
+  }
+}
+
+function getDefaultScreenForRole(role: string): Screen {
+  if (role === 'SUPPLIER') {
+    return 'supplier-menu';
+  }
+  if (role === 'ADMIN') {
+    return 'admin';
+  }
+  return 'koperasi-dashboard';
+}
+
+function getHashForScreen(screen: Screen): string {
+  switch (screen) {
+    case 'login':
+      return 'login';
+    case 'register':
+      return 'register';
+    case 'koperasi-dashboard':
+      return 'koperasi';
+    case 'collective-buy':
+      return 'kolektif';
+    case 'join-pool':
+      return 'gabung-pool';
+    case 'record-transaction':
+      return 'catat';
+    case 'audit-log':
+      return 'log';
+    case 'supplier-menu':
+      return 'supplier';
+    case 'admin':
+      return 'admin';
+    case 'splash':
+    default:
+      return '';
+  }
+}
+
+function getValidatedScreen(hash: string): Screen {
+  const user = getCurrentUser();
+  const token = localStorage.getItem('volumemate_token');
+
+  // If not logged in
+  if (!token || !user) {
+    if (hash === '#register') {
+      return 'register';
+    }
+    if (hash === '#login') {
+      return 'login';
+    }
+    if (hash === '' || hash === '#') {
+      return 'splash';
+    }
+    return 'login'; // Redirect to login for protected pages
   }
 
-  if (window.location.hash === '#register') {
-    return 'register';
+  // If logged in
+  const role = user.role;
+
+  // If on public pages, redirect logged-in user to their dashboard
+  if (!hash || hash === '#' || hash === '#login' || hash === '#register') {
+    return getDefaultScreenForRole(role);
   }
 
-  if (window.location.hash === '#koperasi') {
+  if (role === 'SUPPLIER') {
+    if (hash === '#supplier') {
+      return 'supplier-menu';
+    }
+    return 'supplier-menu'; // Redirect other hashes
+  }
+
+  if (role === 'ADMIN') {
+    if (hash === '#admin') {
+      return 'admin';
+    }
+    return 'admin'; // Redirect other hashes
+  }
+
+  // Koperasi roles (ADMIN_KOPERASI, ANGGOTA, etc.)
+  if (hash === '#koperasi') {
     return 'koperasi-dashboard';
   }
-
-  if (window.location.hash === '#kolektif') {
+  if (hash === '#kolektif') {
     return 'collective-buy';
   }
-
-  if (window.location.hash === '#catat') {
+  if (hash === '#gabung-pool') {
+    return 'join-pool';
+  }
+  if (hash === '#catat') {
     return 'record-transaction';
   }
-
-  if (window.location.hash === '#log') {
+  if (hash === '#log') {
     return 'audit-log';
   }
 
-  if (window.location.hash === '#supplier') {
-    return 'supplier-menu';
-  }
-
-  if (window.location.hash === '#admin') {
-    return 'admin';
-  }
-
-  return 'splash';
+  return 'koperasi-dashboard'; // Default fallback for Koperasi
 }
 
 export default function App() {
-  const [screen, setScreen] = useState<Screen>(getInitialScreen);
+  const [screen, setScreen] = useState<Screen>(() => getValidatedScreen(window.location.hash));
+  const [joinedPoolIds, setJoinedPoolIds] = useState<Array<string | number>>([2]);
+  const [selectedJoinPool, setSelectedJoinPool] = useState<ProcurementPool>(pools[0]);
+  const [collectiveNotice, setCollectiveNotice] = useState('');
+  const [collectiveInitialTab, setCollectiveInitialTab] = useState<'open' | 'mine'>('open');
 
   useEffect(() => {
-    const syncScreenWithHash = () => setScreen(getInitialScreen());
+    const handleNavigation = () => {
+      const currentHash = window.location.hash;
+      const validatedScreen = getValidatedScreen(currentHash);
+      const expectedHash = '#' + getHashForScreen(validatedScreen);
 
-    window.addEventListener('hashchange', syncScreenWithHash);
+      if (currentHash !== expectedHash && !(currentHash === '' && expectedHash === '#')) {
+        window.location.hash = getHashForScreen(validatedScreen);
+      }
+      setScreen(validatedScreen);
+    };
 
-    return () => window.removeEventListener('hashchange', syncScreenWithHash);
+    window.addEventListener('hashchange', handleNavigation);
+    handleNavigation();
+
+    return () => window.removeEventListener('hashchange', handleNavigation);
   }, []);
 
   const goToLogin = () => {
+    api.clearToken();
     window.location.hash = 'login';
     setScreen('login');
   };
@@ -83,8 +173,46 @@ export default function App() {
   };
 
   const goToCollectiveBuy = () => {
+    setCollectiveInitialTab('open');
     window.location.hash = 'kolektif';
     setScreen('collective-buy');
+  };
+
+  const goToJoinPool = (pool: ProcurementPool) => {
+    setSelectedJoinPool(pool);
+    window.location.hash = 'gabung-pool';
+    setScreen('join-pool');
+  };
+
+  const confirmJoinPool = async (poolId: string | number, contributionTon: number) => {
+    try {
+      const pool = selectedJoinPool;
+      if (!pool) return;
+
+      const quantityKg = contributionTon * 1000;
+      const unitPricePerKg = pool.unitPricePerTon / 1000;
+      const totalPrice = quantityKg * unitPricePerKg;
+
+      // 1. Record order in backend
+      const order = (await api.recordTransaction({
+        jenisPupuk: pool.product,
+        quantity: quantityKg,
+        supplierName: pool.supplier,
+        tanggal: new Date().toISOString().split('T')[0],
+        totalPrice: totalPrice,
+      })) as any;
+
+      // 2. Join pool in backend
+      await api.joinPool(String(poolId), order.id);
+
+      setJoinedPoolIds((currentIds) => (currentIds.includes(poolId) ? currentIds : [...currentIds, poolId]));
+      setCollectiveNotice(`Berhasil bergabung ke pool dengan kontribusi ${contributionTon.toLocaleString('id-ID')} Ton.`);
+      setCollectiveInitialTab('mine');
+      window.location.hash = 'kolektif';
+      setScreen('collective-buy');
+    } catch (err: unknown) {
+      alert('Gagal bergabung ke pool: ' + (err instanceof Error ? err.message : String(err)));
+    }
   };
 
   const goToRecordTransaction = () => {
@@ -136,10 +264,25 @@ export default function App() {
   if (screen === 'collective-buy') {
     return (
       <CollectiveBuyScreen
+        initialTab={collectiveInitialTab}
+        joinedPoolIds={joinedPoolIds}
         onHomePress={goToKoperasiMenu}
+        onJoinPoolPress={goToJoinPool}
         onLogPress={goToAuditLog}
         onLogoutPress={goToLogin}
         onRecordPress={goToRecordTransaction}
+        onSuccessMessageShown={() => setCollectiveNotice('')}
+        successMessage={collectiveNotice}
+      />
+    );
+  }
+
+  if (screen === 'join-pool') {
+    return (
+      <JoinPoolScreen
+        onBackPress={goToCollectiveBuy}
+        onConfirm={confirmJoinPool}
+        pool={selectedJoinPool}
       />
     );
   }

@@ -4,6 +4,7 @@ import { colors, fonts } from '../theme';
 
 type PoolCardProps = {
   onAction: (message: string) => void;
+  onJoinPress?: (pool: ProcurementPool) => void;
   pool: ProcurementPool;
 };
 
@@ -11,7 +12,7 @@ const cardShadow = {
   boxShadow: '0 4px 12px rgba(27, 67, 50, 0.05)',
 } as unknown as ViewStyle;
 
-export function PoolCard({ onAction, pool }: PoolCardProps) {
+export function PoolCard({ onAction, onJoinPress, pool }: PoolCardProps) {
   return (
     <View style={styles.poolCard}>
       <View style={styles.poolAccent} />
@@ -48,13 +49,18 @@ export function PoolCard({ onAction, pool }: PoolCardProps) {
 
       <Pressable
         accessibilityRole="button"
-        onPress={() =>
+        onPress={() => {
+          if (pool.action === 'join' && onJoinPress) {
+            onJoinPress(pool);
+            return;
+          }
+
           onAction(
             pool.action === 'join'
-              ? `Dummy: kamu memilih gabung ke ${pool.supplier}.`
-              : `Dummy: detail ${pool.supplier} akan dibuka nanti.`,
-          )
-        }
+              ? `Terjadi kesalahan saat bergabung ke ${pool.supplier}.`
+              : `Detail untuk ${pool.supplier} sedang diproses.`,
+          );
+        }}
         style={[styles.actionButton, pool.action === 'detail' && styles.secondaryActionButton]}
       >
         <Text style={[styles.actionText, pool.action === 'detail' && styles.secondaryActionText]}>

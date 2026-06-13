@@ -1,7 +1,12 @@
-import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcryptjs';
+import { Role } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -10,7 +15,12 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async register(name: string, email: string, passwordString: string) {
+  async register(
+    name: string,
+    email: string,
+    passwordString: string,
+    roleInput?: string,
+  ) {
     const existingUser = await this.prisma.user.findUnique({
       where: { email },
     });
@@ -23,13 +33,32 @@ export class AuthService {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(passwordString, salt);
 
-    // Create a default Koperasi for the user so they have dashboard data instantly
-    const koperasi = await this.prisma.koperasi.create({
-      data: {
-        name: `Koperasi ${name}`,
-        address: 'Alamat Koperasi Baru',
-      },
-    });
+    let koperasiId: string | undefined = undefined;
+    let supplierId: string | undefined = undefined;
+    let finalRole: Role = Role.ANGGOTA;
+
+    if (roleInput === 'supplier' || roleInput === 'SUPPLIER') {
+      // Create a default Supplier record
+      const supplier = await this.prisma.supplier.create({
+        data: {
+          name: `Pemasok ${name}`,
+          address: 'Alamat Pemasok Baru',
+          phone: '08123456789',
+        },
+      });
+      supplierId = supplier.id;
+      finalRole = Role.SUPPLIER;
+    } else {
+      // Create a default Koperasi record
+      const koperasi = await this.prisma.koperasi.create({
+        data: {
+          name: `Koperasi ${name}`,
+          address: 'Alamat Koperasi Baru',
+        },
+      });
+      koperasiId = koperasi.id;
+      finalRole = Role.ADMIN_KOPERASI;
+    }
 
     // Create User
     const user = await this.prisma.user.create({
@@ -37,15 +66,23 @@ export class AuthService {
         name,
         email,
         password: hashedPassword,
-        koperasiId: koperasi.id,
+        koperasiId,
+        supplierId,
+        role: finalRole,
       },
-      include: { koperasi: true },
+      include: { koperasi: true, supplier: true },
     });
 
-    const payload = { sub: user.id, email: user.email, name: user.name };
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+    };
     const token = await this.jwtService.signAsync(payload);
 
-    const { password, ...userWithoutPassword } = user;
+    const { password: _, ...userWithoutPassword } = user;
+    void _;
     return {
       user: userWithoutPassword,
       access_token: token,
@@ -55,7 +92,7 @@ export class AuthService {
   async login(email: string, passwordString: string) {
     const user = await this.prisma.user.findUnique({
       where: { email },
-      include: { koperasi: true },
+      include: { koperasi: true, supplier: true },
     });
 
     if (!user) {
@@ -67,10 +104,16 @@ export class AuthService {
       throw new UnauthorizedException('Email atau sandi salah');
     }
 
-    const payload = { sub: user.id, email: user.email, name: user.name };
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+    };
     const token = await this.jwtService.signAsync(payload);
 
-    const { password, ...userWithoutPassword } = user;
+    const { password: _, ...userWithoutPassword } = user;
+    void _;
     return {
       user: userWithoutPassword,
       access_token: token,
@@ -80,10 +123,15 @@ export class AuthService {
   async validateUserById(id: string) {
     const user = await this.prisma.user.findUnique({
       where: { id },
-      include: { koperasi: true },
+      include: { koperasi: true, supplier: true },
     });
-    if (!user) return null;
-    const { password, ...userWithoutPassword } = user;
+    if (!user) {
+      throw new UnauthorizedException(
+        'User tidak ditemukan. Silakan login kembali.',
+      );
+    }
+    const { password: _, ...userWithoutPassword } = user;
+    void _;
     return userWithoutPassword;
   }
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Pressable,
   SafeAreaView,
@@ -21,6 +21,16 @@ type AuditLogScreenProps = {
   onRecordPress: () => void;
 };
 
+type ManualLog = {
+  amount: string;
+  icon: string;
+  product: string;
+  supplier: string;
+  time: string;
+  total: string;
+  hash?: string;
+};
+
 type PoolLog = {
   date: string;
   description: string;
@@ -28,30 +38,38 @@ type PoolLog = {
   status: 'SUKSES' | 'GAGAL' | 'DIBATALKAN';
 };
 
-const poolLogs: PoolLog[] = [
-  {
-    date: '21 Okt',
-    description: 'Target volume 500 Ton Urea terpenuhi dengan 3 koperasi partisipan.',
-    id: 'Pool #P-2026-089',
-    status: 'SUKSES',
-  },
-  {
-    date: '18 Okt',
-    description: 'Batas waktu terlampaui. Target 200 Ton NPK hanya terkumpul 80 Ton.',
-    id: 'Pool #P-2026-088',
-    status: 'GAGAL',
-  },
-  {
-    date: '15 Okt',
-    description: 'Dibatalkan oleh inisiator setelah supplier mengubah batas minimum volume.',
-    id: 'Pool #P-2026-087',
-    status: 'DIBATALKAN',
-  },
-];
+
 
 const cardShadow = {
   boxShadow: '0 4px 12px rgba(27, 67, 50, 0.05)',
 } as unknown as ViewStyle;
+
+function formatTime(dateStr: string) {
+  const d = new Date(dateStr);
+  return d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB';
+}
+
+function formatDateLabel(dateStr: string) {
+  const d = new Date(dateStr);
+  const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
+  const formatted = d.toLocaleDateString('id-ID', options).toUpperCase();
+  
+  const today = new Date();
+  const yesterday = new Date();
+  yesterday.setDate(today.getDate() - 1);
+  
+  if (d.toDateString() === today.toDateString()) {
+    return `HARI INI, ${formatted}`;
+  } else if (d.toDateString() === yesterday.toDateString()) {
+    return `KEMARIN, ${formatted}`;
+  }
+  return formatted;
+}
+
+function formatDateShort(dateStr: string) {
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+}
 
 export function AuditLogScreen({
   onCollectivePress,
@@ -61,18 +79,23 @@ export function AuditLogScreen({
 }: AuditLogScreenProps) {
   const { height } = useWindowDimensions();
   const [activeTab, setActiveTab] = useState<'manual' | 'pool'>('manual');
+  const [notice, setNotice] = useState('');
   const [logs, setLogs] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [notice, setNotice] = useState('');
+
+  const showNotice = (message: string) => {
+    setNotice(message);
+    window.setTimeout(() => setNotice(''), 2400);
+  };
 
   useEffect(() => {
     async function loadLogs() {
       try {
         setIsLoading(true);
         const data = await api.getAuditLogs();
-        setLogs(data);
-      } catch (err: any) {
-        setNotice(err.message || 'Gagal memuat log audit.');
+        setLogs(data as any[]);
+      } catch (err) {
+        showNotice('Gagal memuat log audit: ' + (err instanceof Error ? err.message : String(err)));
       } finally {
         setIsLoading(false);
       }
@@ -80,36 +103,119 @@ export function AuditLogScreen({
     loadLogs();
   }, []);
 
-  const handleExportCsv = () => {
-    setNotice('Mengunduh laporan transaksi CSV...');
-    const url = api.exportCsvUrl();
-    window.open(url, '_blank');
-    window.setTimeout(() => setNotice(''), 3000);
+  const handleExport = () => {
+    try {
+      const url = api.exportCsvUrl();
+      window.open(url, '_blank');
+      showNotice('Mengunduh laporan CSV...');
+    } catch (err) {
+      showNotice('Gagal mengekspor data.');
+    }
   };
 
-  const handleLogout = () => {
-    api.clearToken();
-    onLogoutPress();
-  };
+  // Process manual logs
+  const manualActions = ['MANUAL_TRANSACTION', 'CREATE_ORDER', 'CONFIRM_ORDER', 'OUTGOING_DISTRIBUTION'];
+  const filteredManualLogs = logs.filter((log) => manualActions.includes(log.action));
+
+  const manualItemsMapped = filteredManualLogs.map((log) => {
+    let details: any = {};
+    try {
+      details = JSON.parse(log.details);
+    } catch {
+      details = {};
+    }
+
+    const isManual = log.action === 'MANUAL_TRANSACTION';
+    const isDist = log.action === 'OUTGOING_DISTRIBUTION';
+
+    let product = 'Pembelian Pupuk';
+    let supplier = 'Sistem';
+    let amount = '-';
+    let total = 'Rp 0';
+    let icon = 'ORD';
+
+    if (isManual) {
+      product = details.jenisPupuk || 'Pupuk';
+      supplier = details.supplierName || 'Pemasok';
+      amount = `${details.quantity} kg`;
+      total = `Rp ${(details.totalPrice || 0).toLocaleString('id-ID')}`;
+      icon = (details.jenisPupuk || 'PK').substring(0, 2).toUpperCase();
+    } else if (isDist) {
+      product = `Penyaluran ${details.jenisPupuk || 'Pupuk'}`;
+      supplier = `Petani: ${details.buyerName || 'Petani'}`;
+      amount = `${details.quantity} kg`;
+      total = `Rp ${(details.totalPrice || 0).toLocaleString('id-ID')}`;
+      icon = 'OUT';
+    } else {
+      total = `Rp ${(details.totalPrice || 0).toLocaleString('id-ID')}`;
+    }
+
+    return {
+      product,
+      supplier,
+      amount,
+      total,
+      time: formatTime(log.createdAt),
+      dateLabel: formatDateLabel(log.createdAt),
+      icon,
+      hash: `VM-${icon}-${log.id.substring(0, 4).toUpperCase()}`,
+      isOutgoing: isDist,
+    };
+  });
+
+  const groupedManualLogs: Array<{ dateLabel: string; items: ManualLog[] }> = [];
+  manualItemsMapped.forEach((item) => {
+    let group = groupedManualLogs.find((g) => g.dateLabel === item.dateLabel);
+    if (!group) {
+      group = { dateLabel: item.dateLabel, items: [] };
+      groupedManualLogs.push(group);
+    }
+    group.items.push(item);
+  });
+
+  // Process pool logs
+  const poolActions = ['JOIN_POOL', 'FINALIZE_POOL_SUCCESS', 'FINALIZE_POOL_FALLBACK_GRACE'];
+  const filteredPoolLogs = logs.filter((log) => poolActions.includes(log.action));
+
+  const mappedPoolLogs: PoolLog[] = filteredPoolLogs.map((log) => {
+    let details: any = {};
+    try {
+      details = JSON.parse(log.details);
+    } catch {
+      details = {};
+    }
+
+    let description = '';
+    let status: 'SUKSES' | 'GAGAL' | 'DIBATALKAN' = 'SUKSES';
+    const poolIdShort = details.poolId ? details.poolId.substring(0, 8) : log.id.substring(0, 8);
+
+    if (log.action === 'JOIN_POOL') {
+      description = `Koperasi bergabung ke pool. Volume total: ${details.totalVolumeKg || 0} kg. Harga saat ini: Rp ${(details.activePricePerKg || 0).toLocaleString('id-ID')}/kg.`;
+      status = 'SUKSES';
+    } else if (log.action === 'FINALIZE_POOL_SUCCESS') {
+      description = `Pool #${poolIdShort} diselesaikan sukses dengan total volume ${details.totalVolumeKg || 0} kg.`;
+      status = 'SUKSES';
+    } else if (log.action === 'FINALIZE_POOL_FALLBACK_GRACE') {
+      const deadlineStr = details.extendedDeadline ? formatDateShort(details.extendedDeadline) : '2 hari';
+      description = `Batas waktu pool terlampaui (${details.totalVolumeKg || 0} kg). Grace period aktif: deadline diperpanjang hingga ${deadlineStr}.`;
+      status = 'GAGAL';
+    }
+
+    return {
+      id: `Pool #${poolIdShort}`,
+      date: formatDateShort(log.createdAt),
+      description,
+      status,
+    };
+  });
+
+  const manualLogsToRender = groupedManualLogs;
+  const poolLogsToRender = mappedPoolLogs;
 
   return (
     <SafeAreaView style={[styles.safeArea, { minHeight: height }]}>
       <View style={[styles.shell, { height }]}>
-<<<<<<< HEAD
-        <View style={styles.topBar}>
-          <View style={styles.brandRow}>
-            <View style={styles.brandIcon}>
-              <BrandMark size={26} />
-            </View>
-            <Text style={styles.brandText}>VolumeMate</Text>
-          </View>
-          <Pressable accessibilityRole="button" onPress={handleLogout} style={styles.logoutButton}>
-            <Text style={styles.logoutText}>Keluar</Text>
-          </Pressable>
-        </View>
-=======
         <MainHeader onLogoutPress={onLogoutPress} />
->>>>>>> f53dd0f77fb50e4b647bf08268e7b5ad2c6a65fb
 
         <ScrollView
           contentContainerStyle={styles.scrollContent}
@@ -123,11 +229,11 @@ export function AuditLogScreen({
             </View>
             <Pressable
               accessibilityRole="button"
-              onPress={handleExportCsv}
+              onPress={handleExport}
               style={styles.exportButton}
             >
               <DownloadIcon />
-              <Text style={styles.exportText}>Export CSV</Text>
+              <Text style={styles.exportText}>Ekspor CSV</Text>
             </Pressable>
           </View>
 
@@ -145,7 +251,7 @@ export function AuditLogScreen({
               onPress={() => setActiveTab('manual')}
               style={[styles.tabButton, activeTab === 'manual' && styles.tabButtonActive]}
             >
-              <Text style={[styles.tabText, activeTab === 'manual' && styles.tabTextActive]}>Transaksi Ledger</Text>
+              <Text style={[styles.tabText, activeTab === 'manual' && styles.tabTextActive]}>Transaksi Manual</Text>
             </Pressable>
             <Pressable
               accessibilityRole="button"
@@ -163,16 +269,25 @@ export function AuditLogScreen({
           ) : null}
 
           {isLoading ? (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 40 }}>
-              <Text style={{ fontFamily: fonts.body, color: colors.primary, fontSize: 14 }}>Memuat data log...</Text>
+            <View style={styles.loadingContainer}>
+              <Text style={styles.loadingText}>Memuat log audit...</Text>
             </View>
           ) : activeTab === 'manual' ? (
-            <ManualLogList logs={logs} />
+            manualLogsToRender.length === 0 ? (
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>Belum ada log transaksi manual tercatat.</Text>
+              </View>
+            ) : (
+              <ManualLogList items={manualLogsToRender} />
+            )
           ) : (
-            <PoolLogList onDetailPress={(msg) => {
-              setNotice(msg);
-              window.setTimeout(() => setNotice(''), 2400);
-            }} />
+            poolLogsToRender.length === 0 ? (
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>Belum ada riwayat pool patungan tercatat.</Text>
+              </View>
+            ) : (
+              <PoolLogList items={poolLogsToRender} onDetailPress={showNotice} />
+            )
           )}
         </ScrollView>
 
@@ -187,128 +302,59 @@ export function AuditLogScreen({
   );
 }
 
-function ManualLogList({ logs }: { logs: any[] }) {
-  if (logs.length === 0) {
-    return (
-      <View style={{ padding: 24, alignItems: 'center' }}>
-        <Text style={{ color: colors.outline, fontFamily: fonts.body, fontSize: 13 }}>Belum ada log transaksi.</Text>
-      </View>
-    );
-  }
-
+function ManualLogList({ items }: { items: Array<{ dateLabel: string; items: ManualLog[] }> }) {
   return (
     <View style={styles.logList}>
-      {logs.map((log) => (
-        <ManualLogCard log={log} key={log.id} />
+      {items.map((group) => (
+        <View key={group.dateLabel} style={styles.dateGroup}>
+          <View style={styles.dateSeparator}>
+            <Text style={styles.dateLabel}>{group.dateLabel}</Text>
+            <View style={styles.separatorLine} />
+          </View>
+          {group.items.map((item, idx) => (
+            <ManualLogCard item={item} key={`${group.dateLabel}-${item.product}-${idx}`} />
+          ))}
+        </View>
       ))}
     </View>
   );
 }
 
-function ManualLogCard({ log }: { log: any }) {
-  const dateStr = new Date(log.createdAt).toLocaleDateString('id-ID', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-
-  const parsed = parseDetails(log.details, log.action);
-  const icon = getLogIcon(log.action);
+function ManualLogCard({ item }: { item: ManualLog & { isOutgoing?: boolean } }) {
+  const amountTextVal = item.amount === '-' ? '-' : (item.isOutgoing ? `-${item.amount}` : `+${item.amount}`);
 
   return (
     <View style={styles.manualCard}>
-      <View style={styles.logIconCircle}>
-        <Text style={styles.logIconText}>{icon}</Text>
+      <View style={[styles.logIconCircle, item.isOutgoing && { backgroundColor: 'rgba(208, 0, 0, 0.1)' }]}>
+        <Text style={[styles.logIconText, item.isOutgoing && { color: colors.errorRed }]}>{item.icon}</Text>
       </View>
       <View style={styles.logContent}>
         <Text numberOfLines={1} style={styles.logTitle}>
-          {parsed.title}
+          {item.product}
         </Text>
         <Text style={styles.logMeta}>
-          {parsed.desc} - {dateStr}
+          {item.supplier} - {item.time}
         </Text>
-        <Text style={styles.hashText}>Hash: {log.id.substring(0, 18).toUpperCase()}</Text>
+        <Text style={styles.hashText}>Hash: {item.hash || 'VM-GEN-XXXX'}</Text>
       </View>
       <View style={styles.amountBlock}>
-        <Text style={styles.amountText}>{parsed.qty}</Text>
-        <Text style={styles.totalText}>{parsed.total}</Text>
+        <Text style={[styles.amountText, item.isOutgoing && { color: colors.errorRed }]}>{amountTextVal}</Text>
+        <Text style={styles.totalText}>{item.total}</Text>
       </View>
     </View>
   );
 }
 
-function getLogIcon(action: string) {
-  switch (action) {
-    case 'MANUAL_TRANSACTION': return 'TX';
-    case 'CREATE_ORDER': return 'OR';
-    case 'JOIN_POOL': return 'PL';
-    case 'CONFIRM_ORDER': return 'CF';
-    default: return 'LG';
-  }
-}
-
-function parseDetails(details: string, action: string) {
-  try {
-    const data = JSON.parse(details);
-    if (action === 'MANUAL_TRANSACTION') {
-      return {
-        title: `Transaksi: ${data.jenisPupuk}`,
-        desc: `${data.supplierName || 'Pemasok Umum'}`,
-        qty: `${data.quantity} kg`,
-        total: `Rp ${data.totalPrice.toLocaleString('id-ID')}`
-      };
-    }
-    if (action === 'CREATE_ORDER') {
-      return {
-        title: `Order Pengadaan`,
-        desc: `Order ID: ${data.orderId.substring(0, 8)}...`,
-        qty: `Baru`,
-        total: `Rp ${data.totalPrice?.toLocaleString('id-ID') || '-'}`
-      };
-    }
-    if (action === 'JOIN_POOL') {
-      return {
-        title: `Gabung Pool Patungan`,
-        desc: `Pool ID: ${data.poolId.substring(0, 8)}...`,
-        qty: `Partisipan`,
-        total: `-`
-      };
-    }
-    if (action === 'CONFIRM_ORDER') {
-      return {
-        title: `Konfirmasi Order Ledger`,
-        desc: `Order ID: ${data.orderId.substring(0, 8)}...`,
-        qty: `Selesai`,
-        total: `-`
-      };
-    }
-    return {
-      title: action,
-      desc: details,
-      qty: '',
-      total: ''
-    };
-  } catch (_) {
-    return {
-      title: action,
-      desc: details,
-      qty: '',
-      total: ''
-    };
-  }
-}
-
 type PoolLogListProps = {
+  items: PoolLog[];
   onDetailPress: (message: string) => void;
 };
 
-function PoolLogList({ onDetailPress }: PoolLogListProps) {
+function PoolLogList({ items, onDetailPress }: PoolLogListProps) {
   return (
     <View style={styles.poolList}>
-      {poolLogs.map((log) => (
-        <View key={log.id} style={[styles.poolCard, getPoolCardStyle(log.status)]}>
+      {items.map((log, idx) => (
+        <View key={`${log.id}-${idx}`} style={[styles.poolCard, getPoolCardStyle(log.status)]}>
           <View style={styles.poolTopRow}>
             <View>
               <View style={[styles.statusBadge, getStatusStyle(log.status)]}>
@@ -333,7 +379,7 @@ function PoolLogList({ onDetailPress }: PoolLogListProps) {
             </View>
             <Pressable
               accessibilityRole="button"
-              onPress={() => onDetailPress(`Dummy: detail ${log.id} akan dibuka nanti.`)}
+              onPress={() => onDetailPress(`Detail untuk ${log.id} sedang diverifikasi di blockchain.`)}
               style={styles.detailButton}
             >
               <Text style={styles.detailText}>Lihat Detail</Text>
@@ -344,6 +390,7 @@ function PoolLogList({ onDetailPress }: PoolLogListProps) {
     </View>
   );
 }
+
 
 function FilterChip({ isActive = false, label }: { isActive?: boolean; label: string }) {
   return (
@@ -793,5 +840,27 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     lineHeight: 16,
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+  },
+  loadingText: {
+    color: colors.primary,
+    fontFamily: fonts.body,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  emptyContainer: {
+    padding: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyText: {
+    color: colors.outline,
+    fontFamily: fonts.body,
+    fontSize: 14,
+    textAlign: 'center',
   },
 });

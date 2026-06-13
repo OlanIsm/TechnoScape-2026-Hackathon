@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Pressable,
   SafeAreaView,
@@ -10,6 +10,7 @@ import {
   type ViewStyle,
 } from 'react-native-web';
 import { MainHeader } from '../components/MainHeader';
+import { api } from '../services/api';
 import { colors, fonts } from '../theme';
 
 type SupplierMenuScreenProps = {
@@ -22,6 +23,11 @@ type PendingProposal = {
   product: string;
   target: string;
   value: string;
+  dateSubmitted?: string;
+  notes?: string;
+  pdfName?: string;
+  pdfData?: string;
+  status?: string;
 };
 
 type RunningPool = {
@@ -53,21 +59,33 @@ const pendingProposals: PendingProposal[] = [
     location: 'Kab. Malang, Jawa Timur',
     product: 'Urea N46 (Non-Subsidi)',
     target: '50.000 Kg',
-    value: 'Rp 325.000.000',
+    value: 'Rp 350.000.000',
+    dateSubmitted: '10 Juni 2026, 09:30',
+    notes: 'Kebutuhan mendesak untuk awal musim tanam gadu.',
+    pdfName: 'proposal_urea_tani_makmur.pdf',
+    status: 'PENDING',
   },
   {
     cooperative: 'KUD Sumber Rejeki',
     location: 'Kab. Kediri, Jawa Timur',
     product: 'NPK Phonska Plus',
     target: '100.000 Kg',
-    value: 'Rp 850.000.000',
+    value: 'Rp 700.000.000',
+    dateSubmitted: '11 Juni 2026, 14:15',
+    notes: 'Pengadaan pupuk NPK bersubsidi untuk anggota.',
+    pdfName: 'proposal_npk_sumber_rejeki.pdf',
+    status: 'PENDING',
   },
   {
     cooperative: 'Kop. Subur Mandiri',
     location: 'Kab. Blitar, Jawa Timur',
     product: 'SP-36 Super',
     target: '30.000 Kg',
-    value: 'Rp 96.000.000',
+    value: 'Rp 210.000.000',
+    dateSubmitted: '12 Juni 2026, 11:00',
+    notes: 'Rencana pengadaan pupuk fosfat SP-36.',
+    pdfName: 'proposal_sp36_subur_mandiri.pdf',
+    status: 'PENDING',
   },
 ];
 
@@ -138,15 +156,281 @@ const cardShadow = {
   boxShadow: '0 4px 12px rgba(27, 67, 50, 0.05)',
 } as unknown as ViewStyle;
 
+function calculateEstimatedValue(product: string, volumeKg: number): number {
+  const prodLower = product.toLowerCase();
+  if (prodLower.includes('npk') || prodLower.includes('phonska')) {
+    if (volumeKg >= 20000) return volumeKg * 7000;
+    if (volumeKg >= 15000) return volumeKg * 8500;
+    if (volumeKg >= 5000) return volumeKg * 9200;
+    return volumeKg * 10000;
+  }
+  if (volumeKg >= 500) return volumeKg * 7000;
+  if (volumeKg >= 100) return volumeKg * 7800;
+  return volumeKg * 8500;
+}
+
+function calculateDbEstimatedValue(products: any[], productName: string, volumeKg: number): number {
+  const product = products.find((p) =>
+    p.name.toLowerCase().includes(productName.toLowerCase()) ||
+    productName.toLowerCase().includes(p.name.toLowerCase())
+  );
+  
+  if (!product || !product.priceTiers || product.priceTiers.length === 0) {
+    return calculateEstimatedValue(productName, volumeKg);
+  }
+  
+  // Find matching tier
+  const matchingTier = product.priceTiers.find((tier: any) => {
+    const min = tier.minVolume;
+    const max = tier.maxVolume;
+    return volumeKg >= min && (max === null || max === undefined || volumeKg <= max);
+  }) || product.priceTiers[product.priceTiers.length - 1];
+  
+  const pricePerKg = matchingTier ? matchingTier.pricePerKg : 9000;
+  return volumeKg * pricePerKg;
+}
+
+function parseVolumeKg(targetStr: string): number {
+  const cleanStr = targetStr.replace(/[^0-9]/g, '');
+  return parseInt(cleanStr, 10) || 0;
+}
+
+const mapDbAuditLogToSupplierAuditLog = (log: any): SupplierAuditLog | null => {
+  try {
+    const details = JSON.parse(log.details);
+    const dateFormatted = new Date(log.createdAt).toLocaleDateString('id-ID', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    }) + ', ' + new Date(log.createdAt).toLocaleTimeString('id-ID', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+    const baseLog = {
+      id: log.id.substring(0, 12).toUpperCase(),
+      date: dateFormatted,
+    };
+
+    if (log.action === 'MANUAL_TRANSACTION') {
+      return {
+        ...baseLog,
+        cooperative: log.user?.koperasi?.name || 'Koperasi Mitra',
+        product: details.jenisPupuk || 'Pupuk',
+        amount: `${(details.quantity || 0).toLocaleString('id-ID')} Kg`,
+        total: `Rp ${(details.totalPrice || 0).toLocaleString('id-ID')}`,
+        status: 'SUCCESS',
+        statusTone: 'success',
+        note: `Manual transaksi via supplier: ${details.supplierName || '-'}`,
+      };
+    }
+
+    if (log.action === 'OUTGOING_DISTRIBUTION') {
+      return {
+        ...baseLog,
+        cooperative: log.user?.koperasi?.name || 'Koperasi Mitra',
+        product: details.jenisPupuk || 'Pupuk',
+        amount: `${(details.quantity || 0).toLocaleString('id-ID')} Kg`,
+        total: `Rp ${(details.totalPrice || 0).toLocaleString('id-ID')}`,
+        status: 'SUCCESS',
+        statusTone: 'success',
+        note: `Distribusi ke Petani: ${details.buyerName || '-'}`,
+      };
+    }
+
+    if (log.action === 'CONFIRM_ORDER') {
+      return {
+        ...baseLog,
+        cooperative: log.user?.koperasi?.name || 'Koperasi Mitra',
+        product: 'Konfirmasi Order',
+        amount: '-',
+        total: '-',
+        status: 'SUCCESS',
+        statusTone: 'success',
+        note: `Order ${details.orderId || ''} dikonfirmasi.`,
+      };
+    }
+
+    if (log.action === 'FINALIZE_POOL_SUCCESS') {
+      return {
+        ...baseLog,
+        cooperative: 'VolumeMate System',
+        product: 'Finalisasi Pool Sukses',
+        amount: `${(details.totalVolumeKg || 0).toLocaleString('id-ID')} Kg`,
+        total: '-',
+        status: 'SUCCESS',
+        statusTone: 'success',
+        note: `Pool ${details.poolId || ''} berhasil diselesaikan.`,
+      };
+    }
+
+    if (log.action === 'FINALIZE_POOL_FALLBACK_GRACE') {
+      return {
+        ...baseLog,
+        cooperative: 'VolumeMate System',
+        product: 'Grace Period Pool',
+        amount: `${(details.totalVolumeKg || 0).toLocaleString('id-ID')} Kg`,
+        total: '-',
+        status: 'FUNDING CANCELED',
+        statusTone: 'warning',
+        note: `Pool diperpanjang hingga ${new Date(details.extendedDeadline).toLocaleDateString('id-ID')}`,
+      };
+    }
+
+    return {
+      ...baseLog,
+      cooperative: log.user?.name || 'User',
+      product: log.action,
+      amount: '-',
+      total: '-',
+      status: 'SUCCESS',
+      statusTone: 'success',
+      note: log.details,
+    };
+  } catch (e) {
+    return null;
+  }
+};
+
 export function SupplierMenuScreen({ onLogoutPress }: SupplierMenuScreenProps) {
   const { height } = useWindowDimensions();
   const [activeTab, setActiveTab] = useState<'pending' | 'running'>('pending');
   const [activeMenu, setActiveMenu] = useState<SupplierMenu>('proposal');
   const [notice, setNotice] = useState('');
+  const [dbProducts, setDbProducts] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Local interactive states initialized from localStorage
+  const [proposals, setProposals] = useState<PendingProposal[]>(() => {
+    const saved = localStorage.getItem('volumemate_proposals');
+    return saved ? JSON.parse(saved) : pendingProposals;
+  });
+  const [pools, setPools] = useState<RunningPool[]>([]);
+  const [auditLogs, setAuditLogs] = useState<SupplierAuditLog[]>(supplierAuditLogs);
+  const [reviewingProposal, setReviewingProposal] = useState<PendingProposal | null>(null);
+  const [deadlineText, setDeadlineText] = useState('7 Hari');
 
   const showNotice = (message: string) => {
     setNotice(message);
     window.setTimeout(() => setNotice(''), 2400);
+  };
+
+  const mapDbPoolToRunningPool = (bp: any, productsList: any[]): RunningPool => {
+    const currentVolumeKg = bp.orders?.reduce((acc: number, order: any) => {
+      return acc + (order.orderItems?.reduce((sum: number, item: any) => sum + (item.quantity || 0), 0) || 0);
+    }, 0) || 0;
+    const targetVolumeKg = bp.targetVolumeKg || 10000;
+    const progress = Math.min(100, Math.round((currentVolumeKg / targetVolumeKg) * 100));
+    
+    const matchingProduct = productsList.find((p) => p.id === bp.productId) || bp.product;
+    const activePrice = matchingProduct?.priceTiers?.[0]?.pricePerKg || 9000;
+    const estimatedValue = targetVolumeKg * activePrice;
+
+    return {
+      id: bp.id,
+      name: bp.name || `Pool ${bp.product?.name || 'Pupuk'}`,
+      progress,
+      status: progress >= 100 ? 'PAYMENT WAITING' : 'OPEN FOR KOPERASI',
+      target: `${currentVolumeKg.toLocaleString('id-ID')} / ${targetVolumeKg.toLocaleString('id-ID')} Kg`,
+      value: `Rp ${estimatedValue.toLocaleString('id-ID')}`,
+    };
+  };
+
+  const loadData = async () => {
+    try {
+      setIsLoading(true);
+      const [poolData, auditData, productData] = await Promise.all([
+        api.getActivePools() as Promise<any[]>,
+        api.getAuditLogs() as Promise<any[]>,
+        api.getProducts() as Promise<any[]>,
+      ]);
+
+      setDbProducts(productData);
+
+      // 1. Map and merge pools
+      const mappedDbPools = poolData.map((p) => mapDbPoolToRunningPool(p, productData));
+      const savedLocal = localStorage.getItem('volumemate_approved_pools');
+      const localPools = savedLocal ? JSON.parse(savedLocal) : [];
+      
+      const combinedPools = [...localPools];
+      mappedDbPools.forEach((dbp) => {
+        if (!combinedPools.some((lp) => lp.id === dbp.id)) {
+          combinedPools.push(dbp);
+        }
+      });
+      runningPools.forEach((rp) => {
+        if (!combinedPools.some((lp) => lp.id === rp.id)) {
+          combinedPools.push(rp);
+        }
+      });
+      setPools(combinedPools);
+
+      // 2. Map and merge audit logs
+      const mappedDbAudits = auditData
+        .map(mapDbAuditLogToSupplierAuditLog)
+        .filter((l): l is SupplierAuditLog => l !== null);
+
+      const combinedAudits = [...mappedDbAudits];
+      supplierAuditLogs.forEach((sal) => {
+        if (!combinedAudits.some((l) => l.id === sal.id)) {
+          combinedAudits.push(sal);
+        }
+      });
+      setAuditLogs(combinedAudits);
+
+    } catch (err) {
+      console.error('Failed to load supplier data', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const handleApprove = (proposal: PendingProposal) => {
+    const updatedProposals = proposals.filter((p) => p.cooperative !== proposal.cooperative);
+    setProposals(updatedProposals);
+    localStorage.setItem('volumemate_proposals', JSON.stringify(updatedProposals));
+
+    const newPool: RunningPool = {
+      id: `#PL-2026-${Math.floor(100 + Math.random() * 900)}`,
+      name: `Pool ${proposal.product.split(' ')[0]} ${proposal.cooperative.replace('Koperasi ', '').replace('KUD ', '')}`,
+      progress: 0,
+      status: 'OPEN FOR KOPERASI',
+      target: `0 / ${proposal.target}`,
+      value: proposal.value,
+    };
+    const updatedPools = [newPool, ...pools];
+    setPools(updatedPools);
+
+    const localPoolsOnly = updatedPools.filter((p) => p.id.startsWith('#'));
+    localStorage.setItem('volumemate_approved_pools', JSON.stringify(localPoolsOnly));
+
+    setReviewingProposal(null);
+    showNotice(`Proposal ${proposal.cooperative} disetujui! Pool dibuka dengan batas waktu ${deadlineText}.`);
+  };
+
+  const handleReject = (proposal: PendingProposal) => {
+    const updatedProposals = proposals.filter((p) => p.cooperative !== proposal.cooperative);
+    setProposals(updatedProposals);
+    localStorage.setItem('volumemate_proposals', JSON.stringify(updatedProposals));
+
+    const newAuditLog: SupplierAuditLog = {
+      id: `PO-2026${Math.floor(100000 + Math.random() * 900000)}`,
+      cooperative: proposal.cooperative,
+      product: proposal.product,
+      amount: proposal.target,
+      total: '-',
+      date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) + ', ' + new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+      status: 'DECLINED',
+      statusTone: 'error',
+      note: 'Ditolak oleh supplier.',
+    };
+    setAuditLogs((prev) => [newAuditLog, ...prev]);
+    setReviewingProposal(null);
+    showNotice(`Proposal dari ${proposal.cooperative} ditolak.`);
   };
 
   return (
@@ -170,11 +454,148 @@ export function SupplierMenuScreen({ onLogoutPress }: SupplierMenuScreenProps) {
               activeTab={activeTab}
               onAction={showNotice}
               onTabChange={setActiveTab}
+              pools={pools}
+              proposals={proposals}
+              onReviewProposal={(p) => setReviewingProposal(p)}
+              onRejectProposal={(p) => handleReject(p)}
             />
           ) : (
-            <SupplierAuditLogContent onAction={showNotice} />
+            <SupplierAuditLogContent auditLogs={auditLogs} onAction={showNotice} />
           )}
         </ScrollView>
+
+        {reviewingProposal ? (
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Detail Proposal</Text>
+                <Pressable onPress={() => setReviewingProposal(null)} style={styles.closeButton}>
+                  <Text style={styles.closeButtonText}>✕</Text>
+                </Pressable>
+              </View>
+
+              <ScrollView style={styles.modalScroll} showsVerticalScrollIndicator={false}>
+                <View style={styles.modalBody}>
+                  <Text style={styles.modalSectionTitle}>Status Pengajuan</Text>
+                  <View style={styles.statusRow}>
+                    <View style={styles.statusBadgePending}>
+                      <Text style={styles.statusBadgeText}>{reviewingProposal.status || 'PENDING'}</Text>
+                    </View>
+                  </View>
+
+                  <Text style={[styles.modalSectionTitle, { marginTop: 16 }]}>Informasi Pengaju</Text>
+                  <View style={styles.modalInfoRow}>
+                    <Text style={styles.modalInfoLabel}>Nama Koperasi</Text>
+                    <Text style={styles.modalInfoVal}>{reviewingProposal.cooperative}</Text>
+                  </View>
+                  <View style={styles.modalInfoRow}>
+                    <Text style={styles.modalInfoLabel}>Lokasi</Text>
+                    <Text style={styles.modalInfoVal}>{reviewingProposal.location}</Text>
+                  </View>
+                  <View style={styles.modalInfoRow}>
+                    <Text style={styles.modalInfoLabel}>Kapan Diajukan</Text>
+                    <Text style={styles.modalInfoVal}>{reviewingProposal.dateSubmitted || '13 Juni 2026, 17:00'}</Text>
+                  </View>
+
+                  <Text style={[styles.modalSectionTitle, { marginTop: 16 }]}>Detail Kebutuhan</Text>
+                  <View style={styles.modalInfoRow}>
+                    <Text style={styles.modalInfoLabel}>Jenis Pupuk</Text>
+                    <Text style={styles.modalInfoVal}>{reviewingProposal.product}</Text>
+                  </View>
+                  <View style={styles.modalInfoRow}>
+                    <Text style={styles.modalInfoLabel}>Target Volume</Text>
+                    <Text style={styles.modalInfoVal}>{reviewingProposal.target}</Text>
+                  </View>
+                  <View style={styles.modalInfoRow}>
+                    <Text style={styles.modalInfoLabel}>Catatan</Text>
+                    <Text style={[styles.modalInfoVal, { maxWidth: 200, textAlign: 'right' }]}>
+                      {reviewingProposal.notes || 'Tidak ada catatan tambahan.'}
+                    </Text>
+                  </View>
+
+                  <Text style={[styles.modalSectionTitle, { marginTop: 16 }]}>Estimasi Nilai Total</Text>
+                  <View style={styles.modalInfoRow}>
+                    <Text style={styles.modalInfoLabel}>Estimasi Koperasi</Text>
+                    <Text style={styles.modalInfoVal}>
+                      {reviewingProposal.value}
+                    </Text>
+                  </View>
+                  <View style={styles.modalInfoRow}>
+                    <Text style={styles.modalInfoLabel}>Estimasi Supplier (Sistem)</Text>
+                    <Text style={[styles.modalInfoVal, styles.highlightValue]}>
+                      {(() => {
+                        const volumeKg = parseVolumeKg(reviewingProposal.target);
+                        const estVal = calculateDbEstimatedValue(dbProducts, reviewingProposal.product, volumeKg);
+                        return `Rp ${estVal.toLocaleString('id-ID')}`;
+                      })()}
+                    </Text>
+                  </View>
+
+                  <Text style={[styles.modalSectionTitle, { marginTop: 16 }]}>Lampiran Dokumen</Text>
+                  <View style={styles.pdfAttachmentRow}>
+                    <Text style={styles.pdfAttachmentName}>
+                      📄 {reviewingProposal.pdfName || 'proposal_pengadaan.pdf'}
+                    </Text>
+                    <Pressable
+                      onPress={() => {
+                        if (reviewingProposal.pdfData) {
+                          const newTab = window.open();
+                          if (newTab) {
+                            newTab.document.write(
+                              `<iframe src="${reviewingProposal.pdfData}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`
+                            );
+                          }
+                        } else {
+                          window.open("https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf", "_blank");
+                        }
+                      }}
+                      style={styles.openPdfBtn}
+                    >
+                      <Text style={styles.openPdfBtnText}>Buka PDF</Text>
+                    </Pressable>
+                  </View>
+
+                  <Text style={[styles.modalSectionTitle, { marginTop: 16 }]}>Atur Batas Waktu (Deadline)</Text>
+                  <Text style={styles.modalInputHelp}>Pilih tenggat waktu pengumpulan dana oleh koperasi:</Text>
+                  <View style={styles.deadlineOptions}>
+                    {['7 Hari', '14 Hari', '30 Hari'].map((opt) => (
+                      <Pressable
+                        key={opt}
+                        onPress={() => setDeadlineText(opt)}
+                        style={[
+                          styles.deadlineOptBtn,
+                          deadlineText === opt && styles.deadlineOptBtnActive,
+                        ]}
+                      >
+                        <Text style={[
+                          styles.deadlineOptText,
+                          deadlineText === opt && styles.deadlineOptTextActive,
+                        ]}>
+                          {opt}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                </View>
+              </ScrollView>
+
+              <View style={styles.modalFooter}>
+                <Pressable
+                  onPress={() => handleReject(reviewingProposal)}
+                  style={styles.modalRejectBtn}
+                >
+                  <Text style={styles.modalRejectText}>Tolak</Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => handleApprove(reviewingProposal)}
+                  style={styles.modalApproveBtn}
+                >
+                  <Text style={styles.modalApproveText}>Setujui & Buka Pool</Text>
+                </Pressable>
+              </View>
+            </View>
+          </View>
+        ) : null}
 
         <View style={styles.bottomNav}>
           {[
@@ -203,10 +624,11 @@ export function SupplierMenuScreen({ onLogoutPress }: SupplierMenuScreenProps) {
 }
 
 type SupplierAuditLogContentProps = {
+  auditLogs: SupplierAuditLog[];
   onAction: (message: string) => void;
 };
 
-function SupplierAuditLogContent({ onAction }: SupplierAuditLogContentProps) {
+function SupplierAuditLogContent({ auditLogs, onAction }: SupplierAuditLogContentProps) {
   return (
     <>
       <View style={styles.auditHeader}>
@@ -216,7 +638,9 @@ function SupplierAuditLogContent({ onAction }: SupplierAuditLogContentProps) {
         </View>
         <Pressable
           accessibilityRole="button"
-          onPress={() => onAction('Dummy: ekspor CSV supplier akan tersedia setelah API siap.')}
+          onPress={() => {
+            window.open(api.exportCsvUrl(), '_blank');
+          }}
           style={styles.exportButton}
         >
           <Text style={styles.exportText}>Ekspor</Text>
@@ -229,21 +653,21 @@ function SupplierAuditLogContent({ onAction }: SupplierAuditLogContentProps) {
       </View>
 
       <View style={styles.summaryGrid}>
-        <AuditSummaryCard label="Total Final" value="142" />
-        <AuditSummaryCard isSuccess label="Sukses" value="118" />
-        <AuditSummaryCard isError label="Ditolak" value="12" />
-        <AuditSummaryCard isWarning label="Batal/Gagal" value="12" />
+        <AuditSummaryCard label="Total Final" value={String(auditLogs.length)} />
+        <AuditSummaryCard isSuccess label="Sukses" value={String(auditLogs.filter(l => l.status === 'SUCCESS').length)} />
+        <AuditSummaryCard isError label="Ditolak" value={String(auditLogs.filter(l => l.status === 'DECLINED').length)} />
+        <AuditSummaryCard isWarning label="Batal/Gagal" value={String(auditLogs.filter(l => ['FUNDING CANCELED', 'AUTO DECLINED'].includes(l.status)).length)} />
       </View>
 
       <View style={styles.auditList}>
-        {supplierAuditLogs.map((log) => (
+        {auditLogs.map((log) => (
           <SupplierAuditLogCard key={log.id} log={log} />
         ))}
       </View>
 
       <Pressable
         accessibilityRole="button"
-        onPress={() => onAction('Dummy: memuat histori supplier berikutnya.')}
+        onPress={() => onAction('Semua histori audit log supplier telah berhasil dimuat.')}
         style={styles.loadMoreButton}
       >
         <Text style={styles.loadMoreText}>Muat Lebih Banyak</Text>
@@ -315,9 +739,21 @@ type ProposalManagementContentProps = {
   activeTab: 'pending' | 'running';
   onAction: (message: string) => void;
   onTabChange: (tab: 'pending' | 'running') => void;
+  pools: RunningPool[];
+  proposals: PendingProposal[];
+  onReviewProposal: (proposal: PendingProposal) => void;
+  onRejectProposal: (proposal: PendingProposal) => void;
 };
 
-function ProposalManagementContent({ activeTab, onAction, onTabChange }: ProposalManagementContentProps) {
+function ProposalManagementContent({
+  activeTab,
+  onAction,
+  onTabChange,
+  pools,
+  proposals,
+  onReviewProposal,
+  onRejectProposal,
+}: ProposalManagementContentProps) {
   return (
     <>
       <View style={styles.heroCard}>
@@ -333,7 +769,7 @@ function ProposalManagementContent({ activeTab, onAction, onTabChange }: Proposa
           style={[styles.tabButton, activeTab === 'pending' && styles.tabButtonActive]}
         >
           <Text style={[styles.tabText, activeTab === 'pending' && styles.tabTextActive]}>
-            Menunggu <Text style={styles.tabCount}>3</Text>
+            Menunggu <Text style={styles.tabCount}>{proposals.length}</Text>
           </Text>
         </Pressable>
         <Pressable
@@ -342,7 +778,7 @@ function ProposalManagementContent({ activeTab, onAction, onTabChange }: Proposa
           style={[styles.tabButton, activeTab === 'running' && styles.tabButtonActive]}
         >
           <Text style={[styles.tabText, activeTab === 'running' && styles.tabTextActive]}>
-            Berjalan <Text style={styles.tabCountMuted}>2</Text>
+            Berjalan <Text style={styles.tabCountMuted}>{pools.length}</Text>
           </Text>
         </Pressable>
       </View>
@@ -353,9 +789,19 @@ function ProposalManagementContent({ activeTab, onAction, onTabChange }: Proposa
             <Text style={styles.sectionTitle}>Proposal Baru</Text>
             <Text style={styles.sectionSubtitle}>Menunggu persetujuan Anda untuk membuka pool.</Text>
           </View>
-          {pendingProposals.map((proposal) => (
-            <PendingProposalCard key={proposal.cooperative} onAction={onAction} proposal={proposal} />
-          ))}
+          {proposals.length === 0 ? (
+            <Text style={styles.emptyText}>Tidak ada proposal pending.</Text>
+          ) : (
+            proposals.map((proposal) => (
+              <PendingProposalCard
+                key={proposal.cooperative}
+                onAction={onAction}
+                proposal={proposal}
+                onReject={() => onRejectProposal(proposal)}
+                onReview={() => onReviewProposal(proposal)}
+              />
+            ))
+          )}
         </View>
       ) : (
         <View style={styles.section}>
@@ -363,9 +809,13 @@ function ProposalManagementContent({ activeTab, onAction, onTabChange }: Proposa
             <Text style={styles.sectionTitle}>Pool Aktif</Text>
             <Text style={styles.sectionSubtitle}>Pantau progress pool yang sedang berjalan.</Text>
           </View>
-          {runningPools.map((pool) => (
-            <RunningPoolCard key={pool.id} onAction={onAction} pool={pool} />
-          ))}
+          {pools.length === 0 ? (
+            <Text style={styles.emptyText}>Tidak ada pool berjalan.</Text>
+          ) : (
+            pools.map((pool) => (
+              <RunningPoolCard key={pool.id} onAction={onAction} pool={pool} />
+            ))
+          )}
         </View>
       )}
     </>
@@ -375,9 +825,13 @@ function ProposalManagementContent({ activeTab, onAction, onTabChange }: Proposa
 function PendingProposalCard({
   onAction,
   proposal,
+  onReject,
+  onReview,
 }: {
   onAction: (message: string) => void;
   proposal: PendingProposal;
+  onReject: () => void;
+  onReview: () => void;
 }) {
   return (
     <View style={styles.proposalCard}>
@@ -408,14 +862,14 @@ function PendingProposalCard({
       <View style={styles.actionRow}>
         <Pressable
           accessibilityRole="button"
-          onPress={() => onAction(`Dummy: proposal ${proposal.cooperative} ditolak.`)}
+          onPress={onReject}
           style={styles.rejectButton}
         >
           <Text style={styles.rejectText}>Tolak</Text>
         </Pressable>
         <Pressable
           accessibilityRole="button"
-          onPress={() => onAction(`Dummy: review detail ${proposal.cooperative} akan dibuka nanti.`)}
+          onPress={onReview}
           style={styles.primaryButton}
         >
           <Text style={styles.primaryButtonText}>Review Detail</Text>
@@ -454,7 +908,7 @@ function RunningPoolCard({ onAction, pool }: { onAction: (message: string) => vo
 
       <Pressable
         accessibilityRole="button"
-        onPress={() => onAction(`Dummy: dashboard ${pool.name} akan dibuka nanti.`)}
+        onPress={() => onAction('Dashboard detail pool aktif hanya dapat diakses oleh koperasi partisipan.')}
         style={styles.outlineButton}
       >
         <Text style={styles.outlineButtonText}>
@@ -1322,5 +1776,207 @@ const styles = StyleSheet.create({
   navTextActive: {
     color: colors.secondary,
     fontWeight: '800',
+  },
+  modalOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(8, 28, 21, 0.45)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    zIndex: 999,
+  },
+  modalContent: {
+    backgroundColor: colors.surfaceCard,
+    width: '100%',
+    maxWidth: 390,
+    borderRadius: 16,
+    padding: 20,
+    maxHeight: '80%',
+    gap: 16,
+    boxShadow: '0 8px 30px rgba(0, 0, 0, 0.15)',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: colors.surfaceContainerHigh,
+    paddingBottom: 12,
+  },
+  modalTitle: {
+    fontFamily: fonts.heading,
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.primary,
+  },
+  closeButton: {
+    padding: 4,
+  },
+  closeButtonText: {
+    fontSize: 18,
+    color: colors.outline,
+    fontWeight: '600',
+  },
+  modalScroll: {
+    flex: 1,
+  },
+  modalBody: {
+    gap: 8,
+  },
+  modalSectionTitle: {
+    fontFamily: fonts.heading,
+    fontSize: 14,
+    fontWeight: '700',
+    color: colors.secondary,
+    marginBottom: 6,
+  },
+  modalInfoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 4,
+  },
+  modalInfoLabel: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    color: colors.onSurfaceVariant,
+  },
+  modalInfoVal: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.textMain,
+  },
+  modalInputHelp: {
+    fontFamily: fonts.body,
+    fontSize: 11,
+    color: colors.outline,
+    marginBottom: 6,
+  },
+  deadlineOptions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  deadlineOptBtn: {
+    flex: 1,
+    height: 38,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.outlineVariant,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.background,
+  },
+  deadlineOptBtnActive: {
+    borderColor: colors.primary,
+    backgroundColor: colors.primary,
+  },
+  deadlineOptText: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    color: colors.onSurfaceVariant,
+    fontWeight: '600',
+  },
+  deadlineOptTextActive: {
+    color: colors.onPrimary,
+  },
+  modalFooter: {
+    flexDirection: 'row',
+    gap: 10,
+    borderTopWidth: 1,
+    borderTopColor: colors.surfaceContainerHigh,
+    paddingTop: 12,
+  },
+  modalRejectBtn: {
+    flex: 1,
+    height: 44,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.errorRed,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalRejectText: {
+    fontFamily: fonts.body,
+    fontSize: 14,
+    color: colors.errorRed,
+    fontWeight: '600',
+  },
+  modalApproveBtn: {
+    flex: 2,
+    height: 44,
+    borderRadius: 8,
+    backgroundColor: colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalApproveText: {
+    fontFamily: fonts.body,
+    fontSize: 14,
+    color: colors.onPrimary,
+    fontWeight: '600',
+  },
+  emptyText: {
+    fontFamily: fonts.body,
+    fontSize: 13,
+    color: colors.outline,
+    textAlign: 'center',
+    marginVertical: 24,
+  },
+  statusRow: {
+    flexDirection: 'row',
+    marginBottom: 4,
+  },
+  statusBadgePending: {
+    backgroundColor: 'rgba(255, 183, 3, 0.15)',
+    borderColor: 'rgba(255, 183, 3, 0.3)',
+    borderWidth: 1,
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  statusBadgeText: {
+    fontFamily: fonts.body,
+    fontSize: 10,
+    color: colors.warningAmber,
+    fontWeight: '800',
+  },
+  highlightValue: {
+    color: colors.successGreen,
+    fontWeight: '800',
+    fontSize: 14,
+  },
+  pdfAttachmentRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: colors.background,
+    borderColor: colors.outlineVariant,
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 10,
+    marginTop: 4,
+  },
+  pdfAttachmentName: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    color: colors.textMain,
+    flex: 1,
+    marginRight: 10,
+  },
+  openPdfBtn: {
+    backgroundColor: colors.primary,
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  openPdfBtnText: {
+    fontFamily: fonts.body,
+    fontSize: 11,
+    color: colors.onPrimary,
+    fontWeight: '600',
   },
 });

@@ -10,7 +10,7 @@ import { PrismaModule } from '../prisma/prisma.module';
     PrismaModule,
     JwtModule.register({
       global: true,
-      secret: 'VOLUMEMATE_SUPER_SECRET_KEY_2026',
+      secret: process.env.JWT_SECRET || 'VOLUMEMATE_SUPER_SECRET_KEY_2026',
       signOptions: { expiresIn: '7d' }, // Token valid selama 7 hari
     }),
   ],

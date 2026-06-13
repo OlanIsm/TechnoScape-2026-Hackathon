@@ -7,22 +7,30 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 
+interface JWTPayload {
+  sub: string;
+  email: string;
+  name: string;
+  role: string;
+}
+
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(private jwtService: JwtService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest();
+    const request = context
+      .switchToHttp()
+      .getRequest<Request & { user?: JWTPayload }>();
     const token = this.extractTokenFromHeader(request);
     if (!token) {
       throw new UnauthorizedException('Token autentikasi tidak ditemukan');
     }
     try {
-      const payload = await this.jwtService.verifyAsync(token, {
-        secret: 'VOLUMEMATE_SUPER_SECRET_KEY_2026', // Gunakan secret key statis untuk Hackathon MVP
-      });
-      // Attach user payload to the request
-      request['user'] = payload;
+      const payload = (await this.jwtService.verifyAsync(token, {
+        secret: process.env.JWT_SECRET || 'VOLUMEMATE_SUPER_SECRET_KEY_2026',
+      })) as unknown as JWTPayload;
+      request.user = payload;
     } catch {
       throw new UnauthorizedException('Token autentikasi tidak valid');
     }

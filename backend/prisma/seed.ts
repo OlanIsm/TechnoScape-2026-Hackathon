@@ -15,11 +15,12 @@ async function main() {
 
   // Clear existing data to avoid key duplicate errors on re-run
   await prisma.auditLog.deleteMany({});
+  await prisma.distribution.deleteMany({});
   await prisma.orderItem.deleteMany({});
   await prisma.order.deleteMany({});
   await prisma.collectivePool.deleteMany({});
-  await prisma.product.deleteMany({});
   await prisma.priceTier.deleteMany({});
+  await prisma.product.deleteMany({});
   await prisma.supplier.deleteMany({});
   await prisma.user.deleteMany({});
   await prisma.koperasi.deleteMany({});
@@ -47,7 +48,7 @@ async function main() {
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash('password123', salt);
 
-  const adminUser = await prisma.user.create({
+  await prisma.user.create({
     data: {
       name: 'Budi Santoso',
       email: 'admin@koperasi.com',
@@ -67,7 +68,9 @@ async function main() {
     },
   });
 
-  console.log('User demo berhasil dibuat. Login menggunakan email: admin@koperasi.com / password: password123');
+  console.log(
+    'User demo berhasil dibuat. Login menggunakan email: admin@koperasi.com / password: password123',
+  );
 
   // 3. Buat Supplier
   const supplier1 = await prisma.supplier.create({
@@ -90,11 +93,26 @@ async function main() {
 
   console.log('Supplier berhasil dibuat.');
 
+  // Create Supplier User linked to supplier1
+  await prisma.user.create({
+    data: {
+      name: 'Sales Petrokimia',
+      email: 'supplier@petrokimia.com',
+      password: hashedPassword,
+      role: 'SUPPLIER',
+      supplierId: supplier1.id,
+    },
+  });
+  console.log(
+    'User Supplier demo berhasil dibuat. Login menggunakan email: supplier@petrokimia.com / password: password123',
+  );
+
   // 4. Buat Produk
   const pupukNPK = await prisma.product.create({
     data: {
       name: 'Pupuk NPK Phonska',
-      description: 'Pupuk majemuk NPK bersubsidi dan non-subsidi untuk padi dan palawija.',
+      description:
+        'Pupuk majemuk NPK bersubsidi dan non-subsidi untuk padi dan palawija.',
       supplierId: supplier1.id,
     },
   });
@@ -102,7 +120,8 @@ async function main() {
   const pupukUrea = await prisma.product.create({
     data: {
       name: 'Pupuk Urea Granul',
-      description: 'Pupuk nitrogen konsentrasi tinggi untuk menyuburkan vegetasi tanaman.',
+      description:
+        'Pupuk nitrogen konsentrasi tinggi untuk menyuburkan vegetasi tanaman.',
       supplierId: supplier2.id,
     },
   });
@@ -113,19 +132,54 @@ async function main() {
   // Untuk NPK Phonska (Berdasarkan Figma: 120/200 kg target)
   await prisma.priceTier.createMany({
     data: [
-      { productId: pupukNPK.id, minVolume: 0, maxVolume: 50, pricePerKg: 10000 },
-      { productId: pupukNPK.id, minVolume: 50, maxVolume: 120, pricePerKg: 9200 },
-      { productId: pupukNPK.id, minVolume: 120, maxVolume: 200, pricePerKg: 8500 },
-      { productId: pupukNPK.id, minVolume: 200, maxVolume: null, pricePerKg: 7800 },
+      {
+        productId: pupukNPK.id,
+        minVolume: 0,
+        maxVolume: 5000,
+        pricePerKg: 10000,
+      },
+      {
+        productId: pupukNPK.id,
+        minVolume: 5000,
+        maxVolume: 15000,
+        pricePerKg: 9200,
+      },
+      {
+        productId: pupukNPK.id,
+        minVolume: 15000,
+        maxVolume: 20000,
+        pricePerKg: 8500,
+      },
+      {
+        productId: pupukNPK.id,
+        minVolume: 20000,
+        maxVolume: null,
+        pricePerKg: 7000,
+      },
     ],
   });
 
   // Untuk Urea
   await prisma.priceTier.createMany({
     data: [
-      { productId: pupukUrea.id, minVolume: 0, maxVolume: 100, pricePerKg: 8500 },
-      { productId: pupukUrea.id, minVolume: 100, maxVolume: 500, pricePerKg: 7800 },
-      { productId: pupukUrea.id, minVolume: 500, maxVolume: null, pricePerKg: 7000 },
+      {
+        productId: pupukUrea.id,
+        minVolume: 0,
+        maxVolume: 100,
+        pricePerKg: 8500,
+      },
+      {
+        productId: pupukUrea.id,
+        minVolume: 100,
+        maxVolume: 500,
+        pricePerKg: 7800,
+      },
+      {
+        productId: pupukUrea.id,
+        minVolume: 500,
+        maxVolume: null,
+        pricePerKg: 7000,
+      },
     ],
   });
 
@@ -171,15 +225,15 @@ async function main() {
   // 8. Histori Transaksi Bulanan untuk AI Forecasting (Menangani Masalah Grain Dataset Tanpa Tanggal)
   // Dataset hanya memiliki Bulan/Tahun. Maka kita petakan ke TANGGAL 1 setiap bulannya (YYYY-MM-01)
   const historiBulanan = [
-    { tahun: 2025, bulan: 9, qty: 1200 },  // September 2025
+    { tahun: 2025, bulan: 9, qty: 1200 }, // September 2025
     { tahun: 2025, bulan: 10, qty: 1450 }, // Oktober 2025
     { tahun: 2025, bulan: 11, qty: 1900 }, // November 2025
     { tahun: 2025, bulan: 12, qty: 2100 }, // Desember 2025
-    { tahun: 2026, bulan: 1, qty: 1100 },  // Januari 2026
-    { tahun: 2026, bulan: 2, qty: 1300 },  // Februari 2026
-    { tahun: 2026, bulan: 3, qty: 1700 },  // Maret 2026
-    { tahun: 2026, bulan: 4, qty: 2200 },  // April 2026
-    { tahun: 2026, bulan: 5, qty: 2500 },  // Mei 2026
+    { tahun: 2026, bulan: 1, qty: 1100 }, // Januari 2026
+    { tahun: 2026, bulan: 2, qty: 1300 }, // Februari 2026
+    { tahun: 2026, bulan: 3, qty: 1700 }, // Maret 2026
+    { tahun: 2026, bulan: 4, qty: 2200 }, // April 2026
+    { tahun: 2026, bulan: 5, qty: 2500 }, // Mei 2026
   ];
 
   for (const h of historiBulanan) {
@@ -206,7 +260,9 @@ async function main() {
     });
   }
 
-  console.log('Histori transaksi bulanan (YYYY-MM-01) berhasil di-seed untuk AI Forecasting.');
+  console.log(
+    'Histori transaksi bulanan (YYYY-MM-01) berhasil di-seed untuk AI Forecasting.',
+  );
   console.log('Proses Seeding Selesai!');
 }
 

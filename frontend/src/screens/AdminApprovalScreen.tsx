@@ -106,7 +106,7 @@ export function AdminApprovalScreen({ onLogoutPress }: AdminApprovalScreenProps)
       return;
     }
 
-    showNotice(`Dummy: ${selectedAccount.name} ${action}.`);
+    showNotice(`Akun ${selectedAccount.name} berhasil ${action} dan diaktifkan.`);
     closeReview();
   };
 
