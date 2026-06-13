@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { AdminApprovalScreen } from './screens/AdminApprovalScreen';
 import { AuditLogScreen } from './screens/AuditLogScreen';
 import { CollectiveBuyScreen } from './screens/CollectiveBuyScreen';
+import { pools, type ProcurementPool } from './data/pools';
+import { JoinPoolScreen } from './screens/JoinPoolScreen';
 import { KoperasiDashboardScreen } from './screens/KoperasiDashboardScreen';
 import { LoginScreen } from './screens/LoginScreen';
 import { SupplierMenuScreen } from './screens/MenuScreen';
@@ -15,6 +17,7 @@ type Screen =
   | 'register'
   | 'koperasi-dashboard'
   | 'collective-buy'
+  | 'join-pool'
   | 'record-transaction'
   | 'audit-log'
   | 'supplier-menu'
@@ -35,6 +38,10 @@ function getInitialScreen(): Screen {
 
   if (window.location.hash === '#kolektif') {
     return 'collective-buy';
+  }
+
+  if (window.location.hash === '#gabung-pool') {
+    return 'join-pool';
   }
 
   if (window.location.hash === '#catat') {
@@ -58,6 +65,10 @@ function getInitialScreen(): Screen {
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>(getInitialScreen);
+  const [joinedPoolIds, setJoinedPoolIds] = useState<number[]>([2]);
+  const [selectedJoinPool, setSelectedJoinPool] = useState<ProcurementPool>(pools[0]);
+  const [collectiveNotice, setCollectiveNotice] = useState('');
+  const [collectiveInitialTab, setCollectiveInitialTab] = useState<'open' | 'mine'>('open');
 
   useEffect(() => {
     const syncScreenWithHash = () => setScreen(getInitialScreen());
@@ -83,6 +94,21 @@ export default function App() {
   };
 
   const goToCollectiveBuy = () => {
+    setCollectiveInitialTab('open');
+    window.location.hash = 'kolektif';
+    setScreen('collective-buy');
+  };
+
+  const goToJoinPool = (pool: ProcurementPool) => {
+    setSelectedJoinPool(pool);
+    window.location.hash = 'gabung-pool';
+    setScreen('join-pool');
+  };
+
+  const confirmJoinPool = (poolId: number, contributionTon: number) => {
+    setJoinedPoolIds((currentIds) => (currentIds.includes(poolId) ? currentIds : [...currentIds, poolId]));
+    setCollectiveNotice(`Berhasil bergabung ke pool dengan kontribusi ${contributionTon.toLocaleString('id-ID')} Ton.`);
+    setCollectiveInitialTab('mine');
     window.location.hash = 'kolektif';
     setScreen('collective-buy');
   };
@@ -136,10 +162,25 @@ export default function App() {
   if (screen === 'collective-buy') {
     return (
       <CollectiveBuyScreen
+        initialTab={collectiveInitialTab}
+        joinedPoolIds={joinedPoolIds}
         onHomePress={goToKoperasiMenu}
+        onJoinPoolPress={goToJoinPool}
         onLogPress={goToAuditLog}
         onLogoutPress={goToLogin}
         onRecordPress={goToRecordTransaction}
+        onSuccessMessageShown={() => setCollectiveNotice('')}
+        successMessage={collectiveNotice}
+      />
+    );
+  }
+
+  if (screen === 'join-pool') {
+    return (
+      <JoinPoolScreen
+        onBackPress={goToCollectiveBuy}
+        onConfirm={confirmJoinPool}
+        pool={selectedJoinPool}
       />
     );
   }

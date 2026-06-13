@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import {
   Image,
   SafeAreaView,
@@ -18,7 +17,6 @@ import { MainHeader } from '../components/MainHeader';
 import { PoolCard } from '../components/PoolCard';
 import { pools } from '../data/pools';
 import { colors, fonts } from '../theme';
-import { api } from '../services/api';
 
 type KoperasiDashboardScreenProps = {
   onCollectivePress: () => void;
@@ -38,64 +36,9 @@ export function KoperasiDashboardScreen({
   onRecordPress,
 }: KoperasiDashboardScreenProps) {
   const { height } = useWindowDimensions();
-  const [dashboardData, setDashboardData] = useState<any>(null);
-  const [activePools, setActivePools] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    async function loadData() {
-      try {
-        setIsLoading(true);
-        const [dash, pools] = await Promise.all([
-          api.getDashboard(),
-          api.getActivePools()
-        ]);
-        setDashboardData(dash);
-        setActivePools(pools);
-      } catch (err: any) {
-        setError(err.message || 'Gagal memuat data dasbor.');
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    loadData();
-  }, []);
-
-  const handleLogout = () => {
-    api.clearToken();
-    onLogoutPress();
-  };
-
-  const currentPool = activePools.length > 0 ? activePools[0] : null;
 
   return (
     <SafeAreaView style={[styles.safeArea, { minHeight: height }]}>
-<<<<<<< HEAD
-      <View style={styles.shell}>
-        <View style={styles.topBar}>
-          <View style={styles.profileRow}>
-            <View style={styles.avatar}>
-              <BrandMark size={28} />
-            </View>
-            <View>
-              <Text style={styles.orgName}>{dashboardData?.koperasiName || 'Koperasi Sumber Makmur'}</Text>
-              <Text style={styles.statusText}>Koperasi disetujui</Text>
-            </View>
-          </View>
-          <Pressable accessibilityRole="button" onPress={handleLogout} style={styles.logoutButton}>
-            <Text style={styles.logoutText}>Keluar</Text>
-          </Pressable>
-        </View>
-
-        {isLoading ? (
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 40 }}>
-            <Text style={{ fontFamily: fonts.body, color: colors.primary, fontSize: 16 }}>Memuat data dasbor...</Text>
-          </View>
-        ) : error ? (
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 40 }}>
-            <Text style={{ fontFamily: fonts.body, color: colors.errorRed, fontSize: 14, textAlign: 'center' }}>{error}</Text>
-=======
       <View style={[styles.shell, { height }]}>
         <MainHeader onLogoutPress={onLogoutPress} />
 
@@ -126,42 +69,11 @@ export function KoperasiDashboardScreen({
               supportingText="Target pencatatan 85%"
               value="24.5 Ton"
             />
->>>>>>> f53dd0f77fb50e4b647bf08268e7b5ad2c6a65fb
           </View>
-        ) : (
-          <View style={styles.content}>
-            <View style={styles.hero}>
-              <Text style={styles.title}>Beranda</Text>
-              <Text style={styles.subtitle}>
-                Selamat datang, {dashboardData?.userName || 'Manager'}. Berikut adalah ringkasan pengadaan Anda.
-              </Text>
-            </View>
 
-<<<<<<< HEAD
-            <View style={styles.metricGrid}>
-              <MetricCard
-                accentColor={colors.primary}
-                label="Hemat Bulan Ini"
-                supportingText="Dari harga pasar eceran"
-                value={`Rp ${(dashboardData?.hematBulanIni || 0).toLocaleString('id-ID')}`}
-              />
-              <MetricCard
-                accentColor={colors.soilBrown}
-                label="Volume Stok"
-                supportingText={`Cukup untuk ${dashboardData?.stokCukupBulan || 0} bulan`}
-                value={`${((dashboardData?.stokPupukKg || 0) / 1000).toFixed(1)} Ton`}
-              />
-            </View>
-
-            <VolumeMindCard data={dashboardData?.rekomendasiVolumeMind} accuracy={dashboardData?.akurasiPrediksi || 94.2} />
-            <PoolActiveCard pool={currentPool} onDetailPress={onCollectivePress} />
-          </View>
-        )}
-=======
           <VolumeMindCard />
           <PoolActiveCard />
         </ScrollView>
->>>>>>> f53dd0f77fb50e4b647bf08268e7b5ad2c6a65fb
 
         <KoperasiBottomNav
           activeTab="home"
@@ -195,59 +107,26 @@ function MetricCard({ accentColor, label, supportingIcon, supportingText, value 
   );
 }
 
-function VolumeMindCard({ data, accuracy }: { data: any; accuracy: number }) {
-  if (!data) return null;
-
-  const volumeTon = (data.angka_kg / 1000).toFixed(1);
-  const costJt = (data.totalCost / 1000000).toFixed(1);
-  const savingsText = data.savingsRp > 0 ? `Rp ${(data.savingsRp / 1000000).toFixed(1)}Jt` : 'Rp 0';
-
+function VolumeMindCard() {
   return (
     <View style={styles.volumeMindCard}>
       <View style={styles.volumeMindHeader}>
-<<<<<<< HEAD
-        <View style={styles.volumeMindTitleRow}>
-          <View style={styles.volumeIcon}>
-            <Text style={styles.volumeIconText}>VM</Text>
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.volumeTitle}>VolumeMind</Text>
-            <Text style={styles.volumeSubtitle}>Rekomendasi Pengadaan: {data.bulan_1}</Text>
-          </View>
-        </View>
-        <View style={styles.accuracyBadge}>
-          <Text style={styles.accuracyText}>AKURASI</Text>
-          <Text style={styles.accuracyValue}>{accuracy.toFixed(1)}%</Text>
-=======
         <View style={styles.volumeMindCopy}>
           <Text style={styles.volumeTitle}>VolumeMind</Text>
           <Text style={styles.volumeSubtitle}>Prediksi Kebutuhan Bulan Depan</Text>
         </View>
         <View style={styles.accuracyBadge}>
           <Text style={styles.accuracyText}>AKURASI 94%</Text>
->>>>>>> f53dd0f77fb50e4b647bf08268e7b5ad2c6a65fb
         </View>
       </View>
 
       <View style={styles.recommendationBox}>
         <View style={styles.recommendationGrid}>
-<<<<<<< HEAD
-          <InfoCell label="Rekomendasi Pemasok" value={data.supplierName} />
-          <InfoCell label="Kuantitas Optimal" value={`${volumeTon} Ton (NPK)`} />
-          <InfoCell label="Estimasi Biaya" value={`Rp ${data.totalCost.toLocaleString('id-ID')}`} />
-          <InfoCell isSaving label={data.isVolumeHack ? "Hemat (Volume Hack)" : "Potensi Penghematan"} value={savingsText} />
-=======
           <InfoCell icon={storeIcon} label="Rekomendasi Pemasok" value="PT Agro Nusa" />
           <InfoCell icon={quantityIcon} label="Kuantitas Optimal" value="12.5 Ton (Urea)" />
           <InfoCell label="Estimasi Biaya" value="Rp 68.750.000" />
           <InfoCell isSaving label="Potensi Penghematan" value="Rp 4.2Jt" />
->>>>>>> f53dd0f77fb50e4b647bf08268e7b5ad2c6a65fb
         </View>
-        {data.explanation ? (
-          <Text style={{ marginTop: 10, fontSize: 11, color: colors.outline, fontStyle: 'italic', lineHeight: 15 }}>
-            {data.explanation}
-          </Text>
-        ) : null}
       </View>
     </View>
   );
@@ -272,83 +151,16 @@ function InfoCell({ icon, isSaving = false, label, value }: InfoCellProps) {
   );
 }
 
-<<<<<<< HEAD
-function PoolActiveCard({ pool, onDetailPress }: { pool: any; onDetailPress: () => void }) {
-  if (!pool) {
-    return (
-      <View style={styles.poolSection}>
-        <View style={styles.poolHeader}>
-          <Text style={styles.poolTitle}>Pool Aktif</Text>
-        </View>
-        <View style={[styles.poolCard, { alignItems: 'center', padding: 24 }]}>
-          <Text style={{ color: colors.outline, fontFamily: fonts.body, fontSize: 13, textAlign: 'center' }}>
-            Belum ada pool aktif saat ini.
-          </Text>
-        </View>
-      </View>
-    );
-  }
-
-  const totalVolume = pool.targetVolumeKg || 1000;
-  const currentVolume = pool.currentVolumeKg || 0;
-  const progressPercent = Math.min(100, Math.round((currentVolume / totalVolume) * 100));
-=======
 function PoolActiveCard() {
   const activePool = pools[1];
->>>>>>> f53dd0f77fb50e4b647bf08268e7b5ad2c6a65fb
 
   return (
     <View style={styles.poolSection}>
       <View style={styles.poolHeader}>
         <Text style={styles.poolTitle}>Pool Aktif</Text>
-<<<<<<< HEAD
-        <Pressable onPress={onDetailPress}>
-          <Text style={styles.seeAll}>Lihat Semua &gt;</Text>
-        </Pressable>
-      </View>
-
-      <View style={styles.poolCard}>
-        <View style={styles.poolTopRow}>
-          <View>
-            <View style={styles.poolMetaRow}>
-              <View style={[styles.pendingBadge, pool.status === 'ACTIVE' && { backgroundColor: 'rgba(43, 147, 72, 0.18)' }]}>
-                <Text style={[styles.pendingText, pool.status === 'ACTIVE' && { color: colors.successGreen }]}>
-                  {pool.status}
-                </Text>
-              </View>
-              {pool.deadlineAt ? (
-                <Text style={styles.poolDeadline}>
-                  Berakhir: {new Date(pool.deadlineAt).toLocaleDateString('id-ID')}
-                </Text>
-              ) : null}
-            </View>
-            <Text style={styles.poolName}>{pool.name || `Pool ${pool.product?.name}`}</Text>
-          </View>
-          <View style={styles.groupIcon}>
-            <Text style={styles.groupIconText}>OO</Text>
-            <View style={styles.groupDot} />
-          </View>
-        </View>
-
-        <View style={styles.progressMeta}>
-          <Text style={styles.progressLabel}>Progres Terkumpul</Text>
-          <Text style={styles.progressValue}>
-            {progressPercent}% ({(currentVolume / 1000).toFixed(1)}/{(totalVolume / 1000).toFixed(1)} Ton)
-          </Text>
-        </View>
-        <View style={styles.progressTrack}>
-          <View style={[styles.progressFill, { width: `${progressPercent}%` }]} />
-        </View>
-
-        <Pressable accessibilityRole="button" onPress={onDetailPress} style={styles.detailButton}>
-          <Text style={styles.detailButtonText}>IKUTI POOL PATUNGAN</Text>
-        </Pressable>
-      </View>
-=======
       </View>
 
       <PoolCard onAction={() => undefined} pool={activePool} />
->>>>>>> f53dd0f77fb50e4b647bf08268e7b5ad2c6a65fb
     </View>
   );
 }

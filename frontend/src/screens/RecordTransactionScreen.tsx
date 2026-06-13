@@ -28,6 +28,10 @@ const cardShadow = {
   boxShadow: '0 4px 12px rgba(27, 67, 50, 0.05)',
 } as unknown as ViewStyle;
 
+function getErrorMessage(error: unknown, fallback: string) {
+  return error instanceof Error ? error.message : fallback;
+}
+
 export function RecordTransactionScreen({
   onCollectivePress,
   onHomePress,
@@ -75,8 +79,8 @@ export function RecordTransactionScreen({
       setDate('');
       setTotalPrice('');
       window.setTimeout(() => setNotice(''), 2600);
-    } catch (err: any) {
-      setNotice(err.message || 'Gagal menyimpan transaksi.');
+    } catch (err: unknown) {
+      setNotice(getErrorMessage(err, 'Gagal menyimpan transaksi.'));
       window.setTimeout(() => setNotice(''), 3500);
     }
   };

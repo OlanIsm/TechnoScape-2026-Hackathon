@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   Pressable,
   SafeAreaView,
@@ -12,7 +12,6 @@ import {
 import { KoperasiBottomNav } from '../components/KoperasiBottomNav';
 import { MainHeader } from '../components/MainHeader';
 import { colors, fonts } from '../theme';
-import { api } from '../services/api';
 
 type AuditLogScreenProps = {
   onCollectivePress: () => void;
@@ -21,12 +20,58 @@ type AuditLogScreenProps = {
   onRecordPress: () => void;
 };
 
+type ManualLog = {
+  amount: string;
+  icon: string;
+  product: string;
+  supplier: string;
+  time: string;
+  total: string;
+};
+
 type PoolLog = {
   date: string;
   description: string;
   id: string;
   status: 'SUKSES' | 'GAGAL' | 'DIBATALKAN';
 };
+
+const manualLogs: Array<{ dateLabel: string; items: ManualLog[] }> = [
+  {
+    dateLabel: 'HARI INI, 24 OKT 2026',
+    items: [
+      {
+        amount: '50 Ton',
+        icon: 'UR',
+        product: 'Pupuk Urea Prill',
+        supplier: 'PT Agro Maju',
+        time: '10:45 WIB',
+        total: 'Rp 425 Jt',
+      },
+      {
+        amount: '120 Ton',
+        icon: 'NP',
+        product: 'Pupuk NPK 15-15-15',
+        supplier: 'CV Tani Subur',
+        time: '08:30 WIB',
+        total: 'Rp 1.2 M',
+      },
+    ],
+  },
+  {
+    dateLabel: 'KEMARIN, 23 OKT 2026',
+    items: [
+      {
+        amount: '5 Ribu L',
+        icon: 'OC',
+        product: 'Pupuk Organik Cair',
+        supplier: 'Kop. Makmur',
+        time: '14:15 WIB',
+        total: 'Rp 85 Jt',
+      },
+    ],
+  },
+];
 
 const poolLogs: PoolLog[] = [
   {
@@ -61,55 +106,17 @@ export function AuditLogScreen({
 }: AuditLogScreenProps) {
   const { height } = useWindowDimensions();
   const [activeTab, setActiveTab] = useState<'manual' | 'pool'>('manual');
-  const [logs, setLogs] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [notice, setNotice] = useState('');
 
-  useEffect(() => {
-    async function loadLogs() {
-      try {
-        setIsLoading(true);
-        const data = await api.getAuditLogs();
-        setLogs(data);
-      } catch (err: any) {
-        setNotice(err.message || 'Gagal memuat log audit.');
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    loadLogs();
-  }, []);
-
-  const handleExportCsv = () => {
-    setNotice('Mengunduh laporan transaksi CSV...');
-    const url = api.exportCsvUrl();
-    window.open(url, '_blank');
-    window.setTimeout(() => setNotice(''), 3000);
-  };
-
-  const handleLogout = () => {
-    api.clearToken();
-    onLogoutPress();
+  const showNotice = (message: string) => {
+    setNotice(message);
+    window.setTimeout(() => setNotice(''), 2400);
   };
 
   return (
     <SafeAreaView style={[styles.safeArea, { minHeight: height }]}>
       <View style={[styles.shell, { height }]}>
-<<<<<<< HEAD
-        <View style={styles.topBar}>
-          <View style={styles.brandRow}>
-            <View style={styles.brandIcon}>
-              <BrandMark size={26} />
-            </View>
-            <Text style={styles.brandText}>VolumeMate</Text>
-          </View>
-          <Pressable accessibilityRole="button" onPress={handleLogout} style={styles.logoutButton}>
-            <Text style={styles.logoutText}>Keluar</Text>
-          </Pressable>
-        </View>
-=======
         <MainHeader onLogoutPress={onLogoutPress} />
->>>>>>> f53dd0f77fb50e4b647bf08268e7b5ad2c6a65fb
 
         <ScrollView
           contentContainerStyle={styles.scrollContent}
@@ -123,11 +130,11 @@ export function AuditLogScreen({
             </View>
             <Pressable
               accessibilityRole="button"
-              onPress={handleExportCsv}
+              onPress={() => showNotice('Dummy: export PDF/Excel akan tersedia setelah API audit siap.')}
               style={styles.exportButton}
             >
               <DownloadIcon />
-              <Text style={styles.exportText}>Export CSV</Text>
+              <Text style={styles.exportText}>Eksport</Text>
             </Pressable>
           </View>
 
@@ -145,7 +152,7 @@ export function AuditLogScreen({
               onPress={() => setActiveTab('manual')}
               style={[styles.tabButton, activeTab === 'manual' && styles.tabButtonActive]}
             >
-              <Text style={[styles.tabText, activeTab === 'manual' && styles.tabTextActive]}>Transaksi Ledger</Text>
+              <Text style={[styles.tabText, activeTab === 'manual' && styles.tabTextActive]}>Transaksi Manual</Text>
             </Pressable>
             <Pressable
               accessibilityRole="button"
@@ -162,18 +169,7 @@ export function AuditLogScreen({
             </View>
           ) : null}
 
-          {isLoading ? (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 40 }}>
-              <Text style={{ fontFamily: fonts.body, color: colors.primary, fontSize: 14 }}>Memuat data log...</Text>
-            </View>
-          ) : activeTab === 'manual' ? (
-            <ManualLogList logs={logs} />
-          ) : (
-            <PoolLogList onDetailPress={(msg) => {
-              setNotice(msg);
-              window.setTimeout(() => setNotice(''), 2400);
-            }} />
-          )}
+          {activeTab === 'manual' ? <ManualLogList /> : <PoolLogList onDetailPress={showNotice} />}
         </ScrollView>
 
         <KoperasiBottomNav
@@ -187,117 +183,45 @@ export function AuditLogScreen({
   );
 }
 
-function ManualLogList({ logs }: { logs: any[] }) {
-  if (logs.length === 0) {
-    return (
-      <View style={{ padding: 24, alignItems: 'center' }}>
-        <Text style={{ color: colors.outline, fontFamily: fonts.body, fontSize: 13 }}>Belum ada log transaksi.</Text>
-      </View>
-    );
-  }
-
+function ManualLogList() {
   return (
     <View style={styles.logList}>
-      {logs.map((log) => (
-        <ManualLogCard log={log} key={log.id} />
+      {manualLogs.map((group) => (
+        <View key={group.dateLabel} style={styles.dateGroup}>
+          <View style={styles.dateSeparator}>
+            <Text style={styles.dateLabel}>{group.dateLabel}</Text>
+            <View style={styles.separatorLine} />
+          </View>
+          {group.items.map((item) => (
+            <ManualLogCard item={item} key={`${group.dateLabel}-${item.product}`} />
+          ))}
+        </View>
       ))}
     </View>
   );
 }
 
-function ManualLogCard({ log }: { log: any }) {
-  const dateStr = new Date(log.createdAt).toLocaleDateString('id-ID', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-
-  const parsed = parseDetails(log.details, log.action);
-  const icon = getLogIcon(log.action);
-
+function ManualLogCard({ item }: { item: ManualLog }) {
   return (
     <View style={styles.manualCard}>
       <View style={styles.logIconCircle}>
-        <Text style={styles.logIconText}>{icon}</Text>
+        <Text style={styles.logIconText}>{item.icon}</Text>
       </View>
       <View style={styles.logContent}>
         <Text numberOfLines={1} style={styles.logTitle}>
-          {parsed.title}
+          {item.product}
         </Text>
         <Text style={styles.logMeta}>
-          {parsed.desc} - {dateStr}
+          {item.supplier} - {item.time}
         </Text>
-        <Text style={styles.hashText}>Hash: {log.id.substring(0, 18).toUpperCase()}</Text>
+        <Text style={styles.hashText}>Hash: VM-{item.icon}-A7K2</Text>
       </View>
       <View style={styles.amountBlock}>
-        <Text style={styles.amountText}>{parsed.qty}</Text>
-        <Text style={styles.totalText}>{parsed.total}</Text>
+        <Text style={styles.amountText}>{item.amount}</Text>
+        <Text style={styles.totalText}>{item.total}</Text>
       </View>
     </View>
   );
-}
-
-function getLogIcon(action: string) {
-  switch (action) {
-    case 'MANUAL_TRANSACTION': return 'TX';
-    case 'CREATE_ORDER': return 'OR';
-    case 'JOIN_POOL': return 'PL';
-    case 'CONFIRM_ORDER': return 'CF';
-    default: return 'LG';
-  }
-}
-
-function parseDetails(details: string, action: string) {
-  try {
-    const data = JSON.parse(details);
-    if (action === 'MANUAL_TRANSACTION') {
-      return {
-        title: `Transaksi: ${data.jenisPupuk}`,
-        desc: `${data.supplierName || 'Pemasok Umum'}`,
-        qty: `${data.quantity} kg`,
-        total: `Rp ${data.totalPrice.toLocaleString('id-ID')}`
-      };
-    }
-    if (action === 'CREATE_ORDER') {
-      return {
-        title: `Order Pengadaan`,
-        desc: `Order ID: ${data.orderId.substring(0, 8)}...`,
-        qty: `Baru`,
-        total: `Rp ${data.totalPrice?.toLocaleString('id-ID') || '-'}`
-      };
-    }
-    if (action === 'JOIN_POOL') {
-      return {
-        title: `Gabung Pool Patungan`,
-        desc: `Pool ID: ${data.poolId.substring(0, 8)}...`,
-        qty: `Partisipan`,
-        total: `-`
-      };
-    }
-    if (action === 'CONFIRM_ORDER') {
-      return {
-        title: `Konfirmasi Order Ledger`,
-        desc: `Order ID: ${data.orderId.substring(0, 8)}...`,
-        qty: `Selesai`,
-        total: `-`
-      };
-    }
-    return {
-      title: action,
-      desc: details,
-      qty: '',
-      total: ''
-    };
-  } catch (_) {
-    return {
-      title: action,
-      desc: details,
-      qty: '',
-      total: ''
-    };
-  }
 }
 
 type PoolLogListProps = {

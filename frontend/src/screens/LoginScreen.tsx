@@ -24,6 +24,10 @@ const cardShadow = {
   boxShadow: '0 4px 12px rgba(27, 67, 50, 0.05)',
 } as unknown as ViewStyle;
 
+function getErrorMessage(error: unknown, fallback: string) {
+  return error instanceof Error ? error.message : fallback;
+}
+
 export function LoginScreen({
   onAdminLogin,
   onKoperasiLogin,
@@ -46,8 +50,8 @@ export function LoginScreen({
         await api.login('admin@koperasi.com', 'password123');
         setNotice('');
         onKoperasiLogin?.();
-      } catch (err: any) {
-        setNotice(err.message || 'Login gagal. Pastikan backend aktif.');
+      } catch (err: unknown) {
+        setNotice(getErrorMessage(err, 'Login gagal. Pastikan backend aktif.'));
       }
       return;
     }
@@ -59,8 +63,8 @@ export function LoginScreen({
         await api.login('joko@koperasi.com', 'password123');
         setNotice('');
         onKoperasiLogin?.();
-      } catch (err: any) {
-        setNotice(err.message || 'Login gagal. Pastikan backend aktif.');
+      } catch (err: unknown) {
+        setNotice(getErrorMessage(err, 'Login gagal. Pastikan backend aktif.'));
       }
       return;
     }
@@ -84,13 +88,15 @@ export function LoginScreen({
       setNotice('');
       
       const role = response.user?.role;
-      if (role === 'ADMIN_KOPERASI' || role === 'ANGGOTA') {
+      if (role === 'SUPPLIER') {
+        onSupplierLogin?.();
+      } else if (role === 'ADMIN_KOPERASI' || role === 'ANGGOTA') {
         onKoperasiLogin?.();
       } else {
         onKoperasiLogin?.();
       }
-    } catch (err: any) {
-      setNotice(err.message || 'Login gagal. Periksa kembali email dan password.');
+    } catch (err: unknown) {
+      setNotice(getErrorMessage(err, 'Login gagal. Periksa kembali email dan password.'));
     }
   };
 

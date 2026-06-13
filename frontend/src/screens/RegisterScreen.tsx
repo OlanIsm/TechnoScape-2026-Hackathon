@@ -19,6 +19,10 @@ import { api } from '../services/api';
 
 type Role = 'koperasi' | 'supplier';
 
+function getErrorMessage(error: unknown, fallback: string) {
+  return error instanceof Error ? error.message : fallback;
+}
+
 const steps = [
   { id: '1', label: 'Akun', isActive: true },
   { id: '2', label: 'Organisasi', isActive: false },
@@ -53,8 +57,8 @@ export function RegisterScreen({ onBackPress, onLoginPress }: RegisterScreenProp
       setTimeout(() => {
         onLoginPress?.();
       }, 1500);
-    } catch (err: any) {
-      setNotice(err.message || 'Registrasi gagal. Email mungkin sudah terdaftar.');
+    } catch (err: unknown) {
+      setNotice(getErrorMessage(err, 'Registrasi gagal. Email mungkin sudah terdaftar.'));
     }
   };
 

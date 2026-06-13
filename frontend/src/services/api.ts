@@ -1,5 +1,7 @@
 const API_BASE_URL = 'http://localhost:3000';
 
+type ApiPayload = Record<string, unknown>;
+
 export function getToken() {
   return localStorage.getItem('volumemate_token');
 }
@@ -31,7 +33,9 @@ async function request(endpoint: string, options: RequestInit = {}) {
     try {
       const errData = await response.json();
       errMsg = errData.message || errMsg;
-    } catch (_) {}
+    } catch {
+      errMsg = 'Terjadi kesalahan pada server';
+    }
     throw new Error(errMsg);
   }
 
@@ -51,7 +55,7 @@ export const api = {
     return data;
   },
 
-  async register(data: any) {
+  async register(data: ApiPayload) {
     return request('/auth/register', {
       method: 'POST',
       body: JSON.stringify(data),
@@ -70,7 +74,7 @@ export const api = {
     return request('/orders/pools/active');
   },
 
-  async createPool(data: any) {
+  async createPool(data: ApiPayload) {
     return request('/orders/pools', {
       method: 'POST',
       body: JSON.stringify(data),
@@ -88,7 +92,7 @@ export const api = {
     return request('/suppliers');
   },
 
-  async recordTransaction(data: any) {
+  async recordTransaction(data: ApiPayload) {
     return request('/orders/manual', {
       method: 'POST',
       body: JSON.stringify(data),
