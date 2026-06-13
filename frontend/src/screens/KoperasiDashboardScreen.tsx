@@ -1,6 +1,5 @@
 import {
   Image,
-  Pressable,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -15,6 +14,8 @@ import storeIcon from '../assets/store_icon.svg';
 import upIcon from '../assets/up_icon.svg';
 import { KoperasiBottomNav } from '../components/KoperasiBottomNav';
 import { MainHeader } from '../components/MainHeader';
+import { PoolCard } from '../components/PoolCard';
+import { pools } from '../data/pools';
 import { colors, fonts } from '../theme';
 
 type KoperasiDashboardScreenProps = {
@@ -151,42 +152,15 @@ function InfoCell({ icon, isSaving = false, label, value }: InfoCellProps) {
 }
 
 function PoolActiveCard() {
+  const activePool = pools[1];
+
   return (
     <View style={styles.poolSection}>
       <View style={styles.poolHeader}>
         <Text style={styles.poolTitle}>Pool Aktif</Text>
-        <Text style={styles.seeAll}>Lihat Semua &gt;</Text>
       </View>
 
-      <View style={styles.poolCard}>
-        <View style={styles.poolTopRow}>
-          <View>
-            <View style={styles.poolMetaRow}>
-              <View style={styles.pendingBadge}>
-                <Text style={styles.pendingText}>PENDING</Text>
-              </View>
-              <Text style={styles.poolDeadline}>Berakhir: 2 Hari</Text>
-            </View>
-            <Text style={styles.poolName}>Pool NPK Mutiara Q3</Text>
-          </View>
-          <View style={styles.groupIcon}>
-            <Text style={styles.groupIconText}>OO</Text>
-            <View style={styles.groupDot} />
-          </View>
-        </View>
-
-        <View style={styles.progressMeta}>
-          <Text style={styles.progressLabel}>Progres Terkumpul</Text>
-          <Text style={styles.progressValue}>65% (13/20 Ton)</Text>
-        </View>
-        <View style={styles.progressTrack}>
-          <View style={styles.progressFill} />
-        </View>
-
-        <Pressable accessibilityRole="button" onPress={() => undefined} style={styles.detailButton}>
-          <Text style={styles.detailButtonText}>LIHAT DETAIL POOL</Text>
-        </Pressable>
-      </View>
+      <PoolCard onAction={() => undefined} pool={activePool} />
     </View>
   );
 }
@@ -385,132 +359,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '600',
     lineHeight: 28,
-  },
-  seeAll: {
-    color: colors.primary,
-    fontFamily: fonts.body,
-    fontSize: 10,
-    fontWeight: '600',
-    lineHeight: 14,
-  },
-  poolCard: {
-    backgroundColor: colors.surfaceCard,
-    borderColor: colors.surfaceContainerHigh,
-    borderRadius: 8,
-    borderWidth: 1,
-    gap: 12,
-    padding: 16,
-    ...cardShadow,
-  },
-  poolTopRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  poolMetaRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 4,
-  },
-  pendingBadge: {
-    backgroundColor: 'rgba(255, 183, 3, 0.18)',
-    borderRadius: 4,
-    paddingHorizontal: 6,
-    paddingVertical: 3,
-  },
-  pendingText: {
-    color: colors.warningAmber,
-    fontFamily: fonts.body,
-    fontSize: 10,
-    fontWeight: '700',
-    lineHeight: 12,
-  },
-  poolDeadline: {
-    color: colors.onSurfaceVariant,
-    fontFamily: fonts.body,
-    fontSize: 11,
-    lineHeight: 14,
-  },
-  poolName: {
-    color: colors.primary,
-    fontFamily: fonts.heading,
-    fontSize: 18,
-    fontWeight: '600',
-    lineHeight: 24,
-  },
-  groupIcon: {
-    width: 44,
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.surfaceContainerLow,
-    borderColor: colors.outlineVariant,
-    borderRadius: 22,
-    borderWidth: 1,
-    position: 'relative',
-  },
-  groupIconText: {
-    color: colors.primary,
-    fontFamily: fonts.body,
-    fontSize: 11,
-    fontWeight: '700',
-  },
-  groupDot: {
-    position: 'absolute',
-    right: 3,
-    bottom: 3,
-    width: 10,
-    height: 10,
-    backgroundColor: colors.secondary,
-    borderColor: colors.surfaceCard,
-    borderRadius: 5,
-    borderWidth: 2,
-  },
-  progressMeta: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  progressLabel: {
-    color: colors.outline,
-    fontFamily: fonts.body,
-    fontSize: 11,
-    lineHeight: 14,
-  },
-  progressValue: {
-    color: colors.primary,
-    fontFamily: fonts.body,
-    fontSize: 11,
-    fontWeight: '700',
-    lineHeight: 14,
-  },
-  progressTrack: {
-    height: 6,
-    backgroundColor: colors.surfaceContainerHigh,
-    borderRadius: 999,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    width: '65%',
-    height: '100%',
-    backgroundColor: colors.secondary,
-    borderRadius: 999,
-  },
-  detailButton: {
-    minHeight: 42,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderColor: colors.secondary,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
-  detailButtonText: {
-    color: colors.secondary,
-    fontFamily: fonts.body,
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 0.4,
-    lineHeight: 16,
   },
   bottomNav: {
     position: 'absolute',
