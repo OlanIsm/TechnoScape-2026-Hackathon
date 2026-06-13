@@ -44,7 +44,6 @@ type SupplierAuditLog = {
   cooperative: string;
   date: string;
   id: string;
-  note?: string;
   product: string;
   status: 'SUCCESS' | 'DECLINED' | 'FUNDING CANCELED' | 'AUTO DECLINED';
   statusTone: 'success' | 'error' | 'warning' | 'muted';
@@ -110,7 +109,6 @@ const supplierAuditLogs: SupplierAuditLog[] = [
     cooperative: 'Koperasi Mekar Sari',
     date: '22 Okt 2026, 09:15',
     id: 'PO-20261022-042',
-    note: 'Alasan: stok tidak mencukupi untuk deadline.',
     product: 'Urea Daun Buah',
     status: 'DECLINED',
     statusTone: 'error',
@@ -237,7 +235,8 @@ function SupplierAuditLogContent({ onAction }: SupplierAuditLogContentProps) {
           onPress={() => onAction('Dummy: ekspor CSV supplier akan tersedia setelah API siap.')}
           style={styles.exportButton}
         >
-          <Text style={styles.exportText}>Ekspor</Text>
+          <DownloadIcon />
+          <Text style={styles.exportText}>Ekspor CSV</Text>
         </Pressable>
       </View>
 
@@ -319,12 +318,21 @@ function SupplierAuditLogCard({ log }: { log: SupplierAuditLog }) {
         <Text style={styles.auditMeta}>
           ID: {log.id} - Vol: {log.amount}
         </Text>
-        {log.note ? <Text style={styles.auditNote}>{log.note}</Text> : null}
         <View style={styles.auditFooter}>
           <Text style={[styles.auditTotal, log.total === '-' && styles.auditTotalMuted]}>{log.total}</Text>
           <Text style={styles.auditDate}>{log.date}</Text>
         </View>
       </View>
+    </View>
+  );
+}
+
+function DownloadIcon() {
+  return (
+    <View style={styles.downloadIcon}>
+      <View style={styles.downloadStem} />
+      <View style={styles.downloadArrow} />
+      <View style={styles.downloadBase} />
     </View>
   );
 }
@@ -944,20 +952,57 @@ const styles = StyleSheet.create({
   exportButton: {
     minHeight: 40,
     alignItems: 'center',
+    flexDirection: 'row',
+    gap: 7,
     justifyContent: 'center',
-    backgroundColor: colors.surfaceCard,
-    borderColor: colors.primary,
-    borderRadius: 8,
+    backgroundColor: colors.surfaceContainerLowest,
+    borderColor: colors.outlineVariant,
+    borderRadius: 9,
     borderWidth: 1,
-    paddingHorizontal: 14,
+    paddingHorizontal: 11,
     ...cardShadow,
   },
   exportText: {
-    color: colors.primary,
+    color: colors.secondary,
     fontFamily: fonts.body,
     fontSize: 12,
-    fontWeight: '800',
+    fontWeight: '700',
     lineHeight: 16,
+  },
+  downloadIcon: {
+    width: 16,
+    height: 16,
+    position: 'relative',
+  },
+  downloadStem: {
+    position: 'absolute',
+    left: 7,
+    top: 1,
+    width: 2,
+    height: 8,
+    backgroundColor: colors.secondary,
+    borderRadius: 1,
+  },
+  downloadArrow: {
+    position: 'absolute',
+    left: 4,
+    top: 7,
+    width: 8,
+    height: 8,
+    borderBottomColor: colors.secondary,
+    borderBottomWidth: 2,
+    borderRightColor: colors.secondary,
+    borderRightWidth: 2,
+    transform: [{ rotate: '45deg' }],
+  },
+  downloadBase: {
+    position: 'absolute',
+    left: 2,
+    bottom: 1,
+    width: 12,
+    height: 2,
+    backgroundColor: colors.secondary,
+    borderRadius: 1,
   },
   filterCard: {
     minHeight: 46,
@@ -1139,19 +1184,6 @@ const styles = StyleSheet.create({
     fontSize: 11,
     lineHeight: 14,
     marginTop: 3,
-  },
-  auditNote: {
-    alignSelf: 'flex-start',
-    backgroundColor: 'rgba(208, 0, 0, 0.06)',
-    borderRadius: 5,
-    color: colors.errorRed,
-    fontFamily: fonts.body,
-    fontSize: 11,
-    fontWeight: '600',
-    lineHeight: 15,
-    marginTop: 6,
-    paddingHorizontal: 7,
-    paddingVertical: 5,
   },
   auditFooter: {
     alignItems: 'center',
