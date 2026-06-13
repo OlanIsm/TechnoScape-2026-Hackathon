@@ -8,6 +8,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native-web';
+import { BrandMark } from '../components/BrandMark';
 import { colors, fonts } from '../theme';
 
 type RegisterScreenProps = {
@@ -50,7 +51,7 @@ export function RegisterScreen({ onBackPress, onLoginPress }: RegisterScreenProp
             <Text style={styles.backIcon}>{'<'}</Text>
             <Text style={styles.backText}>Kembali</Text>
           </Pressable>
-          <Text style={styles.brand}>VolumeMate</Text>
+          <BrandMark size={28} />
           <View style={styles.topSpacer} />
         </View>
 
@@ -229,13 +230,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     letterSpacing: 0.6,
     lineHeight: 16,
-  },
-  brand: {
-    color: colors.primary,
-    fontFamily: fonts.heading,
-    fontSize: 24,
-    fontWeight: '700',
-    lineHeight: 32,
   },
   topSpacer: {
     width: 82,
