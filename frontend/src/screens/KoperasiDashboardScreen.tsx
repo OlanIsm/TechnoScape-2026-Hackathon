@@ -250,22 +250,33 @@ export function KoperasiDashboardScreen({
                   />
                 </Pressable>
               </View>
+              <View style={styles.salesCard}>
+                <View style={styles.salesHeaderRow}>
+                  <Text style={styles.salesCardTitle}>Laporan Distribusi & Pendapatan</Text>
+                  <View style={styles.outgoingBadge}>
+                    <Text style={styles.outgoingBadgeText}>STOK KELUAR</Text>
+                  </View>
+                </View>
 
-              <View style={[styles.metricGrid, { marginTop: 4 }]}>
-                <MetricCard
-                  accentColor={colors.secondary}
-                  label="Ton Terjual"
-                  supportingIcon={growIcon}
-                  supportingText="Penyaluran ke petani"
-                  value={`${((dashboardData?.totalSoldKg || 0) / 1000).toFixed(1)} Ton`}
-                />
-                <MetricCard
-                  accentColor={colors.soilBrown}
-                  label="Pendapatan Kotor"
-                  supportingIcon={upIcon}
-                  supportingText="Total dari penyaluran"
-                  value={`Rp ${(dashboardData?.totalRevenue || 0).toLocaleString('id-ID')}`}
-                />
+                <View style={styles.salesGrid}>
+                  <View style={styles.salesCol}>
+                    <Text style={styles.salesLabel}>Total Penyaluran</Text>
+                    <Text style={[styles.salesValue, { color: colors.errorRed }]}>
+                      {`${((dashboardData?.totalSoldKg || 0) / 1000).toFixed(1)} Ton`}
+                    </Text>
+                    <Text style={styles.salesSubtext}>Pupuk keluar ke petani</Text>
+                  </View>
+
+                  <View style={styles.salesDivider} />
+
+                  <View style={styles.salesCol}>
+                    <Text style={styles.salesLabel}>Total Pendapatan</Text>
+                    <Text style={[styles.salesValue, { color: colors.successGreen }]}>
+                      {`Rp ${(dashboardData?.totalRevenue || 0).toLocaleString('id-ID')}`}
+                    </Text>
+                    <Text style={styles.salesSubtext}>Dana penjualan diterima</Text>
+                  </View>
+                </View>
               </View>
 
               <VolumeMindCard
@@ -1118,5 +1129,73 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     color: colors.successGreen,
+  },
+  salesCard: {
+    backgroundColor: colors.surfaceCard,
+    borderColor: 'rgba(193, 200, 194, 0.48)',
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 16,
+    gap: 12,
+    marginVertical: 8,
+    ...cardShadow,
+  },
+  salesHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  salesCardTitle: {
+    color: colors.primary,
+    fontFamily: fonts.heading,
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  outgoingBadge: {
+    backgroundColor: 'rgba(208, 0, 0, 0.1)',
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  outgoingBadgeText: {
+    color: colors.errorRed,
+    fontFamily: fonts.body,
+    fontSize: 9,
+    fontWeight: '800',
+  },
+  salesGrid: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 4,
+  },
+  salesCol: {
+    flex: 1,
+    gap: 2,
+  },
+  salesLabel: {
+    color: colors.outline,
+    fontFamily: fonts.body,
+    fontSize: 11,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+  },
+  salesValue: {
+    fontFamily: fonts.heading,
+    fontSize: 18,
+    fontWeight: '700',
+    lineHeight: 24,
+  },
+  salesSubtext: {
+    color: colors.onSurfaceVariant,
+    fontFamily: fonts.body,
+    fontSize: 10,
+  },
+  salesDivider: {
+    width: 1,
+    height: 40,
+    backgroundColor: colors.surfaceContainerHigh,
+    marginHorizontal: 12,
   },
 });

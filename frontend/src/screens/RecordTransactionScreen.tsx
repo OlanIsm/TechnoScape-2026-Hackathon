@@ -54,21 +54,21 @@ export function RecordTransactionScreen({
     async function loadProducts() {
       try {
         const products = await api.getProducts() as any[];
-        if (products && products.length > 0) {
-          const names = products.map((p) => {
-            const lower = p.name.toLowerCase();
-            if (lower.includes('urea')) return 'Urea';
-            if (lower.includes('npk')) return 'NPK';
-            if (lower.includes('sp-36')) return 'SP-36';
-            if (lower.includes('za')) return 'ZA';
-            if (lower.includes('organik')) return 'Organik';
-            return p.name;
-          });
-          const uniqueNames = Array.from(new Set(names));
-          setFertilizerOptions(uniqueNames);
-          if (uniqueNames.length > 0 && !uniqueNames.includes(fertilizer)) {
-            setFertilizer(uniqueNames[0]);
-          }
+        const names = products && products.length > 0 
+          ? products.map((p) => {
+              const lower = p.name.toLowerCase();
+              if (lower.includes('urea')) return 'Urea';
+              if (lower.includes('npk')) return 'NPK';
+              if (lower.includes('sp-36')) return 'SP-36';
+              if (lower.includes('za')) return 'ZA';
+              if (lower.includes('organik')) return 'Organik';
+              return p.name;
+            })
+          : [];
+        const uniqueNames = Array.from(new Set(['Urea', 'NPK', 'SP-36', 'ZA', 'Organik', ...names]));
+        setFertilizerOptions(uniqueNames);
+        if (uniqueNames.length > 0 && !uniqueNames.includes(fertilizer)) {
+          setFertilizer(uniqueNames[0]);
         }
       } catch (err) {
         console.warn('Gagal memuat daftar produk dari backend:', err);
@@ -118,6 +118,7 @@ export function RecordTransactionScreen({
           totalPrice: Number(totalPrice),
         });
         setShowSuccessModal(true);
+        setFertilizer('Urea');
         setQuantity('');
         setSupplier('');
         setDate('');
@@ -147,6 +148,7 @@ export function RecordTransactionScreen({
           notes: notes || undefined,
         });
         setShowSuccessModal(true);
+        setFertilizer('Urea');
         setQuantity('');
         setBuyerName('');
         setDate('');
@@ -163,6 +165,7 @@ export function RecordTransactionScreen({
 
   const handleTabChange = (tab: 'pemasukan' | 'pengeluaran') => {
     setActiveTab(tab);
+    setFertilizer('Urea');
     setQuantity('');
     setSupplier('');
     setDate('');

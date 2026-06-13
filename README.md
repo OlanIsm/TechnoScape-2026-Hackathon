@@ -1,149 +1,154 @@
-# 🌿 VolumeMate
-### Smart Procurement System untuk Koperasi Pupuk & Toko Gerai
+# VolumeMate
 
-> Bukan sekadar digitalisasi — VolumeMate adalah lompatan dari pencatatan manual ke *intelligent procurement*.
-
----
-
-## 📋 Tentang Proyek
-
-**VolumeMate** adalah platform manajemen pengadaan pupuk berbasis *volume intelligence* yang dirancang untuk Koperasi Sumber Makmur. Sistem ini menggabungkan digitalisasi pencatatan, kecerdasan buatan, dan mekanisme pembelian kolektif dalam satu ekosistem terpadu.
-
-**Dibuat oleh Team Computer Sigma — TechnoScape 2026**
-
-| Nama | NIM |
-|------|-----|
-| Insan Maulana | 2802496243 |
-| Faiz Ari Fadhillah | 2802541493 |
-| Saladin Zhalifunnas Ahfar | 2802438224 |
-| Jad Abyanza Fauzan | 2802553631 |
+VolumeMate adalah platform sistem pengadaan pupuk cerdas (Smart Procurement System) untuk koperasi pertanian dan toko gerai pupuk desa. Aplikasi ini mengotomatisasi pencatatan inventaris manual, memproyeksikan kebutuhan stok di masa mendatang menggunakan kecerdasan buatan, serta menyediakan fitur patungan pengadaan untuk mengoptimalkan efisiensi pengadaan barang melalui diskon grosir berbasis volume.
 
 ---
 
-## 🚩 Masalah yang Diselesaikan
+## Cara Kerja Aplikasi
 
-Koperasi Sumber Makmur menghadapi dua masalah utama:
+Aplikasi ini bekerja melalui empat komponen utama untuk menyederhanakan dan menghemat pengadaan pupuk:
 
-1. **Informasi asimetris** — Supplier memberikan harga berbeda tergantung volume pembelian, tapi pengurus tidak tahu struktur harga ini sehingga selalu beli di titik paling mahal.
-2. **Tidak ada data historis** — Pencatatan manual menyebabkan tidak ada basis data untuk keputusan pengadaan yang lebih baik.
+### 1. Manajemen Mutasi Stok Real-Time
+Pengurus koperasi mencatat riwayat masuk dan keluar secara digital:
+- **Pemasukan**: Pengadaan pupuk dari supplier eksternal yang menambah jumlah stok fisik koperasi.
+- **Pengeluaran/Penyaluran**: Pendistribusian pupuk kepada para petani anggota yang memotong persediaan stok fisik dan menghasilkan pendapatan tunai bagi koperasi.
 
----
+### 2. Pelacakan Tingkat Harga Supplier (Volume Price Tracker)
+Supplier pupuk memiliki tingkatan harga (price tiers) yang berbeda-beda tergantung jumlah pemesanan. VolumeMate melacak rentang pemesanan ini secara aktif dan memvisualisasikan posisi kuantitas pesanan saat ini terhadap batas kuantitas (threshold) berikutnya agar koperasi bisa mendapatkan harga beli per kg yang lebih murah.
 
-## ✨ Fitur Utama
+### 3. Asisten Cerdas VolumeMind (AI Engine)
+VolumeMind menggunakan algoritma machine learning (Random Forest) untuk memprediksi kebutuhan pupuk bulan berikutnya berdasarkan faktor historis:
+- **Curah Hujan & Musim Tanam**: Menentukan kebutuhan penyerapan pupuk di lahan pertanian.
+- **Prediksi Kebutuhan (Demand Forecasting)**: Menghasilkan estimasi volume kebutuhan pupuk dalam kilogram.
+- **Rekomendasi Optimasi Pembelian (Volume Hack)**: Menghitung secara otomatis jika menambah sedikit volume pembelian di atas prediksi kebutuhan akan memicu tier harga supplier yang lebih murah, sehingga menghasilkan total pengeluaran belanja yang lebih hemat.
 
-### 🧠 VolumeMind — AI Engine
-Inti kecerdasan VolumeMate yang dibangun di atas model machine learning.
-
-- **Demand Forecasting** — Prediksi kebutuhan pupuk anggota berdasarkan histori pembelian dan pola musim tanam
-- **Optimal Buy Recommendation** — Hitung kombinasi terbaik: kapan beli, berapa ton, dari supplier mana — untuk total biaya minimal
-
-### 📊 Volume Price Tracker
-Database struktur harga supplier yang hidup dan terus diperbarui. Visualisasikan posisi pembelian saat ini dan jarak ke tier harga lebih murah berikutnya.
-
-### 🤝 Collective Buying Power
-Agregasi kebutuhan pembelian lintas koperasi desa untuk mencapai threshold tier harga lebih rendah. Semakin banyak koperasi bergabung, semakin besar penghematan kolektif (*network effect*).
-
-### 📝 Supplier Audit Log
-Catatan transaksi permanen yang tidak bisa diedit atau dihapus — hanya bisa ditambah. Siap diekspor sebagai laporan portofolio dalam format PDF atau Excel.
+### 4. Pengadaan Kolektif (Collective Buying Pool)
+Jika satu koperasi desa tidak memenuhi batas minimum pemesanan grosir untuk mendapatkan harga murah, mereka dapat bergabung ke dalam Collective Buying Pool bersama koperasi tetangga. Sistem secara dinamis menghitung total kuantitas pemesanan dari seluruh anggota yang bergabung, memperbarui harga beli untuk semua anggota di dalam pool ketika target tier tercapai, dan mereset status pool setelah selesai dikonfirmasi.
 
 ---
 
-## 🏗️ Arsitektur Sistem
+## Flowchart Sistem
 
-```
-[Pengguna / Browser]
-        ↓
-[Frontend — React.js + Chart.js]
-        ↓
-[Backend — NestJS REST API]
-        ↓
-[VolumeMind AI Engine — Python + scikit-learn] ← microservice terpisah
-        ↓
-[Database — PostgreSQL]
-```
+Alur interaksi fungsional utama di dalam sistem VolumeMate dijelaskan pada diagram di bawah ini:
 
-Seluruh sistem di-deploy di cloud dan dapat diakses dari browser manapun tanpa instalasi tambahan.
-
----
-
-## 🛠️ Tech Stack
-
-| Layer | Teknologi |
-|-------|-----------|
-| Frontend | React.js, Chart.js |
-| Desain | Figma (mobile-first) |
-| Backend | NestJS (Node.js), REST API |
-| AI Engine | Python, scikit-learn |
-| Database | PostgreSQL |
-| Deployment | Vercel (frontend), Railway (backend + DB) |
-
----
-
-## ⚙️ Pertimbangan Kondisi Lapangan
-
-Mengingat koperasi desa memiliki keterbatasan infrastruktur digital:
-
-- **Offline-tolerant** — Data di-cache di browser, tetap bisa dilihat saat koneksi terputus sesaat
-- **Lightweight** — Dioptimalkan untuk jaringan 3G
-- **PWA (Progressive Web App)** — Bisa dipasang di homescreen smartphone tanpa download dari Play Store
-
----
-
-## 💰 Model Bisnis
-
-B2B SaaS dengan skema subscription berbasis koperasi:
-
-| Tier | Target | Harga/Bulan | Fitur |
-|------|--------|-------------|-------|
-| Starter | Koperasi kecil (< 50 anggota) | Rp 150.000 | Volume Price Tracker + Audit Log |
-| Growth | Koperasi menengah (50–200 anggota) | Rp 350.000 | Starter + VolumeMind |
-| Network | Koperasi Collective Buying | Rp 500.000 | Growth + Collective Buying Power |
-
----
-
-## 📈 Proyeksi Pertumbuhan
-
-```
-Fase 1 — Pilot        (Bulan 1–6)   → Onboarding Sumber Makmur, validasi VolumeMind
-Fase 2 — Ekspansi     (Bulan 7–18)  → 5 koperasi, Collective Buying aktif
-Fase 3 — Scale        (Bulan 19–36) → 50+ koperasi, model bisnis mandiri
+```mermaid
+graph TD
+    A["Pengurus Koperasi"] --> B["Pencatatan Transaksi Manual"]
+    B -->|Pemasukan / Beli| C["Stok Masuk & Pengeluaran Kas"]
+    B -->|Pengeluaran / Jual| D["Stok Keluar & Pendapatan Kas"]
+    
+    C & D --> E["Database PostgreSQL"]
+    
+    F["VolumeMind AI Engine"] -->|Mengambil Data Historis & Cuaca| G["Prediksi Demand & Volume Hack"]
+    G -->|Tampilkan di Dashboard| A
+    
+    A --> H["Collective Buying Pool"]
+    H -->|Gabung Anggota Lintas Koperasi| I["Akumulasi Volume Patungan"]
+    I -->|Mencapai Threshold Supplier| J["Update Harga Murah untuk Semua Anggota"]
+    J -->|Selesai Konfirmasi| K["Pemesanan Dikirim & Stok Masuk"]
 ```
 
 ---
 
-## 📊 Target Output (6 Bulan)
+## Tech Stack
 
-| Indikator | Sebelum | Target |
-|-----------|---------|--------|
-| Penghematan biaya pengadaan | 0% | 10–15% per siklus |
-| Akurasi forecast VolumeMind | Tidak ada | ≥ 80% |
-| Koperasi dalam ekosistem | 1 | 3–5 koperasi |
-| Waktu keputusan pengadaan | 1–3 hari | < 1 jam |
-| Kelengkapan dokumentasi | Tidak terstruktur | 100% tercatat |
-
----
-
-## 🔬 Keunggulan vs Solusi yang Ada
-
-| Aspek | Alokop / SiKop | VolumeMate |
-|-------|---------------|------------|
-| Fokus | Simpan pinjam & administrasi | Optimasi pengadaan pupuk |
-| Pendekatan | Reaktif (catat transaksi) | Proaktif (rekomendasikan keputusan) |
-| AI/ML | Tidak ada | VolumeMind |
-| Pembelian kolektif | Tidak ada | Collective Buying Power lintas koperasi |
-| Target | Koperasi simpan pinjam | Koperasi pertanian & pengadaan |
+| Komponen | Teknologi | Keterangan |
+|---|---|---|
+| **Frontend** | React Native Web (React, Vite, CSS) | Antarmuka web responsif dengan nuansa mobile native |
+| **Backend** | NestJS (TypeScript, Prisma ORM) | RESTful API untuk melayani otentikasi, manajemen stok, dan pool |
+| **AI Engine** | Python, FastAPI, Pandas, Joblib, Scikit-learn | Layanan mikro untuk perhitungan model regresi demand forecasting |
+| **Database** | PostgreSQL | Penyimpanan data relasional terstruktur untuk transaksi dan inventaris |
 
 ---
 
-## 📚 Referensi
+## Panduan Menjalankan Aplikasi Secara Lokal
 
-- Badan Pusat Statistik. (2025, 28 Februari). *Statistik Indonesia 2025* (No. publikasi 03200.25004). https://www.bps.go.id/id/publication/2025/02/28/8cfe1a589ad3693396d3db9f/statistik-indonesia-2025.html
-- Kementerian Koordinator Bidang Perekonomian RI. (2021). *Digitalisasi koperasi dorong pengembangan dan modernisasi koperasi*. https://ekon.go.id/publikasi/detail/3392
-- Tempo. (2025, 21 November). *Koperasi desa merah putih putus alur distribusi pupuk nakal*. https://www.tempo.co/info-tempo/koperasi-desa-merah-putih-putus-alur-distribusi-pupuk-nakal-2092053
-- Alokop. (2024, Oktober). *Perkembangan koperasi di Indonesia: Laporan bulanan Juli 2024*. https://alokop.id/perkembangan-koperasi-di-indonesia-laporan-bulanan-juli-2024/
-- Kementerian Pertanian RI. (2023, 27 Desember). *Digitalisasi pertanian, solusi petani muda Indonesia*. https://upland.psp.pertanian.go.id/artikel/1704248896
-- Antara News. (2024, 4 September). *Kementan komitmen terapkan teknologi digitalisasi di sektor pertanian*. https://www.antaranews.com/berita/4308627
+Ikuti langkah-langkah berikut untuk menginstal dan menjalankan semua layanan VolumeMate di mesin lokal Anda.
+
+### Prasyarat
+Sebelum memulai, pastikan perangkat Anda telah terinstal:
+- Node.js (versi 18 ke atas)
+- PostgreSQL
+- Python (versi 3.9 ke atas)
 
 ---
 
-*TechnoScape 2026 — BNCC x AD-INS | Team Computer Sigma*
+### Langkah 1: Persiapan Database PostgreSQL
+1. Buat database kosong baru di PostgreSQL Anda, misalnya bernama `volumemate`.
+2. Pastikan Anda mencatat detail koneksi seperti host, port, username, password, dan nama database tersebut.
+
+---
+
+### Langkah 2: Konfigurasi dan Jalankan Backend
+1. Masuk ke direktori backend:
+   ```bash
+   cd backend
+   ```
+2. Instal semua dependensi Node.js:
+   ```bash
+   npm install
+   ```
+3. Salin file lingkungan contoh dan buat konfigurasi baru:
+   ```bash
+   copy .env.example .env
+   ```
+4. Buka file `.env` yang baru dibuat di editor teks Anda, dan sesuaikan nilai variabel berikut dengan kredensial PostgreSQL Anda:
+   ```env
+   DATABASE_URL="postgresql://username:password@localhost:5432/volumemate"
+   PORT=3000
+   JWT_SECRET="rahasia_volumemate_super_aman_123"
+   ```
+5. Sinkronisasikan skema Prisma ke database PostgreSQL Anda:
+   ```bash
+   npx prisma db push
+   ```
+6. Jalankan script seeding untuk mengisi data awal (akun demo admin, supplier default, dan produk awal):
+   ```bash
+   npm run seed
+   ```
+7. Jalankan server backend dalam mode pengembangan:
+   ```bash
+   npm run start:dev
+   ```
+   Layanan backend akan berjalan di http://localhost:3000.
+
+---
+
+### Langkah 3: Konfigurasi dan Jalankan AI Engine (VolumeMind)
+1. Buka terminal baru dan masuk ke direktori VolumeMind:
+   ```bash
+   cd VolumeMind
+   ```
+2. Instal modul Python yang diperlukan:
+   ```bash
+   pip install fastapi uvicorn pandas joblib scikit-learn
+   ```
+3. Jalankan server FastAPI menggunakan uvicorn:
+   ```bash
+   python -m uvicorn api:app --port 8000 --reload
+   ```
+   Layanan AI Engine akan aktif melayani permintaan prediksi di http://localhost:8000.
+
+---
+
+### Langkah 4: Konfigurasi dan Jalankan Frontend
+1. Buka terminal baru dan masuk ke direktori frontend:
+   ```bash
+   cd frontend
+   ```
+2. Instal semua dependensi frontend:
+   ```bash
+   npm install
+   ```
+3. Jalankan server pengembangan frontend:
+   ```bash
+   npm run dev
+   ```
+   Aplikasi frontend web Anda kini siap diakses melalui tautan lokal yang tertera di terminal (biasanya http://localhost:5173).
+
+---
+
+### Akun Demo untuk Login
+Gunakan kredensial berikut untuk masuk ke dashboard koperasi pengadaan:
+- **Email**: `admin@koperasi.com`
+- **Password**: `password123`
