@@ -55,6 +55,19 @@ export declare class OrderService {
     findAllActivePools(): Promise<any[]>;
     joinPool(poolId: string, orderId: string, userId?: string): Promise<Order>;
     finalizePool(poolId: string): Promise<any>;
+    createDistribution(userId: string, jenisPupuk: string, quantity: number, buyerName: string, tanggal: string, pricePerKg: number, notes?: string): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        koperasiId: string;
+        productId: string;
+        totalPrice: number;
+        quantity: number;
+        pricePerKg: number;
+        buyerName: string;
+        tanggal: Date;
+        notes: string | null;
+    }>;
     writeAuditLog(action: string, details: string, userId?: string): Promise<AuditLog>;
     getAuditLogs(): Promise<AuditLog[]>;
     exportOrdersToCsv(userId: string): Promise<string>;

@@ -29,6 +29,10 @@ let OrderController = class OrderController {
         const userId = req.user.sub;
         return this.orderService.createManualTransaction(userId, jenisPupuk, Number(quantity), supplierName, tanggal, Number(totalPrice));
     }
+    async createDistribution(req, jenisPupuk, quantity, buyerName, tanggal, pricePerKg, notes) {
+        const userId = req.user.sub;
+        return this.orderService.createDistribution(userId, jenisPupuk, Number(quantity), buyerName, tanggal, Number(pricePerKg), notes);
+    }
     async confirmOrder(id, userId) {
         return this.orderService.confirmOrder(id, userId);
     }
@@ -79,6 +83,20 @@ __decorate([
     __metadata("design:paramtypes", [Object, String, Number, String, String, Number]),
     __metadata("design:returntype", Promise)
 ], OrderController.prototype, "createManual", null);
+__decorate([
+    (0, common_1.UseGuards)(auth_guard_1.AuthGuard),
+    (0, common_1.Post)('distribution'),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)('jenisPupuk')),
+    __param(2, (0, common_1.Body)('quantity')),
+    __param(3, (0, common_1.Body)('buyerName')),
+    __param(4, (0, common_1.Body)('tanggal')),
+    __param(5, (0, common_1.Body)('pricePerKg')),
+    __param(6, (0, common_1.Body)('notes')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, Number, String, String, Number, String]),
+    __metadata("design:returntype", Promise)
+], OrderController.prototype, "createDistribution", null);
 __decorate([
     (0, common_1.Post)(':id/confirm'),
     __param(0, (0, common_1.Param)('id')),

@@ -126,6 +126,20 @@ export const api = {
     });
   },
 
+  async recordDistribution(data: {
+    jenisPupuk: string;
+    quantity: number;
+    buyerName: string;
+    tanggal: string;
+    pricePerKg: number;
+    notes?: string;
+  }) {
+    return request('/orders/distribution', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
   async getAuditLogs() {
     return request('/orders/audit-logs');
   },

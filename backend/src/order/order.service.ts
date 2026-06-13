@@ -355,6 +355,77 @@ export class OrderService {
     }
   }
 
+  async createDistribution(
+    userId: string,
+    jenisPupuk: string,
+    quantity: number,
+    buyerName: string,
+    tanggal: string,
+    pricePerKg: number,
+    notes?: string,
+  ) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new BadRequestException('Sesi Anda telah kedaluwarsa atau User tidak ditemukan. Silakan log out dan masuk kembali.');
+    }
+
+    if (!user.koperasiId) {
+      throw new BadRequestException('User Anda tidak terasosiasi dengan Koperasi mana pun di sistem.');
+    }
+
+    // Cari produk
+    let product = await this.prisma.product.findFirst({
+      where: {
+        name: { contains: jenisPupuk, mode: 'insensitive' },
+      },
+    });
+
+    if (!product) {
+      // fallback ke produk pertama
+      product = await this.prisma.product.findFirst();
+    }
+
+    if (!product) {
+      throw new BadRequestException('Tidak ada produk pupuk terdaftar di sistem');
+    }
+
+    const totalPrice = quantity * pricePerKg;
+    const parsedDate = new Date(tanggal);
+    const distributionDate = isNaN(parsedDate.getTime()) ? new Date() : parsedDate;
+
+    const distribution = await this.prisma.distribution.create({
+      data: {
+        koperasiId: user.koperasiId,
+        productId: product.id,
+        quantity,
+        buyerName,
+        tanggal: distributionDate,
+        pricePerKg,
+        totalPrice,
+        notes,
+      },
+    });
+
+    await this.writeAuditLog(
+      'OUTGOING_DISTRIBUTION',
+      JSON.stringify({
+        distributionId: distribution.id,
+        jenisPupuk,
+        quantity,
+        buyerName,
+        totalPrice,
+        pricePerKg,
+        notes,
+      }),
+      userId,
+    );
+
+    return distribution;
+  }
+
   // Audit Log writer helper
   async writeAuditLog(action: string, details: string, userId?: string): Promise<AuditLog> {
     return this.prisma.auditLog.create({

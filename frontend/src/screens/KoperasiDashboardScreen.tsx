@@ -157,6 +157,23 @@ export function KoperasiDashboardScreen({
                 </Pressable>
               </View>
 
+              <View style={[styles.metricGrid, { marginTop: 4 }]}>
+                <MetricCard
+                  accentColor={colors.secondary}
+                  label="Ton Terjual"
+                  supportingIcon={growIcon}
+                  supportingText="Penyaluran ke petani"
+                  value={`${((dashboardData?.totalSoldKg || 0) / 1000).toFixed(1)} Ton`}
+                />
+                <MetricCard
+                  accentColor={colors.soilBrown}
+                  label="Pendapatan Kotor"
+                  supportingIcon={upIcon}
+                  supportingText="Total dari penyaluran"
+                  value={`Rp ${(dashboardData?.totalRevenue || 0).toLocaleString('id-ID')}`}
+                />
+              </View>
+
               <VolumeMindCard
                 accuracy={dashboardData?.akurasiPrediksi || 94.2}
                 data={dashboardData?.rekomendasiVolumeMind}
@@ -177,8 +194,8 @@ export function KoperasiDashboardScreen({
               </View>
 
               <ScrollView style={styles.mutationScroll} showsVerticalScrollIndicator={false}>
-                {auditLogs.filter(log => ['MANUAL_TRANSACTION', 'JOIN_POOL', 'CONFIRM_ORDER'].includes(log.action)).length === 0 ? (
-                  <Text style={styles.emptyText}>Belum ada riwayat pengadaan pupuk.</Text>
+                {auditLogs.filter(log => ['MANUAL_TRANSACTION', 'JOIN_POOL', 'CONFIRM_ORDER', 'OUTGOING_DISTRIBUTION'].includes(log.action)).length === 0 ? (
+                  <Text style={styles.emptyText}>Belum ada riwayat pengadaan atau penyaluran pupuk.</Text>
                 ) : (
                   auditLogs.map((log, index) => {
                     let details: any = {};
@@ -191,8 +208,9 @@ export function KoperasiDashboardScreen({
                     const isManual = log.action === 'MANUAL_TRANSACTION';
                     const isJoin = log.action === 'JOIN_POOL';
                     const isConfirm = log.action === 'CONFIRM_ORDER';
+                    const isDist = log.action === 'OUTGOING_DISTRIBUTION';
 
-                    if (!isManual && !isJoin && !isConfirm) return null;
+                    if (!isManual && !isJoin && !isConfirm && !isDist) return null;
 
                     const date = new Date(log.createdAt).toLocaleDateString('id-ID', {
                       day: 'numeric',
@@ -200,17 +218,26 @@ export function KoperasiDashboardScreen({
                       year: 'numeric',
                     });
                     
-                    const quantityText = isManual 
-                      ? `+${(Number(details.quantity) / 1000).toFixed(1)} Ton` 
-                      : (isJoin ? `+${(Number(details.quantity) / 1000).toFixed(1)} Ton` : `+${(Number(details.totalVolume || 0) / 1000).toFixed(1)} Ton`);
+                    let quantityText = '';
+                    if (isDist) {
+                      quantityText = `-${(Number(details.quantity) / 1000).toFixed(1)} Ton`;
+                    } else if (isManual) {
+                      quantityText = `+${(Number(details.quantity) / 1000).toFixed(1)} Ton`;
+                    } else if (isJoin) {
+                      quantityText = `+${(Number(details.quantity) / 1000).toFixed(1)} Ton`;
+                    } else {
+                      quantityText = `+${(Number(details.totalVolume || 0) / 1000).toFixed(1)} Ton`;
+                    }
                     
-                    const fertilizerName = isManual 
-                      ? (details.jenisPupuk || 'Pupuk') 
-                      : (isJoin ? (details.jenisPupuk || 'NPK Phonska') : 'Pupuk NPK Phonska');
+                    const fertilizerName = isDist 
+                      ? (details.jenisPupuk || 'Pupuk')
+                      : (isManual 
+                          ? (details.jenisPupuk || 'Pupuk') 
+                          : (isJoin ? (details.jenisPupuk || 'NPK Phonska') : 'Pupuk NPK Phonska'));
 
-                    const supplierName = isManual 
-                      ? (details.supplierName || 'Pemasok') 
-                      : (isJoin ? 'CV Petrokimia Makmur' : 'CV Petrokimia Makmur');
+                    const labelText = isDist ? 'Penyaluran' : (isManual ? 'Manual' : 'Kolektif');
+                    const labelColor = isDist ? colors.errorRed : (isManual ? '#0066CC' : colors.successGreen);
+                    const labelBg = isDist ? 'rgba(208, 0, 0, 0.1)' : (isManual ? 'rgba(0, 102, 204, 0.1)' : 'rgba(40, 167, 69, 0.1)');
 
                     return (
                       <View key={log.id || index} style={styles.mutationItem}>
@@ -218,13 +245,13 @@ export function KoperasiDashboardScreen({
                           <Text style={styles.mutationDate}>{date}</Text>
                           <View style={[
                             styles.badge, 
-                            { backgroundColor: isManual ? 'rgba(0, 102, 204, 0.1)' : 'rgba(40, 167, 69, 0.1)' }
+                            { backgroundColor: labelBg }
                           ]}>
                             <Text style={[
                               styles.badgeText, 
-                              { color: isManual ? '#0066CC' : colors.successGreen }
+                              { color: labelColor }
                             ]}>
-                              {isManual ? 'Manual' : 'Kolektif'}
+                              {labelText}
                             </Text>
                           </View>
                         </View>
@@ -232,9 +259,11 @@ export function KoperasiDashboardScreen({
                         <View style={styles.mutationInfo}>
                           <View style={{ flex: 1 }}>
                             <Text style={styles.mutationProduct}>{fertilizerName}</Text>
-                            <Text style={styles.mutationSupplier}>Pemasok: {supplierName}</Text>
+                            <Text style={styles.mutationSupplier}>
+                              {isDist ? `Penerima: ${details.buyerName || 'Petani'}` : `Pemasok: ${isManual ? (details.supplierName || 'Pemasok') : 'CV Petrokimia Makmur'}`}
+                            </Text>
                           </View>
-                          <Text style={styles.mutationQuantity}>{quantityText}</Text>
+                          <Text style={[styles.mutationQuantity, isDist && { color: colors.errorRed }]}>{quantityText}</Text>
                         </View>
                       </View>
                     );

@@ -173,7 +173,7 @@ export function AuditLogScreen({
   };
 
   // Process manual logs
-  const manualActions = ['MANUAL_TRANSACTION', 'CREATE_ORDER', 'CONFIRM_ORDER'];
+  const manualActions = ['MANUAL_TRANSACTION', 'CREATE_ORDER', 'CONFIRM_ORDER', 'OUTGOING_DISTRIBUTION'];
   const filteredManualLogs = logs.filter((log) => manualActions.includes(log.action));
 
   const manualItemsMapped = filteredManualLogs.map((log) => {
@@ -185,11 +185,29 @@ export function AuditLogScreen({
     }
 
     const isManual = log.action === 'MANUAL_TRANSACTION';
-    const product = isManual ? (details.jenisPupuk || 'Pupuk') : 'Pembelian Pupuk';
-    const supplier = isManual ? (details.supplierName || 'Pemasok') : 'Sistem';
-    const amount = isManual ? `${details.quantity} kg` : '-';
-    const total = `Rp ${(details.totalPrice || 0).toLocaleString('id-ID')}`;
-    const icon = isManual ? (details.jenisPupuk || 'PK').substring(0, 2).toUpperCase() : 'ORD';
+    const isDist = log.action === 'OUTGOING_DISTRIBUTION';
+
+    let product = 'Pembelian Pupuk';
+    let supplier = 'Sistem';
+    let amount = '-';
+    let total = 'Rp 0';
+    let icon = 'ORD';
+
+    if (isManual) {
+      product = details.jenisPupuk || 'Pupuk';
+      supplier = details.supplierName || 'Pemasok';
+      amount = `${details.quantity} kg`;
+      total = `Rp ${(details.totalPrice || 0).toLocaleString('id-ID')}`;
+      icon = (details.jenisPupuk || 'PK').substring(0, 2).toUpperCase();
+    } else if (isDist) {
+      product = `Penyaluran ${details.jenisPupuk || 'Pupuk'}`;
+      supplier = `Petani: ${details.buyerName || 'Petani'}`;
+      amount = `${details.quantity} kg`;
+      total = `Rp ${(details.totalPrice || 0).toLocaleString('id-ID')}`;
+      icon = 'OUT';
+    } else {
+      total = `Rp ${(details.totalPrice || 0).toLocaleString('id-ID')}`;
+    }
 
     return {
       product,
@@ -200,6 +218,7 @@ export function AuditLogScreen({
       dateLabel: formatDateLabel(log.createdAt),
       icon,
       hash: `VM-${icon}-${log.id.substring(0, 4).toUpperCase()}`,
+      isOutgoing: isDist,
     };
   });
 
@@ -348,11 +367,13 @@ function ManualLogList({ items }: { items: Array<{ dateLabel: string; items: Man
   );
 }
 
-function ManualLogCard({ item }: { item: ManualLog }) {
+function ManualLogCard({ item }: { item: ManualLog & { isOutgoing?: boolean } }) {
+  const amountTextVal = item.amount === '-' ? '-' : (item.isOutgoing ? `-${item.amount}` : `+${item.amount}`);
+
   return (
     <View style={styles.manualCard}>
-      <View style={styles.logIconCircle}>
-        <Text style={styles.logIconText}>{item.icon}</Text>
+      <View style={[styles.logIconCircle, item.isOutgoing && { backgroundColor: 'rgba(208, 0, 0, 0.1)' }]}>
+        <Text style={[styles.logIconText, item.isOutgoing && { color: colors.errorRed }]}>{item.icon}</Text>
       </View>
       <View style={styles.logContent}>
         <Text numberOfLines={1} style={styles.logTitle}>
@@ -364,7 +385,7 @@ function ManualLogCard({ item }: { item: ManualLog }) {
         <Text style={styles.hashText}>Hash: {item.hash || 'VM-GEN-XXXX'}</Text>
       </View>
       <View style={styles.amountBlock}>
-        <Text style={styles.amountText}>{item.amount}</Text>
+        <Text style={[styles.amountText, item.isOutgoing && { color: colors.errorRed }]}>{amountTextVal}</Text>
         <Text style={styles.totalText}>{item.total}</Text>
       </View>
     </View>

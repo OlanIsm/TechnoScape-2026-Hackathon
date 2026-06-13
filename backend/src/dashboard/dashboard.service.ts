@@ -42,12 +42,12 @@ export class DashboardService {
     });
 
     let totalSavings = 0;
-    let totalStockKg = 0;
+    let totalIncomingKg = 0;
 
     // Hitung penghematan berdasarkan perbedaan harga beli dengan harga eceran biasa (tier terendah)
     orders.forEach((order) => {
       order.orderItems.forEach((item) => {
-        totalStockKg += item.quantity;
+        totalIncomingKg += item.quantity;
 
         const tiers = item.product.priceTiers;
         if (tiers && tiers.length > 0) {
@@ -62,10 +62,25 @@ export class DashboardService {
       });
     });
 
+    // Cari semua data distribusi (stok keluar)
+    const distributions = await this.prisma.distribution.findMany({
+      where: { koperasiId },
+    });
+
+    let totalSoldKg = 0;
+    let totalRevenue = 0;
+    distributions.forEach((dist) => {
+      totalSoldKg += dist.quantity;
+      totalRevenue += dist.totalPrice;
+    });
+
+    // Hitung sisa sisa stok net
+    const netStockKg = Math.max(0, totalIncomingKg - totalSoldKg);
+
     // Default values
-    const keuntungan = orders.length === 0 ? 2450000 : totalSavings;
-    const angka_kg = orders.length === 0 ? 1500 : totalStockKg;
-    const angka_bulan = orders.length === 0 ? 3 : Math.max(1, Math.ceil(totalStockKg / 500)); // asumsi konsumsi 500kg/bulan
+    const keuntungan = (orders.length === 0 && distributions.length === 0) ? 2450000 : totalSavings;
+    const angka_kg = (orders.length === 0 && distributions.length === 0) ? 1500 : netStockKg;
+    const angka_bulan = (orders.length === 0 && distributions.length === 0) ? 3 : Math.max(1, Math.ceil(netStockKg / 500)); // asumsi konsumsi 500kg/bulan
 
     // 3. Panggil VolumeMind AI Engine untuk Prediksi & Rekomendasi
     const now = new Date();
@@ -157,7 +172,8 @@ export class DashboardService {
         predictedDemandKg = recommendResult.predicted_demand_kg;
       }
     } catch (err) {
-      console.warn('Gagal memanggil VolumeMind AI Engine API, menggunakan simulasi fallback:', err.message);
+      const message = err instanceof Error ? err.message : String(err);
+      console.warn('Gagal memanggil VolumeMind AI Engine API, menggunakan simulasi fallback:', message);
     }
 
     return {
@@ -167,6 +183,8 @@ export class DashboardService {
       stokPupukKg: angka_kg,
       stokCukupBulan: angka_bulan,
       akurasiPrediksi: accuracy,
+      totalSoldKg: (orders.length === 0 && distributions.length === 0) ? 850 : totalSoldKg,
+      totalRevenue: (orders.length === 0 && distributions.length === 0) ? 7650000 : totalRevenue,
       rekomendasiVolumeMind,
     };
   }
@@ -246,7 +264,6 @@ export class DashboardService {
     });
   }
 
-  // Backup data mock lengkap jika koperasi tidak valid
   private getMockDashboardData(userName: string) {
     return {
       userName,
@@ -255,6 +272,8 @@ export class DashboardService {
       stokPupukKg: 1500,
       stokCukupBulan: 3,
       akurasiPrediksi: 94.2,
+      totalSoldKg: 850,
+      totalRevenue: 7650000,
       rekomendasiVolumeMind: {
         bulan_1: 'Oktober',
         bulan_2: 'November',

@@ -30,13 +30,14 @@ enum PoolStatus {
 }
 
 model Koperasi {
-  id        String   @id @default(uuid())
-  name      String
-  address   String
-  users     User[]
-  orders    Order[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String         @id @default(uuid())
+  name          String
+  address       String
+  users         User[]
+  orders        Order[]
+  distributions Distribution[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 }
 
 model User {
@@ -64,16 +65,17 @@ model Supplier {
 }
 
 model Product {
-  id          String           @id @default(uuid())
-  name        String
-  description String?
-  supplierId  String
-  supplier    Supplier         @relation(fields: [supplierId], references: [id])
-  priceTiers  PriceTier[]
-  orderItems  OrderItem[]
-  pools       CollectivePool[]
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
+  id            String           @id @default(uuid())
+  name          String
+  description   String?
+  supplierId    String
+  supplier      Supplier         @relation(fields: [supplierId], references: [id])
+  priceTiers    PriceTier[]
+  orderItems    OrderItem[]
+  pools         CollectivePool[]
+  distributions Distribution[]
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
 }
 
 model PriceTier {
@@ -132,3 +134,20 @@ model AuditLog {
   user      User?    @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
 }
+
+model Distribution {
+  id         String   @id @default(uuid())
+  koperasiId String
+  koperasi   Koperasi @relation(fields: [koperasiId], references: [id])
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id])
+  quantity   Float    // Jumlah dalam kg
+  buyerName  String   // Nama Petani/Pembeli
+  tanggal    DateTime @default(now())
+  pricePerKg Float    // Harga Jual/kg
+  totalPrice Float    // Total Terima (Rp)
+  notes      String?  // Catatan
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+

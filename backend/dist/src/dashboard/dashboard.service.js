@@ -47,10 +47,10 @@ let DashboardService = class DashboardService {
             },
         });
         let totalSavings = 0;
-        let totalStockKg = 0;
+        let totalIncomingKg = 0;
         orders.forEach((order) => {
             order.orderItems.forEach((item) => {
-                totalStockKg += item.quantity;
+                totalIncomingKg += item.quantity;
                 const tiers = item.product.priceTiers;
                 if (tiers && tiers.length > 0) {
                     const sortedTiers = [...tiers].sort((a, b) => a.minVolume - b.minVolume);
@@ -62,9 +62,19 @@ let DashboardService = class DashboardService {
                 }
             });
         });
-        const keuntungan = orders.length === 0 ? 2450000 : totalSavings;
-        const angka_kg = orders.length === 0 ? 1500 : totalStockKg;
-        const angka_bulan = orders.length === 0 ? 3 : Math.max(1, Math.ceil(totalStockKg / 500));
+        const distributions = await this.prisma.distribution.findMany({
+            where: { koperasiId },
+        });
+        let totalSoldKg = 0;
+        let totalRevenue = 0;
+        distributions.forEach((dist) => {
+            totalSoldKg += dist.quantity;
+            totalRevenue += dist.totalPrice;
+        });
+        const netStockKg = Math.max(0, totalIncomingKg - totalSoldKg);
+        const keuntungan = (orders.length === 0 && distributions.length === 0) ? 2450000 : totalSavings;
+        const angka_kg = (orders.length === 0 && distributions.length === 0) ? 1500 : netStockKg;
+        const angka_bulan = (orders.length === 0 && distributions.length === 0) ? 3 : Math.max(1, Math.ceil(netStockKg / 500));
         const now = new Date();
         const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
         const targetDateStr = nextMonth.toISOString().split('T')[0];
@@ -144,7 +154,8 @@ let DashboardService = class DashboardService {
             }
         }
         catch (err) {
-            console.warn('Gagal memanggil VolumeMind AI Engine API, menggunakan simulasi fallback:', err.message);
+            const message = err instanceof Error ? err.message : String(err);
+            console.warn('Gagal memanggil VolumeMind AI Engine API, menggunakan simulasi fallback:', message);
         }
         return {
             userName: user.name,
@@ -153,6 +164,8 @@ let DashboardService = class DashboardService {
             stokPupukKg: angka_kg,
             stokCukupBulan: angka_bulan,
             akurasiPrediksi: accuracy,
+            totalSoldKg: (orders.length === 0 && distributions.length === 0) ? 850 : totalSoldKg,
+            totalRevenue: (orders.length === 0 && distributions.length === 0) ? 7650000 : totalRevenue,
             rekomendasiVolumeMind,
         };
     }
@@ -217,6 +230,8 @@ let DashboardService = class DashboardService {
             stokPupukKg: 1500,
             stokCukupBulan: 3,
             akurasiPrediksi: 94.2,
+            totalSoldKg: 850,
+            totalRevenue: 7650000,
             rekomendasiVolumeMind: {
                 bulan_1: 'Oktober',
                 bulan_2: 'November',

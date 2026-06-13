@@ -34,6 +34,29 @@ export class OrderController {
     );
   }
 
+  @UseGuards(AuthGuard)
+  @Post('distribution')
+  async createDistribution(
+    @Request() req,
+    @Body('jenisPupuk') jenisPupuk: string,
+    @Body('quantity') quantity: number,
+    @Body('buyerName') buyerName: string,
+    @Body('tanggal') tanggal: string,
+    @Body('pricePerKg') pricePerKg: number,
+    @Body('notes') notes?: string,
+  ) {
+    const userId = req.user.sub;
+    return this.orderService.createDistribution(
+      userId,
+      jenisPupuk,
+      Number(quantity),
+      buyerName,
+      tanggal,
+      Number(pricePerKg),
+      notes,
+    );
+  }
+
   @Post(':id/confirm')
   async confirmOrder(
     @Param('id') id: string,

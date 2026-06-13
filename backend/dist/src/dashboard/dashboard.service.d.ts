@@ -11,6 +11,8 @@ export declare class DashboardService {
         stokPupukKg: number;
         stokCukupBulan: number;
         akurasiPrediksi: number;
+        totalSoldKg: number;
+        totalRevenue: number;
         rekomendasiVolumeMind: any;
     }>;
     getVolumeMindSummary(query: {

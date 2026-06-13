@@ -32,7 +32,8 @@ export class VolumemindService {
                     }),
                 });
             } catch (err) {
-                throw new ServiceUnavailableException(`Gagal menghubungi AI Engine untuk prediksi. Silakan pastikan python service berjalan. Detail: ${err.message}`);
+                const message = err instanceof Error ? err.message : String(err);
+                throw new ServiceUnavailableException(`Gagal menghubungi AI Engine untuk prediksi. Silakan pastikan python service berjalan. Detail: ${message}`);
             }
 
             if (!predictRes.ok) {
@@ -55,7 +56,8 @@ export class VolumemindService {
                     }),
                 });
             } catch (err) {
-                throw new ServiceUnavailableException(`Gagal menghubungi AI Engine untuk rekomendasi. Detail: ${err.message}`);
+                const message = err instanceof Error ? err.message : String(err);
+                throw new ServiceUnavailableException(`Gagal menghubungi AI Engine untuk rekomendasi. Detail: ${message}`);
             }
 
             if (!recommendRes.ok) {
@@ -70,13 +72,14 @@ export class VolumemindService {
                 ...recommendData,
             };
         } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
             console.error('Error in VolumemindService:', error);
             if (error instanceof BadRequestException || error instanceof ServiceUnavailableException) {
                 throw error;
             }
             throw new ServiceUnavailableException(
-                `Layanan VolumeMind AI Engine tidak dapat merespon. Detail: ${error.message || error}`
+                `Layanan VolumeMind AI Engine tidak dapat merespon. Detail: ${message}`
             );
         }
     }
-}
+}
