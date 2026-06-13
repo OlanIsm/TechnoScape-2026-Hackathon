@@ -171,15 +171,19 @@ export function KoperasiDashboardScreen({
   );
 }
 
-type MetricCardProps = {
+function MetricCard({
+  accentColor,
+  label,
+  supportingIcon,
+  supportingText,
+  value,
+}: {
   accentColor: string;
   label: string;
   supportingIcon: string;
   supportingText: string;
   value: string;
-};
-
-function MetricCard({ accentColor, label, supportingIcon, supportingText, value }: MetricCardProps) {
+}) {
   return (
     <View style={styles.metricCard}>
       <Text style={styles.metricLabel}>{label}</Text>

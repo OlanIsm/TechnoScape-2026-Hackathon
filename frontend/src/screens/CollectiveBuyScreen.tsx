@@ -14,14 +14,20 @@ import {
 import plusIcon from '../assets/plus_icon.svg';
 import { KoperasiBottomNav } from '../components/KoperasiBottomNav';
 import { MainHeader } from '../components/MainHeader';
+import type { ProcurementPool } from '../data/pools';
 import { api } from '../services/api';
 import { colors, fonts } from '../theme';
 
 type CollectiveBuyScreenProps = {
+  initialTab?: 'open' | 'mine';
+  joinedPoolIds?: number[];
   onHomePress: () => void;
+  onJoinPoolPress?: (pool: ProcurementPool) => void;
   onLogPress: () => void;
   onLogoutPress: () => void;
   onRecordPress: () => void;
+  onSuccessMessageShown?: () => void;
+  successMessage?: string;
 };
 
 type PoolOrder = {
@@ -60,13 +66,16 @@ const cardShadow = {
 } as unknown as ViewStyle;
 
 export function CollectiveBuyScreen({
+  initialTab = 'open',
   onHomePress,
   onLogPress,
   onLogoutPress,
   onRecordPress,
+  onSuccessMessageShown,
+  successMessage,
 }: CollectiveBuyScreenProps) {
   const { height } = useWindowDimensions();
-  const [activeTab, setActiveTab] = useState<'open' | 'mine'>('open');
+  const [activeTab, setActiveTab] = useState<'open' | 'mine'>(initialTab);
   const [pools, setPools] = useState<BackendPool[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [notice, setNotice] = useState('');
@@ -87,6 +96,24 @@ export function CollectiveBuyScreen({
   useEffect(() => {
     loadPools();
   }, []);
+
+  useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab]);
+
+  useEffect(() => {
+    if (!successMessage) {
+      return;
+    }
+
+    setNotice(successMessage);
+    const timeoutId = window.setTimeout(() => {
+      setNotice('');
+      onSuccessMessageShown?.();
+    }, 3000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [onSuccessMessageShown, successMessage]);
 
   const handleJoinPool = async (pool: BackendPool) => {
     try {
