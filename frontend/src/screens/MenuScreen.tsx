@@ -28,6 +28,7 @@ type PendingProposal = {
   pdfName?: string;
   pdfData?: string;
   status?: string;
+  supplierEmail?: string;
 };
 
 type RunningPool = {
@@ -64,6 +65,7 @@ const pendingProposals: PendingProposal[] = [
     notes: 'Kebutuhan mendesak untuk awal musim tanam gadu.',
     pdfName: 'proposal_urea_tani_makmur.pdf',
     status: 'PENDING',
+    supplierEmail: 'supplier@petrokimia.com',
   },
   {
     cooperative: 'KUD Sumber Rejeki',
@@ -75,6 +77,7 @@ const pendingProposals: PendingProposal[] = [
     notes: 'Pengadaan pupuk NPK bersubsidi untuk anggota.',
     pdfName: 'proposal_npk_sumber_rejeki.pdf',
     status: 'PENDING',
+    supplierEmail: 'supplier@petrokimia.com',
   },
   {
     cooperative: 'Kop. Subur Mandiri',
@@ -86,6 +89,7 @@ const pendingProposals: PendingProposal[] = [
     notes: 'Rencana pengadaan pupuk fosfat SP-36.',
     pdfName: 'proposal_sp36_subur_mandiri.pdf',
     status: 'PENDING',
+    supplierEmail: 'supplier@petrokimia.com',
   },
 ];
 
@@ -155,6 +159,46 @@ const supplierAuditLogs: SupplierAuditLog[] = [
 const cardShadow = {
   boxShadow: '0 4px 12px rgba(27, 67, 50, 0.05)',
 } as unknown as ViewStyle;
+
+function normalizeEmail(email?: string) {
+  return (email || '').trim().toLowerCase();
+}
+
+function getCurrentSupplierEmail() {
+  const userJson = localStorage.getItem('volumemate_user');
+  if (!userJson) {
+    return 'supplier@petrokimia.com';
+  }
+
+  try {
+    const user = JSON.parse(userJson) as { email?: string };
+    return normalizeEmail(user.email) || 'supplier@petrokimia.com';
+  } catch {
+    return 'supplier@petrokimia.com';
+  }
+}
+
+function loadAllProposals() {
+  const saved = localStorage.getItem('volumemate_proposals');
+  return saved ? (JSON.parse(saved) as PendingProposal[]) : pendingProposals;
+}
+
+function filterProposalsForSupplier(proposals: PendingProposal[], supplierEmail: string) {
+  const normalizedSupplierEmail = normalizeEmail(supplierEmail);
+  return proposals.filter((proposal) => {
+    const proposalSupplierEmail = normalizeEmail(proposal.supplierEmail);
+    return !proposalSupplierEmail || proposalSupplierEmail === normalizedSupplierEmail;
+  });
+}
+
+function isSameProposal(a: PendingProposal, b: PendingProposal) {
+  return (
+    a.cooperative === b.cooperative &&
+    a.product === b.product &&
+    a.target === b.target &&
+    (a.dateSubmitted || '') === (b.dateSubmitted || '')
+  );
+}
 
 function calculateEstimatedValue(product: string, volumeKg: number): number {
   const prodLower = product.toLowerCase();
@@ -299,12 +343,12 @@ export function SupplierMenuScreen({ onLogoutPress }: SupplierMenuScreenProps) {
   const [notice, setNotice] = useState('');
   const [dbProducts, setDbProducts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const supplierEmail = getCurrentSupplierEmail();
 
   // Local interactive states initialized from localStorage
-  const [proposals, setProposals] = useState<PendingProposal[]>(() => {
-    const saved = localStorage.getItem('volumemate_proposals');
-    return saved ? JSON.parse(saved) : pendingProposals;
-  });
+  const [proposals, setProposals] = useState<PendingProposal[]>(() =>
+    filterProposalsForSupplier(loadAllProposals(), supplierEmail),
+  );
   const [pools, setPools] = useState<RunningPool[]>([]);
   const [auditLogs, setAuditLogs] = useState<SupplierAuditLog[]>(supplierAuditLogs);
   const [reviewingProposal, setReviewingProposal] = useState<PendingProposal | null>(null);
@@ -390,9 +434,9 @@ export function SupplierMenuScreen({ onLogoutPress }: SupplierMenuScreenProps) {
   }, []);
 
   const handleApprove = (proposal: PendingProposal) => {
-    const updatedProposals = proposals.filter((p) => p.cooperative !== proposal.cooperative);
-    setProposals(updatedProposals);
-    localStorage.setItem('volumemate_proposals', JSON.stringify(updatedProposals));
+    const updatedAllProposals = loadAllProposals().filter((p) => !isSameProposal(p, proposal));
+    setProposals(filterProposalsForSupplier(updatedAllProposals, supplierEmail));
+    localStorage.setItem('volumemate_proposals', JSON.stringify(updatedAllProposals));
 
     const newPool: RunningPool = {
       id: `#PL-2026-${Math.floor(100 + Math.random() * 900)}`,
@@ -413,9 +457,9 @@ export function SupplierMenuScreen({ onLogoutPress }: SupplierMenuScreenProps) {
   };
 
   const handleReject = (proposal: PendingProposal) => {
-    const updatedProposals = proposals.filter((p) => p.cooperative !== proposal.cooperative);
-    setProposals(updatedProposals);
-    localStorage.setItem('volumemate_proposals', JSON.stringify(updatedProposals));
+    const updatedAllProposals = loadAllProposals().filter((p) => !isSameProposal(p, proposal));
+    setProposals(filterProposalsForSupplier(updatedAllProposals, supplierEmail));
+    localStorage.setItem('volumemate_proposals', JSON.stringify(updatedAllProposals));
 
     const newAuditLog: SupplierAuditLog = {
       id: `PO-2026${Math.floor(100000 + Math.random() * 900000)}`,
@@ -495,6 +539,10 @@ export function SupplierMenuScreen({ onLogoutPress }: SupplierMenuScreenProps) {
                   <View style={styles.modalInfoRow}>
                     <Text style={styles.modalInfoLabel}>Kapan Diajukan</Text>
                     <Text style={styles.modalInfoVal}>{reviewingProposal.dateSubmitted || '13 Juni 2026, 17:00'}</Text>
+                  </View>
+                  <View style={styles.modalInfoRow}>
+                    <Text style={styles.modalInfoLabel}>Email Pemasok Tujuan</Text>
+                    <Text style={styles.modalInfoVal}>{reviewingProposal.supplierEmail || supplierEmail}</Text>
                   </View>
 
                   <Text style={[styles.modalSectionTitle, { marginTop: 16 }]}>Detail Kebutuhan</Text>

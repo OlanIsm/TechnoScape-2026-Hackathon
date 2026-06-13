@@ -207,6 +207,7 @@ export function CollectiveBuyScreen({
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [productOptions, setProductOptions] = useState<string[]>(DEFAULT_FERTILIZER_OPTIONS);
   const [fertilizerType, setFertilizerType] = useState('Pupuk NPK Phonska');
+  const [supplierEmailInput, setSupplierEmailInput] = useState('');
   const [targetVolumeInput, setTargetVolumeInput] = useState('');
   const [notesInput, setNotesInput] = useState('');
   const [pdfFile, setPdfFile] = useState<{ name: string; dataUrl?: string } | null>(null);
@@ -479,6 +480,17 @@ export function CollectiveBuyScreen({
       return;
     }
 
+    const supplierEmail = supplierEmailInput.trim().toLowerCase();
+    if (!supplierEmail) {
+      showProposalFeedback('Email pemasok wajib diisi agar proposal hanya masuk ke pemasok yang dituju.');
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(supplierEmail)) {
+      showProposalFeedback('Format email pemasok tidak valid.');
+      return;
+    }
+
     const volumeVal = parseFloat(targetVolumeInput.replace(/[^0-9.]/g, '')) || 0;
     if (volumeVal <= 0) {
       showProposalFeedback('Volume target harus lebih besar dari 0 Kg.');
@@ -511,6 +523,7 @@ export function CollectiveBuyScreen({
         pdfName: pdfFile ? pdfFile.name : 'proposal_pengadaan.pdf',
         pdfData: pdfFile ? pdfFile.dataUrl : undefined,
         status: 'PENDING',
+        supplierEmail,
         volumeKg: volumeVal,
       };
 
@@ -518,6 +531,7 @@ export function CollectiveBuyScreen({
       localStorage.setItem('volumemate_proposals', JSON.stringify(currentProposals));
 
       setTargetVolumeInput('');
+      setSupplierEmailInput('');
       setNotesInput('');
       setPdfFile(null);
       setPdfUploadState('idle');
@@ -525,7 +539,7 @@ export function CollectiveBuyScreen({
       setShowSubmitModal(false);
 
       setNoticeType('success');
-      setNotice('Proposal pengadaan baru berhasil dikirim ke Supplier!');
+      setNotice(`Proposal pengadaan baru berhasil dikirim ke ${supplierEmail}!`);
       setShowProposalSuccessModal(true);
       window.setTimeout(() => setShowProposalSuccessModal(false), 2200);
       window.setTimeout(() => setNotice(''), 3000);
@@ -579,7 +593,7 @@ export function CollectiveBuyScreen({
               </View>
               <Text style={styles.successModalTitle}>Proposal Terkirim</Text>
               <Text style={styles.successModalDescription}>
-                Proposal sudah masuk ke daftar pending approval supplier.
+                Proposal sudah masuk ke daftar persetujuan pemasok yang dituju.
               </Text>
             </View>
           </View>
@@ -731,6 +745,24 @@ export function CollectiveBuyScreen({
                       </select>
                       <Text style={styles.selectChevron}>⌄</Text>
                     </View>
+                  </View>
+
+                  <View style={styles.formGroup}>
+                    <Text style={styles.formLabel}>Email Pemasok Tujuan</Text>
+                    <TextInput
+                      accessibilityLabel="Email pemasok tujuan proposal"
+                      autoCapitalize="none"
+                      inputMode="email"
+                      keyboardType="email-address"
+                      onChangeText={setSupplierEmailInput}
+                      placeholder="contoh: supplier@petrokimia.com"
+                      placeholderTextColor={colors.outline}
+                      style={styles.formInput}
+                      value={supplierEmailInput}
+                    />
+                    <Text style={styles.formHint}>
+                      Proposal hanya muncul di akun pemasok dengan email ini.
+                    </Text>
                   </View>
 
                   <View style={styles.formGroup}>

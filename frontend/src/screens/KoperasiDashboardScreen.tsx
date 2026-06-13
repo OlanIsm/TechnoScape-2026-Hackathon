@@ -71,6 +71,7 @@ type PendingProposal = {
   dateSubmitted?: string;
   product: string;
   status?: string;
+  supplierEmail?: string;
   target: string;
   value: string;
 };
@@ -582,7 +583,8 @@ function PendingApprovalCard({
                 </View>
               </View>
               <Text style={styles.pendingProposalDate}>
-                Diajukan {proposal.dateSubmitted || 'hari ini'} - menunggu review supplier
+                Diajukan {proposal.dateSubmitted || 'hari ini'} - menunggu tinjauan pemasok
+                {proposal.supplierEmail ? ` (${proposal.supplierEmail})` : ''}
               </Text>
             </View>
           ))}

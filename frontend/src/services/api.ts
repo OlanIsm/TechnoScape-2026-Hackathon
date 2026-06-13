@@ -19,6 +19,7 @@ type CreatePoolPayload = {
   deadline: string;
   name: string;
   productId: string;
+  supplierEmail?: string;
   targetVolumeKg: number;
 };
 

@@ -24,6 +24,10 @@ const FERTILIZER_CATALOG: Record<
   },
 };
 
+type CreatePoolPayload = Prisma.CollectivePoolUncheckedCreateInput & {
+  supplierEmail?: string;
+};
+
 @Injectable()
 export class OrderService {
   constructor(private prisma: PrismaService) {}
@@ -235,18 +239,25 @@ export class OrderService {
   }
 
   // Collective Pool CRUD
-  async createPool(
-    data: Prisma.CollectivePoolUncheckedCreateInput,
-  ): Promise<CollectivePool> {
+  async createPool(data: CreatePoolPayload): Promise<CollectivePool> {
     // Verify product exists first
     const product = await this.prisma.product.findUnique({
       where: { id: data.productId },
+      include: { supplier: true },
     });
     if (!product) {
       throw new BadRequestException(
         `Produk dengan ID '${data.productId}' tidak ditemukan.`,
       );
     }
+
+    const supplierEmail = data.supplierEmail?.trim().toLowerCase();
+    if (supplierEmail && product.supplier.email?.toLowerCase() !== supplierEmail) {
+      throw new BadRequestException(
+        'Email pemasok tidak sesuai dengan pemasok pemilik produk yang dipilih.',
+      );
+    }
+
     return this.prisma.collectivePool.create({
       data: {
         name: data.name,
