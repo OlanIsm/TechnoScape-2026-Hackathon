@@ -11,8 +11,9 @@ export class AuthController {
     @Body('name') name: string,
     @Body('email') email: string,
     @Body('password') passwordString: string,
+    @Body('role') role?: string,
   ) {
-    return this.authService.register(name, email, passwordString);
+    return this.authService.register(name, email, passwordString, role);
   }
 
   @HttpCode(HttpStatus.OK)

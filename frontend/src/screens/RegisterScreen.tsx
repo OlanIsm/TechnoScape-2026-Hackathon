@@ -49,6 +49,7 @@ export function RegisterScreen({ onBackPress, onLoginPress }: RegisterScreenProp
         name: name.trim(),
         email: email.trim(),
         password: password,
+        role: role,
       });
       setNotice('Registrasi berhasil! Silakan masuk dengan akun Anda.');
       setTimeout(() => {

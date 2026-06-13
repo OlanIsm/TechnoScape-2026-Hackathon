@@ -12,6 +12,8 @@ datasource db {
 enum Role {
   ADMIN_KOPERASI
   ANGGOTA
+  SUPPLIER
+  ADMIN
 }
 
 enum OrderStatus {
@@ -48,6 +50,8 @@ model User {
   role       Role       @default(ANGGOTA)
   koperasiId String?
   koperasi   Koperasi?  @relation(fields: [koperasiId], references: [id])
+  supplierId String?
+  supplier   Supplier?  @relation(fields: [supplierId], references: [id])
   auditLogs  AuditLog[]
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
@@ -59,6 +63,7 @@ model Supplier {
   address   String
   phone     String
   email     String?
+  users     User[]
   products  Product[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt

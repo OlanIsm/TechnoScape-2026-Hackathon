@@ -12,6 +12,7 @@ type RegisterPayload = {
   email: string;
   name: string;
   password: string;
+  role?: string;
 };
 
 type CreatePoolPayload = {

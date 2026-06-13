@@ -21,8 +21,8 @@ let AuthController = class AuthController {
     constructor(authService) {
         this.authService = authService;
     }
-    async register(name, email, passwordString) {
-        return this.authService.register(name, email, passwordString);
+    async register(name, email, passwordString, role) {
+        return this.authService.register(name, email, passwordString, role);
     }
     async login(email, passwordString) {
         return this.authService.login(email, passwordString);
@@ -38,8 +38,9 @@ __decorate([
     __param(0, (0, common_1.Body)('name')),
     __param(1, (0, common_1.Body)('email')),
     __param(2, (0, common_1.Body)('password')),
+    __param(3, (0, common_1.Body)('role')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String]),
+    __metadata("design:paramtypes", [String, String, String, String]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "register", null);
 __decorate([

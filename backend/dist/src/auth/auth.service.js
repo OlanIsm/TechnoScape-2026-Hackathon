@@ -54,7 +54,7 @@ let AuthService = class AuthService {
         this.prisma = prisma;
         this.jwtService = jwtService;
     }
-    async register(name, email, passwordString) {
+    async register(name, email, passwordString, roleInput) {
         const existingUser = await this.prisma.user.findUnique({
             where: { email },
         });
@@ -63,22 +63,42 @@ let AuthService = class AuthService {
         }
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(passwordString, salt);
-        const koperasi = await this.prisma.koperasi.create({
-            data: {
-                name: `Koperasi ${name}`,
-                address: 'Alamat Koperasi Baru',
-            },
-        });
+        let koperasiId = undefined;
+        let supplierId = undefined;
+        let finalRole = 'ANGGOTA';
+        if (roleInput === 'supplier' || roleInput === 'SUPPLIER') {
+            const supplier = await this.prisma.supplier.create({
+                data: {
+                    name: `Pemasok ${name}`,
+                    address: 'Alamat Pemasok Baru',
+                    phone: '08123456789',
+                },
+            });
+            supplierId = supplier.id;
+            finalRole = 'SUPPLIER';
+        }
+        else {
+            const koperasi = await this.prisma.koperasi.create({
+                data: {
+                    name: `Koperasi ${name}`,
+                    address: 'Alamat Koperasi Baru',
+                },
+            });
+            koperasiId = koperasi.id;
+            finalRole = 'ADMIN_KOPERASI';
+        }
         const user = await this.prisma.user.create({
             data: {
                 name,
                 email,
                 password: hashedPassword,
-                koperasiId: koperasi.id,
+                koperasiId,
+                supplierId,
+                role: finalRole,
             },
-            include: { koperasi: true },
+            include: { koperasi: true, supplier: true },
         });
-        const payload = { sub: user.id, email: user.email, name: user.name };
+        const payload = { sub: user.id, email: user.email, name: user.name, role: user.role };
         const token = await this.jwtService.signAsync(payload);
         const { password, ...userWithoutPassword } = user;
         return {
@@ -89,7 +109,7 @@ let AuthService = class AuthService {
     async login(email, passwordString) {
         const user = await this.prisma.user.findUnique({
             where: { email },
-            include: { koperasi: true },
+            include: { koperasi: true, supplier: true },
         });
         if (!user) {
             throw new common_1.UnauthorizedException('Email atau sandi salah');
@@ -98,7 +118,7 @@ let AuthService = class AuthService {
         if (!isMatch) {
             throw new common_1.UnauthorizedException('Email atau sandi salah');
         }
-        const payload = { sub: user.id, email: user.email, name: user.name };
+        const payload = { sub: user.id, email: user.email, name: user.name, role: user.role };
         const token = await this.jwtService.signAsync(payload);
         const { password, ...userWithoutPassword } = user;
         return {
@@ -109,7 +129,7 @@ let AuthService = class AuthService {
     async validateUserById(id) {
         const user = await this.prisma.user.findUnique({
             where: { id },
-            include: { koperasi: true },
+            include: { koperasi: true, supplier: true },
         });
         if (!user) {
             throw new common_1.UnauthorizedException('User tidak ditemukan. Silakan login kembali.');

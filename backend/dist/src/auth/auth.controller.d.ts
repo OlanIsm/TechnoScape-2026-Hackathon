@@ -2,7 +2,7 @@ import { AuthService } from './auth.service';
 export declare class AuthController {
     private readonly authService;
     constructor(authService: AuthService);
-    register(name: string, email: string, passwordString: string): Promise<{
+    register(name: string, email: string, passwordString: string, role?: string): Promise<{
         user: {
             koperasi: {
                 id: string;
@@ -11,6 +11,7 @@ export declare class AuthController {
                 createdAt: Date;
                 updatedAt: Date;
             } | null;
+            supplier: never;
             id: string;
             name: string;
             createdAt: Date;
@@ -30,6 +31,7 @@ export declare class AuthController {
                 createdAt: Date;
                 updatedAt: Date;
             } | null;
+            supplier: never;
             id: string;
             name: string;
             createdAt: Date;
@@ -48,6 +50,7 @@ export declare class AuthController {
             createdAt: Date;
             updatedAt: Date;
         } | null;
+        supplier: never;
         id: string;
         name: string;
         createdAt: Date;

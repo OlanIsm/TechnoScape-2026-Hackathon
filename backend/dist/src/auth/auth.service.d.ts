@@ -4,7 +4,7 @@ export declare class AuthService {
     private prisma;
     private jwtService;
     constructor(prisma: PrismaService, jwtService: JwtService);
-    register(name: string, email: string, passwordString: string): Promise<{
+    register(name: string, email: string, passwordString: string, roleInput?: string): Promise<{
         user: {
             koperasi: {
                 id: string;
@@ -13,6 +13,7 @@ export declare class AuthService {
                 createdAt: Date;
                 updatedAt: Date;
             } | null;
+            supplier: never;
             id: string;
             name: string;
             createdAt: Date;
@@ -32,6 +33,7 @@ export declare class AuthService {
                 createdAt: Date;
                 updatedAt: Date;
             } | null;
+            supplier: never;
             id: string;
             name: string;
             createdAt: Date;
@@ -50,6 +52,7 @@ export declare class AuthService {
             createdAt: Date;
             updatedAt: Date;
         } | null;
+        supplier: never;
         id: string;
         name: string;
         createdAt: Date;

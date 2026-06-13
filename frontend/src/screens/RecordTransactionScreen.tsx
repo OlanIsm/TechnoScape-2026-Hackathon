@@ -547,8 +547,8 @@ const styles = StyleSheet.create({
     height: 48,
     paddingHorizontal: 14,
     borderWidth: 0,
-    outlineWidth: 0,
     backgroundColor: 'transparent',
+    ...({ outlineWidth: 0 } as any),
   },
   inputWithPrefix: {
     paddingLeft: 8,

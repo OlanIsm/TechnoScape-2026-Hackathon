@@ -60,6 +60,9 @@ type DashboardData = {
   stokCukupBulan?: number;
   stokPupukKg?: number;
   userName?: string;
+  totalSoldKg?: number;
+  totalRevenue?: number;
+  koperasiName?: string;
 };
 
 const cardShadow = {
@@ -869,7 +872,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   mutationItem: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.surfaceCard,
     borderRadius: 8,
     padding: 12,
     marginBottom: 10,
