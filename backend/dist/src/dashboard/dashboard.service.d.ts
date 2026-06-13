@@ -9,12 +9,7 @@ export declare class DashboardService {
         stokPupukKg: number;
         stokCukupBulan: number;
         akurasiPrediksi: number;
-        rekomendasiVolumeMind: {
-            bulan_1: string;
-            bulan_2: string;
-            angka_kg: number;
-            statusRecom: string;
-        };
+        rekomendasiVolumeMind: any;
     }>;
     private getMockDashboardData;
 }

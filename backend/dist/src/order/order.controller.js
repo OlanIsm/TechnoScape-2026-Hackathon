@@ -25,6 +25,10 @@ let OrderController = class OrderController {
     async createOrder(data) {
         return this.orderService.createOrder(data);
     }
+    async createManual(req, jenisPupuk, quantity, supplierName, tanggal, totalPrice) {
+        const userId = req.user.sub;
+        return this.orderService.createManualTransaction(userId, jenisPupuk, Number(quantity), supplierName, tanggal, Number(totalPrice));
+    }
     async confirmOrder(id, userId) {
         return this.orderService.confirmOrder(id, userId);
     }
@@ -34,8 +38,14 @@ let OrderController = class OrderController {
     async findAllActivePools() {
         return this.orderService.findAllActivePools();
     }
+    async findAllProducts() {
+        return this.orderService.findAllProducts();
+    }
     async joinPool(poolId, orderId, userId) {
         return this.orderService.joinPool(poolId, orderId, userId);
+    }
+    async finalizePool(poolId) {
+        return this.orderService.finalizePool(poolId);
     }
     async getAuditLogs() {
         return this.orderService.getAuditLogs();
@@ -56,6 +66,19 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], OrderController.prototype, "createOrder", null);
+__decorate([
+    (0, common_1.UseGuards)(auth_guard_1.AuthGuard),
+    (0, common_1.Post)('manual'),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)('jenisPupuk')),
+    __param(2, (0, common_1.Body)('quantity')),
+    __param(3, (0, common_1.Body)('supplierName')),
+    __param(4, (0, common_1.Body)('tanggal')),
+    __param(5, (0, common_1.Body)('totalPrice')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, Number, String, String, Number]),
+    __metadata("design:returntype", Promise)
+], OrderController.prototype, "createManual", null);
 __decorate([
     (0, common_1.Post)(':id/confirm'),
     __param(0, (0, common_1.Param)('id')),
@@ -78,6 +101,12 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], OrderController.prototype, "findAllActivePools", null);
 __decorate([
+    (0, common_1.Get)('products'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], OrderController.prototype, "findAllProducts", null);
+__decorate([
     (0, common_1.Post)('pools/:poolId/join'),
     __param(0, (0, common_1.Param)('poolId')),
     __param(1, (0, common_1.Body)('orderId')),
@@ -86,6 +115,13 @@ __decorate([
     __metadata("design:paramtypes", [String, String, String]),
     __metadata("design:returntype", Promise)
 ], OrderController.prototype, "joinPool", null);
+__decorate([
+    (0, common_1.Post)('pools/:poolId/finalize'),
+    __param(0, (0, common_1.Param)('poolId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], OrderController.prototype, "finalizePool", null);
 __decorate([
     (0, common_1.Get)('audit-logs'),
     __metadata("design:type", Function),

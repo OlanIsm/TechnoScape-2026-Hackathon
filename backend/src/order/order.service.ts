@@ -31,6 +31,95 @@ export class OrderService {
     return order;
   }
 
+  async createManualTransaction(
+    userId: string,
+    jenisPupuk: string,
+    quantity: number,
+    supplierName: string,
+    tanggal: string,
+    totalPrice: number,
+  ) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user || !user.koperasiId) {
+      throw new BadRequestException('User tidak terasosiasi dengan Koperasi');
+    }
+
+    // Cari produk
+    let product = await this.prisma.product.findFirst({
+      where: {
+        name: { contains: jenisPupuk, mode: 'insensitive' },
+      },
+    });
+
+    if (!product) {
+      // fallback ke produk pertama
+      product = await this.prisma.product.findFirst();
+    }
+
+    if (!product) {
+      throw new BadRequestException('Tidak ada produk pupuk terdaftar di sistem');
+    }
+
+    // Cari atau buat supplier
+    let supplier = await this.prisma.supplier.findFirst({
+      where: {
+        name: { contains: supplierName, mode: 'insensitive' },
+      },
+    });
+
+    if (!supplier) {
+      supplier = await this.prisma.supplier.create({
+        data: {
+          name: supplierName,
+          address: 'Alamat Supplier Manual',
+          phone: '08123456789',
+        },
+      });
+    }
+
+    const priceAtPurchase = totalPrice / quantity;
+
+    // Simpan order manual dengan status DELIVERED
+    const parsedDate = new Date(tanggal);
+    const orderDate = isNaN(parsedDate.getTime()) ? new Date() : parsedDate;
+
+    const order = await this.prisma.order.create({
+      data: {
+        totalPrice,
+        status: OrderStatus.DELIVERED,
+        koperasiId: user.koperasiId,
+        createdAt: orderDate,
+        orderItems: {
+          create: [
+            {
+              quantity,
+              priceAtPurchase,
+              productId: product.id,
+            },
+          ],
+        },
+      },
+      include: { orderItems: true },
+    });
+
+    await this.writeAuditLog(
+      'MANUAL_TRANSACTION',
+      JSON.stringify({
+        orderId: order.id,
+        jenisPupuk,
+        quantity,
+        supplierName,
+        totalPrice,
+      }),
+      userId,
+    );
+
+    return order;
+  }
+
   // Confirm Order (Immutable Ledger Rule: cannot modify once CONFIRMED)
   async confirmOrder(orderId: string, userId?: string): Promise<Order> {
     const existingOrder = await this.prisma.order.findUnique({
@@ -60,14 +149,26 @@ export class OrderService {
     return updatedOrder;
   }
 
+  // Get all products with supplier + price tiers
+  async findAllProducts() {
+    return this.prisma.product.findMany({
+      include: { supplier: true, priceTiers: true },
+    });
+  }
+
   // Collective Pool CRUD
   async createPool(data: Prisma.CollectivePoolUncheckedCreateInput): Promise<CollectivePool> {
+    // Verify product exists first
+    const product = await this.prisma.product.findUnique({ where: { id: data.productId } });
+    if (!product) {
+      throw new BadRequestException(`Produk dengan ID '${data.productId}' tidak ditemukan.`);
+    }
     return this.prisma.collectivePool.create({
       data: {
         name: data.name,
         deadline: data.deadline,
         status: PoolStatus.ACTIVE,
-        product: { connect: { id: data.productId } },
+        productId: data.productId,
       },
     });
   }
@@ -77,7 +178,7 @@ export class OrderService {
     return this.prisma.collectivePool.findMany({
       where: { status: PoolStatus.ACTIVE },
       include: {
-        product: { include: { supplier: true } },
+        product: { include: { supplier: true, priceTiers: true } },
         orders: { include: { orderItems: true } },
       },
     });
@@ -87,6 +188,7 @@ export class OrderService {
   async joinPool(poolId: string, orderId: string, userId?: string): Promise<Order> {
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
+      include: { orderItems: true },
     });
 
     if (!order) {
@@ -99,25 +201,154 @@ export class OrderService {
 
     const pool = await this.prisma.collectivePool.findUnique({
       where: { id: poolId },
+      include: {
+        product: { include: { priceTiers: true } },
+        orders: { include: { orderItems: true } },
+      },
     });
 
     if (!pool || pool.status !== PoolStatus.ACTIVE) {
       throw new BadRequestException('Pool tidak aktif atau tidak ditemukan');
     }
 
+    // Hubungkan order ke pool
     const updatedOrder = await this.prisma.order.update({
       where: { id: orderId },
       data: { collectivePoolId: poolId },
+      include: { orderItems: true },
     });
 
-    // Write Audit Log
+    // Rekalkulasi total volume di dalam pool
+    const allOrders = await this.prisma.order.findMany({
+      where: { collectivePoolId: poolId },
+      include: { orderItems: true },
+    });
+
+    let totalVolumeKg = 0;
+    for (const ord of allOrders) {
+      for (const item of ord.orderItems) {
+        totalVolumeKg += item.quantity;
+      }
+    }
+
+    // Cari price tier yang sesuai
+    const sortedTiers = pool.product.priceTiers.sort((a, b) => b.minVolume - a.minVolume);
+    let activePricePerKg = pool.product.priceTiers[0]?.pricePerKg || 9000;
+
+    for (const tier of sortedTiers) {
+      if (totalVolumeKg >= tier.minVolume) {
+        activePricePerKg = tier.pricePerKg;
+        break;
+      }
+    }
+
+    // Perbarui harga item pembelian untuk semua anggota pool
+    for (const ord of allOrders) {
+      let updatedTotalOrderPrice = 0;
+      for (const item of ord.orderItems) {
+        const itemQuantity = item.quantity;
+        const newPrice = activePricePerKg;
+
+        await this.prisma.orderItem.update({
+          where: { id: item.id },
+          data: {
+            priceAtPurchase: newPrice,
+          },
+        });
+
+        updatedTotalOrderPrice += itemQuantity * newPrice;
+      }
+
+      await this.prisma.order.update({
+        where: { id: ord.id },
+        data: {
+          totalPrice: updatedTotalOrderPrice,
+        },
+      });
+    }
+
+    // Catat log audit
     await this.writeAuditLog(
       'JOIN_POOL',
-      JSON.stringify({ orderId, poolId }),
-      userId
+      JSON.stringify({
+        orderId,
+        poolId,
+        totalVolumeKg,
+        activePricePerKg,
+      }),
+      userId,
     );
 
     return updatedOrder;
+  }
+
+  // Finalize Pool (Deadline handling with Grace Period or fallback pricing)
+  async finalizePool(poolId: string): Promise<any> {
+    const pool = await this.prisma.collectivePool.findUnique({
+      where: { id: poolId },
+      include: {
+        product: { include: { priceTiers: true } },
+        orders: { include: { orderItems: true } },
+      },
+    });
+
+    if (!pool) {
+      throw new BadRequestException('Pool tidak ditemukan');
+    }
+
+    // Hitung total volume terkumpul
+    let totalVolumeKg = 0;
+    for (const ord of pool.orders) {
+      for (const item of ord.orderItems) {
+        totalVolumeKg += item.quantity;
+      }
+    }
+
+    // Tentukan threshold sukses pool (misalnya 10 Ton)
+    const minTargetVolume = 10000; 
+
+    if (totalVolumeKg >= minTargetVolume) {
+      // Sukses: Ubah status pool ke COMPLETED
+      const updatedPool = await this.prisma.collectivePool.update({
+        where: { id: poolId },
+        data: { status: PoolStatus.COMPLETED },
+      });
+
+      await this.writeAuditLog(
+        'FINALIZE_POOL_SUCCESS',
+        JSON.stringify({ poolId, totalVolumeKg, status: 'COMPLETED' }),
+      );
+
+      return {
+        success: true,
+        message: 'Pool berhasil mengumpulkan kuota target dan diselesaikan.',
+        pool: updatedPool,
+      };
+    } else {
+      // Fallback/Grace Period Mechanism:
+      // Perpanjang deadline pool selama 2 hari sebagai toleransi
+      const newDeadline = new Date();
+      newDeadline.setDate(newDeadline.getDate() + 2);
+
+      const updatedPool = await this.prisma.collectivePool.update({
+        where: { id: poolId },
+        data: {
+          deadline: newDeadline,
+          // Tetap ACTIVE agar bisa menerima partisipan baru
+        },
+      });
+
+      await this.writeAuditLog(
+        'FINALIZE_POOL_FALLBACK_GRACE',
+        JSON.stringify({ poolId, totalVolumeKg, extendedDeadline: newDeadline }),
+      );
+
+      return {
+        success: false,
+        message: 'Volume target tidak tercapai. Grace period aktif: pool diperpanjang 2 hari.',
+        pool: updatedPool,
+      };
+    }
   }
 
   // Audit Log writer helper

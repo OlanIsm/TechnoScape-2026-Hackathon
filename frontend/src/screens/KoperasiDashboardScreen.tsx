@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import {
   Image,
   Pressable,
@@ -15,6 +16,7 @@ import storeIcon from '../assets/store_icon.svg';
 import upIcon from '../assets/up_icon.svg';
 import { KoperasiBottomNav } from '../components/KoperasiBottomNav';
 import { MainHeader } from '../components/MainHeader';
+import { api } from '../services/api';
 import { colors, fonts } from '../theme';
 
 type KoperasiDashboardScreenProps = {
@@ -22,6 +24,42 @@ type KoperasiDashboardScreenProps = {
   onLogPress: () => void;
   onLogoutPress: () => void;
   onRecordPress: () => void;
+};
+
+type PoolOrder = {
+  orderItems?: Array<{ quantity?: number }>;
+};
+
+type BackendPool = {
+  currentVolumeKg?: number;
+  deadline?: string;
+  deadlineAt?: string;
+  name?: string;
+  orders?: PoolOrder[];
+  product?: {
+    name?: string;
+  };
+  status?: string;
+  targetVolumeKg?: number;
+};
+
+type VolumeMindRecommendation = {
+  angka_kg?: number;
+  bulan_1?: string;
+  explanation?: string;
+  isVolumeHack?: boolean;
+  savingsRp?: number;
+  supplierName?: string;
+  totalCost?: number;
+};
+
+type DashboardData = {
+  akurasiPrediksi?: number;
+  hematBulanIni?: number;
+  rekomendasiVolumeMind?: VolumeMindRecommendation;
+  stokCukupBulan?: number;
+  stokPupukKg?: number;
+  userName?: string;
 };
 
 const cardShadow = {
@@ -35,43 +73,91 @@ export function KoperasiDashboardScreen({
   onRecordPress,
 }: KoperasiDashboardScreenProps) {
   const { height } = useWindowDimensions();
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [activePools, setActivePools] = useState<BackendPool[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        setIsLoading(true);
+        const [dash, pools] = await Promise.all([
+          api.getDashboard() as Promise<DashboardData>,
+          api.getActivePools() as Promise<BackendPool[]>,
+        ]);
+        setDashboardData(dash);
+        setActivePools(pools);
+      } catch (err: unknown) {
+        setError(getErrorMessage(err, 'Gagal memuat data dasbor.'));
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadData();
+  }, []);
+
+  const handleLogout = () => {
+    api.clearToken();
+    onLogoutPress();
+  };
+
+  const currentPool = activePools.length > 0 ? activePools[0] : null;
+  const savings = Number(dashboardData?.hematBulanIni || 0);
+  const stockKg = Number(dashboardData?.stokPupukKg || 0);
 
   return (
     <SafeAreaView style={[styles.safeArea, { minHeight: height }]}>
       <View style={[styles.shell, { height }]}>
-        <MainHeader onLogoutPress={onLogoutPress} />
+        <MainHeader onLogoutPress={handleLogout} />
 
         <ScrollView
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
           style={styles.contentScroll}
         >
-          <View style={styles.hero}>
-            <Text style={styles.title}>Beranda</Text>
-            <Text style={styles.subtitle}>
-              Ringkasan pengadaan berdasarkan transaksi koperasi yang sudah dicatat.
-            </Text>
-          </View>
+          {isLoading ? (
+            <View style={styles.stateBlock}>
+              <Text style={styles.loadingText}>Memuat data dasbor...</Text>
+            </View>
+          ) : error ? (
+            <View style={styles.stateBlock}>
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          ) : (
+            <>
+              <View style={styles.hero}>
+                <Text style={styles.title}>Beranda</Text>
+                <Text style={styles.subtitle}>
+                  Selamat datang, {dashboardData?.userName || 'Manager'}. Berikut adalah ringkasan pengadaan Anda.
+                </Text>
+              </View>
 
-          <View style={styles.metricGrid}>
-            <MetricCard
-              accentColor={colors.primary}
-              label="Total Belanja"
-              supportingIcon={growIcon}
-              supportingText="+12% dari bulan lalu"
-              value="Rp 145.5Jt"
-            />
-            <MetricCard
-              accentColor={colors.soilBrown}
-              label="Volume Pupuk"
-              supportingIcon={upIcon}
-              supportingText="Target pencatatan 85%"
-              value="24.5 Ton"
-            />
-          </View>
+              <View style={styles.metricGrid}>
+                <MetricCard
+                  accentColor={colors.primary}
+                  label="Hemat Bulan Ini"
+                  supportingIcon={growIcon}
+                  supportingText="Dari harga pasar eceran"
+                  value={`Rp ${savings.toLocaleString('id-ID')}`}
+                />
+                <MetricCard
+                  accentColor={colors.soilBrown}
+                  label="Volume Stok"
+                  supportingIcon={upIcon}
+                  supportingText={`Cukup untuk ${dashboardData?.stokCukupBulan || 0} bulan`}
+                  value={`${(stockKg / 1000).toFixed(1)} Ton`}
+                />
+              </View>
 
-          <VolumeMindCard />
-          <PoolActiveCard />
+              <VolumeMindCard
+                accuracy={dashboardData?.akurasiPrediksi || 94.2}
+                data={dashboardData?.rekomendasiVolumeMind}
+              />
+              <PoolActiveCard onDetailPress={onCollectivePress} pool={currentPool} />
+            </>
+          )}
         </ScrollView>
 
         <KoperasiBottomNav
@@ -85,15 +171,19 @@ export function KoperasiDashboardScreen({
   );
 }
 
-type MetricCardProps = {
+function MetricCard({
+  accentColor,
+  label,
+  supportingIcon,
+  supportingText,
+  value,
+}: {
   accentColor: string;
   label: string;
   supportingIcon: string;
   supportingText: string;
   value: string;
-};
-
-function MetricCard({ accentColor, label, supportingIcon, supportingText, value }: MetricCardProps) {
+}) {
   return (
     <View style={styles.metricCard}>
       <Text style={styles.metricLabel}>{label}</Text>
@@ -106,39 +196,55 @@ function MetricCard({ accentColor, label, supportingIcon, supportingText, value 
   );
 }
 
-function VolumeMindCard() {
+function VolumeMindCard({ data, accuracy }: { data?: VolumeMindRecommendation; accuracy: number }) {
+  if (!data) {
+    return null;
+  }
+
+  const volumeTon = (Number(data.angka_kg || 0) / 1000).toFixed(1);
+  const savingsText = Number(data.savingsRp || 0) > 0 ? `Rp ${(Number(data.savingsRp) / 1000000).toFixed(1)}Jt` : 'Rp 0';
+
   return (
     <View style={styles.volumeMindCard}>
       <View style={styles.volumeMindHeader}>
         <View style={styles.volumeMindCopy}>
           <Text style={styles.volumeTitle}>VolumeMind</Text>
-          <Text style={styles.volumeSubtitle}>Prediksi Kebutuhan Bulan Depan</Text>
+          <Text style={styles.volumeSubtitle}>Rekomendasi Pengadaan: {data.bulan_1 || 'Bulan Depan'}</Text>
         </View>
         <View style={styles.accuracyBadge}>
-          <Text style={styles.accuracyText}>AKURASI 94%</Text>
+          <Text style={styles.accuracyText}>AKURASI</Text>
+          <Text style={styles.accuracyValue}>{Number(accuracy).toFixed(1)}%</Text>
         </View>
       </View>
 
       <View style={styles.recommendationBox}>
         <View style={styles.recommendationGrid}>
-          <InfoCell icon={storeIcon} label="Rekomendasi Pemasok" value="PT Agro Nusa" />
-          <InfoCell icon={quantityIcon} label="Kuantitas Optimal" value="12.5 Ton (Urea)" />
-          <InfoCell label="Estimasi Biaya" value="Rp 68.750.000" />
-          <InfoCell isSaving label="Potensi Penghematan" value="Rp 4.2Jt" />
+          <InfoCell icon={storeIcon} label="Rekomendasi Pemasok" value={data.supplierName || '-'} />
+          <InfoCell icon={quantityIcon} label="Kuantitas Optimal" value={`${volumeTon} Ton (NPK)`} />
+          <InfoCell label="Estimasi Biaya" value={`Rp ${Number(data.totalCost || 0).toLocaleString('id-ID')}`} />
+          <InfoCell
+            isSaving
+            label={data.isVolumeHack ? 'Hemat (Volume Hack)' : 'Potensi Penghematan'}
+            value={savingsText}
+          />
         </View>
+        {data.explanation ? <Text style={styles.explanationText}>{data.explanation}</Text> : null}
       </View>
     </View>
   );
 }
 
-type InfoCellProps = {
+function InfoCell({
+  icon,
+  isSaving = false,
+  label,
+  value,
+}: {
   icon?: string;
   isSaving?: boolean;
   label: string;
   value: string;
-};
-
-function InfoCell({ icon, isSaving = false, label, value }: InfoCellProps) {
+}) {
   return (
     <View style={styles.infoCell}>
       <Text style={[styles.infoLabel, isSaving && styles.savingLabel]}>{label}</Text>
@@ -150,24 +256,51 @@ function InfoCell({ icon, isSaving = false, label, value }: InfoCellProps) {
   );
 }
 
-function PoolActiveCard() {
+function PoolActiveCard({ pool, onDetailPress }: { onDetailPress: () => void; pool: BackendPool | null }) {
+  if (!pool) {
+    return (
+      <View style={styles.poolSection}>
+        <View style={styles.poolHeader}>
+          <Text style={styles.poolTitle}>Pool Aktif</Text>
+        </View>
+        <View style={[styles.poolCard, styles.emptyCard]}>
+          <Text style={styles.emptyText}>Belum ada pool aktif saat ini.</Text>
+        </View>
+      </View>
+    );
+  }
+
+  const totalVolume = pool.targetVolumeKg || 1000;
+  const currentVolume =
+    pool.currentVolumeKg ||
+    pool.orders?.reduce((acc, order) => acc + (order.orderItems?.[0]?.quantity || 0), 0) ||
+    0;
+  const progressPercent = Math.min(100, Math.round((currentVolume / totalVolume) * 100));
+  const deadline = pool.deadlineAt || pool.deadline;
+
   return (
     <View style={styles.poolSection}>
       <View style={styles.poolHeader}>
         <Text style={styles.poolTitle}>Pool Aktif</Text>
-        <Text style={styles.seeAll}>Lihat Semua &gt;</Text>
+        <Pressable accessibilityRole="button" onPress={onDetailPress}>
+          <Text style={styles.seeAll}>Lihat Semua &gt;</Text>
+        </Pressable>
       </View>
 
       <View style={styles.poolCard}>
         <View style={styles.poolTopRow}>
-          <View>
+          <View style={styles.poolCopy}>
             <View style={styles.poolMetaRow}>
-              <View style={styles.pendingBadge}>
-                <Text style={styles.pendingText}>PENDING</Text>
+              <View style={[styles.pendingBadge, pool.status === 'ACTIVE' && styles.activeBadge]}>
+                <Text style={[styles.pendingText, pool.status === 'ACTIVE' && styles.activeText]}>
+                  {pool.status || 'ACTIVE'}
+                </Text>
               </View>
-              <Text style={styles.poolDeadline}>Berakhir: 2 Hari</Text>
+              {deadline ? (
+                <Text style={styles.poolDeadline}>Berakhir: {new Date(deadline).toLocaleDateString('id-ID')}</Text>
+              ) : null}
             </View>
-            <Text style={styles.poolName}>Pool NPK Mutiara Q3</Text>
+            <Text style={styles.poolName}>{pool.name || `Pool ${pool.product?.name || 'Pupuk'}`}</Text>
           </View>
           <View style={styles.groupIcon}>
             <Text style={styles.groupIconText}>OO</Text>
@@ -177,18 +310,24 @@ function PoolActiveCard() {
 
         <View style={styles.progressMeta}>
           <Text style={styles.progressLabel}>Progres Terkumpul</Text>
-          <Text style={styles.progressValue}>65% (13/20 Ton)</Text>
+          <Text style={styles.progressValue}>
+            {progressPercent}% ({(currentVolume / 1000).toFixed(1)}/{(totalVolume / 1000).toFixed(1)} Ton)
+          </Text>
         </View>
         <View style={styles.progressTrack}>
-          <View style={styles.progressFill} />
+          <View style={[styles.progressFill, { width: `${progressPercent}%` }]} />
         </View>
 
-        <Pressable accessibilityRole="button" onPress={() => undefined} style={styles.detailButton}>
-          <Text style={styles.detailButtonText}>LIHAT DETAIL POOL</Text>
+        <Pressable accessibilityRole="button" onPress={onDetailPress} style={styles.detailButton}>
+          <Text style={styles.detailButtonText}>IKUTI POOL PATUNGAN</Text>
         </Pressable>
       </View>
     </View>
   );
+}
+
+function getErrorMessage(err: unknown, fallback: string) {
+  return err instanceof Error ? err.message : fallback;
 }
 
 const styles = StyleSheet.create({
@@ -210,6 +349,24 @@ const styles = StyleSheet.create({
   },
   contentScroll: {
     flex: 1,
+  },
+  stateBlock: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 240,
+    padding: 40,
+  },
+  loadingText: {
+    color: colors.primary,
+    fontFamily: fonts.body,
+    fontSize: 16,
+  },
+  errorText: {
+    color: colors.errorRed,
+    fontFamily: fonts.body,
+    fontSize: 14,
+    lineHeight: 20,
+    textAlign: 'center',
   },
   hero: {
     gap: 6,
@@ -258,14 +415,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     lineHeight: 28,
   },
-  metricSupporting: {
-    color: colors.successGreen,
-    flexShrink: 1,
-    fontFamily: fonts.body,
-    fontSize: 11,
-    fontWeight: '500',
-    lineHeight: 14,
-  },
   metricSupportingRow: {
     alignItems: 'center',
     flexDirection: 'row',
@@ -274,6 +423,14 @@ const styles = StyleSheet.create({
   metricTrendIcon: {
     width: 12,
     height: 12,
+  },
+  metricSupporting: {
+    color: colors.successGreen,
+    flexShrink: 1,
+    fontFamily: fonts.body,
+    fontSize: 11,
+    fontWeight: '500',
+    lineHeight: 14,
   },
   volumeMindCard: {
     backgroundColor: '#b7dcff',
@@ -310,8 +467,8 @@ const styles = StyleSheet.create({
   accuracyBadge: {
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 40,
-    minWidth: 104,
+    minHeight: 48,
+    minWidth: 92,
     backgroundColor: 'rgba(43, 147, 72, 0.34)',
     borderRadius: 6,
     paddingHorizontal: 10,
@@ -320,9 +477,16 @@ const styles = StyleSheet.create({
   accuracyText: {
     color: colors.primary,
     fontFamily: fonts.body,
-    fontSize: 14,
+    fontSize: 10,
     fontWeight: '800',
-    lineHeight: 18,
+    lineHeight: 12,
+  },
+  accuracyValue: {
+    color: colors.primary,
+    fontFamily: fonts.heading,
+    fontSize: 16,
+    fontWeight: '800',
+    lineHeight: 20,
   },
   recommendationBox: {
     backgroundColor: colors.surfaceCard,
@@ -347,6 +511,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     lineHeight: 11,
   },
+  savingLabel: {
+    color: colors.successGreen,
+  },
   infoValueRow: {
     alignItems: 'center',
     flexDirection: 'row',
@@ -357,19 +524,24 @@ const styles = StyleSheet.create({
     width: 13,
     height: 13,
   },
-  savingLabel: {
-    color: colors.successGreen,
-  },
   infoValue: {
     color: colors.primary,
-    fontFamily: fonts.body,
     flexShrink: 1,
+    fontFamily: fonts.body,
     fontSize: 16,
     fontWeight: '700',
     lineHeight: 21,
   },
   savingValue: {
     color: colors.successGreen,
+  },
+  explanationText: {
+    color: colors.outline,
+    fontFamily: fonts.body,
+    fontSize: 11,
+    fontStyle: 'italic',
+    lineHeight: 15,
+    marginTop: 10,
   },
   poolSection: {
     gap: 10,
@@ -387,242 +559,150 @@ const styles = StyleSheet.create({
     lineHeight: 28,
   },
   seeAll: {
-    color: colors.primary,
+    color: colors.secondary,
     fontFamily: fonts.body,
-    fontSize: 10,
-    fontWeight: '600',
-    lineHeight: 14,
+    fontSize: 12,
+    fontWeight: '700',
+    lineHeight: 16,
   },
   poolCard: {
     backgroundColor: colors.surfaceCard,
-    borderColor: colors.surfaceContainerHigh,
-    borderRadius: 8,
+    borderColor: 'rgba(193, 200, 194, 0.48)',
+    borderRadius: 12,
     borderWidth: 1,
-    gap: 12,
+    gap: 14,
     padding: 16,
     ...cardShadow,
   },
-  poolTopRow: {
+  emptyCard: {
     alignItems: 'center',
+    padding: 24,
+  },
+  emptyText: {
+    color: colors.outline,
+    fontFamily: fonts.body,
+    fontSize: 13,
+    textAlign: 'center',
+  },
+  poolTopRow: {
+    alignItems: 'flex-start',
     flexDirection: 'row',
+    gap: 12,
     justifyContent: 'space-between',
+  },
+  poolCopy: {
+    flex: 1,
+    minWidth: 0,
   },
   poolMetaRow: {
     alignItems: 'center',
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 8,
-    marginBottom: 4,
   },
   pendingBadge: {
-    backgroundColor: 'rgba(255, 183, 3, 0.18)',
-    borderRadius: 4,
-    paddingHorizontal: 6,
-    paddingVertical: 3,
+    backgroundColor: colors.surfaceVariant,
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  activeBadge: {
+    backgroundColor: 'rgba(43, 147, 72, 0.18)',
   },
   pendingText: {
-    color: colors.warningAmber,
-    fontFamily: fonts.body,
-    fontSize: 10,
-    fontWeight: '700',
-    lineHeight: 12,
-  },
-  poolDeadline: {
     color: colors.onSurfaceVariant,
     fontFamily: fonts.body,
+    fontSize: 10,
+    fontWeight: '800',
+    lineHeight: 12,
+  },
+  activeText: {
+    color: colors.successGreen,
+  },
+  poolDeadline: {
+    color: colors.outline,
+    fontFamily: fonts.body,
     fontSize: 11,
+    fontWeight: '600',
     lineHeight: 14,
   },
   poolName: {
     color: colors.primary,
     fontFamily: fonts.heading,
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '700',
     lineHeight: 24,
+    marginTop: 8,
   },
   groupIcon: {
-    width: 44,
-    height: 44,
+    width: 42,
+    height: 42,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.surfaceContainerLow,
-    borderColor: colors.outlineVariant,
-    borderRadius: 22,
-    borderWidth: 1,
+    backgroundColor: colors.secondaryContainer,
+    borderRadius: 21,
     position: 'relative',
   },
   groupIconText: {
-    color: colors.primary,
-    fontFamily: fonts.body,
+    color: colors.secondary,
+    fontFamily: fonts.heading,
     fontSize: 11,
-    fontWeight: '700',
+    fontWeight: '800',
   },
   groupDot: {
     position: 'absolute',
-    right: 3,
-    bottom: 3,
-    width: 10,
-    height: 10,
-    backgroundColor: colors.secondary,
+    right: 5,
+    bottom: 5,
+    width: 8,
+    height: 8,
+    backgroundColor: colors.successGreen,
     borderColor: colors.surfaceCard,
-    borderRadius: 5,
-    borderWidth: 2,
+    borderRadius: 4,
+    borderWidth: 1,
   },
   progressMeta: {
+    alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
   progressLabel: {
-    color: colors.outline,
-    fontFamily: fonts.body,
-    fontSize: 11,
-    lineHeight: 14,
-  },
-  progressValue: {
-    color: colors.primary,
-    fontFamily: fonts.body,
-    fontSize: 11,
-    fontWeight: '700',
-    lineHeight: 14,
-  },
-  progressTrack: {
-    height: 6,
-    backgroundColor: colors.surfaceContainerHigh,
-    borderRadius: 999,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    width: '65%',
-    height: '100%',
-    backgroundColor: colors.secondary,
-    borderRadius: 999,
-  },
-  detailButton: {
-    minHeight: 42,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderColor: colors.secondary,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
-  detailButtonText: {
-    color: colors.secondary,
-    fontFamily: fonts.body,
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 0.4,
-    lineHeight: 16,
-  },
-  bottomNav: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    minHeight: 64,
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    backgroundColor: colors.surfaceContainerLowest,
-    paddingHorizontal: 12,
-  },
-  navItem: {
-    flex: 1,
-    alignItems: 'center',
-    gap: 3,
-    paddingVertical: 8,
-  },
-  navItemActive: {
-    backgroundColor: 'transparent',
-  },
-  homeIcon: {
-    width: 22,
-    height: 22,
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-  },
-  homeRoof: {
-    width: 0,
-    height: 0,
-    borderLeftWidth: 9,
-    borderRightWidth: 9,
-    borderBottomWidth: 8,
-    borderLeftColor: 'transparent',
-    borderRightColor: 'transparent',
-  },
-  homeBase: {
-    width: 14,
-    height: 11,
-    borderBottomLeftRadius: 2,
-    borderBottomRightRadius: 2,
-  },
-  roundIcon: {
-    width: 20,
-    height: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 10,
-    borderWidth: 1.5,
-  },
-  roundDot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-  },
-  roundDotSmall: {
-    width: 3,
-    height: 3,
-    borderRadius: 2,
-    marginTop: 3,
-  },
-  noteIcon: {
-    width: 22,
-    height: 22,
-    justifyContent: 'center',
-    gap: 3,
-  },
-  noteLine: {
-    height: 2,
-    borderRadius: 1,
-  },
-  notePencil: {
-    width: 9,
-    height: 2,
-    borderRadius: 1,
-    transform: [{ rotate: '-35deg' }],
-    alignSelf: 'flex-end',
-  },
-  logIcon: {
-    width: 20,
-    height: 16,
-    borderRadius: 2,
-    borderWidth: 1.5,
-    position: 'relative',
-  },
-  logSlash: {
-    position: 'absolute',
-    left: 3,
-    top: 6,
-    width: 14,
-    height: 2,
-    borderRadius: 1,
-    transform: [{ rotate: '28deg' }],
-  },
-  logLine: {
-    position: 'absolute',
-    right: 3,
-    bottom: 3,
-    width: 8,
-    height: 2,
-    borderRadius: 1,
-  },
-  navText: {
     color: colors.onSurfaceVariant,
     fontFamily: fonts.body,
     fontSize: 11,
     fontWeight: '500',
     lineHeight: 14,
   },
-  navTextActive: {
+  progressValue: {
     color: colors.primary,
+    fontFamily: fonts.body,
+    fontSize: 12,
     fontWeight: '700',
+    lineHeight: 16,
+  },
+  progressTrack: {
+    height: 8,
+    backgroundColor: colors.surfaceVariant,
+    borderRadius: 999,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: colors.secondary,
+    borderRadius: 999,
+  },
+  detailButton: {
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+  },
+  detailButtonText: {
+    color: colors.onPrimary,
+    fontFamily: fonts.body,
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 0.4,
+    lineHeight: 16,
   },
 });

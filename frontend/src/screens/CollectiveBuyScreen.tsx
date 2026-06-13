@@ -1,98 +1,192 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
+  Image,
   Pressable,
   SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   useWindowDimensions,
   View,
   type ViewStyle,
 } from 'react-native-web';
+import plusIcon from '../assets/plus_icon.svg';
 import { KoperasiBottomNav } from '../components/KoperasiBottomNav';
 import { MainHeader } from '../components/MainHeader';
+import type { ProcurementPool } from '../data/pools';
+import { api } from '../services/api';
 import { colors, fonts } from '../theme';
 
 type CollectiveBuyScreenProps = {
+  initialTab?: 'open' | 'mine';
+  joinedPoolIds?: number[];
   onHomePress: () => void;
+  onJoinPoolPress?: (pool: ProcurementPool) => void;
   onLogPress: () => void;
   onLogoutPress: () => void;
   onRecordPress: () => void;
+  onSuccessMessageShown?: () => void;
+  successMessage?: string;
 };
 
-type Pool = {
-  action: 'join' | 'detail';
-  deadline: string;
-  id: number;
-  location: string;
-  price: string;
-  product: string;
-  progress: number;
-  progressText: string;
-  supplier: string;
+type PoolOrder = {
+  orderItems?: Array<{ quantity?: number }>;
 };
 
-const pools: Pool[] = [
-  {
-    action: 'join',
-    deadline: '2 Hari Lagi',
-    id: 1,
-    location: 'Bontang, Kaltim',
-    price: 'Rp 385.000 /sak',
-    product: 'Urea Non-Subsidi 50kg',
-    progress: 60,
-    progressText: '600 / 1000 Ton',
-    supplier: 'PT Pupuk Kaltim',
-  },
-  {
-    action: 'detail',
-    deadline: '12 Jam Lagi',
-    id: 2,
-    location: 'Surabaya, Jatim',
-    price: 'Rp 650.000 /sak',
-    product: 'NPK Mutiara 16-16-16',
-    progress: 85,
-    progressText: '425 / 500 Ton',
-    supplier: 'CV Tani Subur Jaya',
-  },
-  {
-    action: 'join',
-    deadline: '5 Hari Lagi',
-    id: 3,
-    location: 'Gresik, Jatim',
-    price: 'Rp 172.000 /sak',
-    product: 'SP-36 Super 50kg',
-    progress: 42,
-    progressText: '210 / 500 Ton',
-    supplier: 'PT Agro Nusa',
-  },
-];
+type BackendPool = {
+  currentVolumeKg?: number;
+  deadline?: string;
+  deadlineAt?: string;
+  id: string;
+  name?: string;
+  orders?: PoolOrder[];
+  product?: {
+    name?: string;
+    priceTiers?: Array<{ pricePerKg?: number }>;
+    supplier?: {
+      name?: string;
+    };
+  };
+  status?: string;
+  targetVolumeKg?: number;
+};
+
+type Product = {
+  id: string;
+  name: string;
+};
+
+type RecordedOrder = {
+  id: string;
+};
 
 const cardShadow = {
   boxShadow: '0 4px 12px rgba(27, 67, 50, 0.05)',
 } as unknown as ViewStyle;
 
 export function CollectiveBuyScreen({
+  initialTab = 'open',
   onHomePress,
   onLogPress,
   onLogoutPress,
   onRecordPress,
+  onSuccessMessageShown,
+  successMessage,
 }: CollectiveBuyScreenProps) {
   const { height } = useWindowDimensions();
-  const [activeTab, setActiveTab] = useState<'open' | 'mine'>('open');
+  const [activeTab, setActiveTab] = useState<'open' | 'mine'>(initialTab);
+  const [pools, setPools] = useState<BackendPool[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [notice, setNotice] = useState('');
+  const [search, setSearch] = useState('');
 
-  const showDummyNotice = (message: string) => {
-    setNotice(message);
-    window.setTimeout(() => setNotice(''), 2200);
+  const loadPools = async () => {
+    try {
+      setIsLoading(true);
+      const data = (await api.getActivePools()) as BackendPool[];
+      setPools(data);
+    } catch (err: unknown) {
+      setNotice(getErrorMessage(err, 'Gagal memuat pool aktif.'));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const visiblePools = activeTab === 'open' ? pools : pools.slice(1, 2);
+  useEffect(() => {
+    loadPools();
+  }, []);
+
+  useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab]);
+
+  useEffect(() => {
+    if (!successMessage) {
+      return;
+    }
+
+    setNotice(successMessage);
+    const timeoutId = window.setTimeout(() => {
+      setNotice('');
+      onSuccessMessageShown?.();
+    }, 3000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [onSuccessMessageShown, successMessage]);
+
+  const handleJoinPool = async (pool: BackendPool) => {
+    try {
+      setNotice(`Mendaftarkan partisipasi ke pool ${pool.name || ''}...`);
+
+      const order = (await api.recordTransaction({
+        jenisPupuk: pool.product?.name || 'NPK Phonska',
+        quantity: 5000,
+        supplierName: pool.product?.supplier?.name || 'Petrokimia',
+        tanggal: new Date().toISOString().split('T')[0],
+        totalPrice: 42500000,
+      })) as RecordedOrder;
+
+      await api.joinPool(pool.id, order.id);
+
+      setNotice('Sukses bergabung ke pool! Progres volume dan harga ter-update secara real-time.');
+      await loadPools();
+      window.setTimeout(() => setNotice(''), 3000);
+    } catch (err: unknown) {
+      setNotice(getErrorMessage(err, 'Gagal bergabung ke pool.'));
+      window.setTimeout(() => setNotice(''), 3500);
+    }
+  };
+
+  const handleCreatePool = async () => {
+    try {
+      setNotice('Menyiapkan proposal pool baru...');
+      const products = (await api.getProducts()) as Product[];
+
+      if (!products || products.length === 0) {
+        setNotice('Tidak ada produk tersedia di database. Hubungi admin.');
+        window.setTimeout(() => setNotice(''), 3500);
+        return;
+      }
+
+      const selectedProduct = products[0];
+      const deadlineDate = new Date();
+      deadlineDate.setDate(deadlineDate.getDate() + 7);
+
+      await api.createPool({
+        name: `Pool ${selectedProduct.name} Bersama`,
+        deadline: deadlineDate.toISOString(),
+        productId: selectedProduct.id,
+        targetVolumeKg: 20000,
+      });
+
+      setNotice('Proposal pool baru berhasil didaftarkan di ledger!');
+      await loadPools();
+      window.setTimeout(() => setNotice(''), 3000);
+    } catch (err: unknown) {
+      setNotice(getErrorMessage(err, 'Gagal membuat proposal pool baru.'));
+      window.setTimeout(() => setNotice(''), 3500);
+    }
+  };
+
+  const handleLogout = () => {
+    api.clearToken();
+    onLogoutPress();
+  };
+
+  const filteredPools = pools.filter((pool) => {
+    const query = search.toLowerCase();
+    return (
+      pool.name?.toLowerCase().includes(query) ||
+      pool.product?.name?.toLowerCase().includes(query) ||
+      pool.product?.supplier?.name?.toLowerCase().includes(query)
+    );
+  });
 
   return (
     <SafeAreaView style={[styles.safeArea, { minHeight: height }]}>
       <View style={[styles.shell, { height }]}>
-        <MainHeader onLogoutPress={onLogoutPress} />
+        <MainHeader onLogoutPress={handleLogout} />
 
         <ScrollView
           contentContainerStyle={styles.scrollContent}
@@ -104,6 +198,30 @@ export function CollectiveBuyScreen({
             <Text style={styles.subtitle}>
               Gabung dengan pool lain untuk mencapai target volume dan mendapatkan harga grosir terbaik.
             </Text>
+          </View>
+
+          <View style={styles.searchWrap}>
+            <View style={styles.searchIcon}>
+              <View style={styles.searchLens} />
+              <View style={styles.searchHandle} />
+            </View>
+            <TextInput
+              accessibilityLabel="Cari supplier atau jenis pupuk"
+              onChangeText={setSearch}
+              placeholder="Cari supplier atau jenis pupuk..."
+              placeholderTextColor={colors.outline}
+              style={styles.searchInput}
+              value={search}
+            />
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => setNotice('Filter pool ter-update otomatis saat Anda mengetik.')}
+              style={styles.filterButton}
+            >
+              <View style={styles.filterLineLong} />
+              <View style={styles.filterLineShort} />
+              <View style={styles.filterLineMid} />
+            </Pressable>
           </View>
 
           <View style={styles.tabs}>
@@ -129,20 +247,32 @@ export function CollectiveBuyScreen({
             </View>
           ) : null}
 
-          <View style={styles.poolList}>
-            {visiblePools.map((pool) => (
-              <PoolCard key={pool.id} onAction={showDummyNotice} pool={pool} />
-            ))}
-          </View>
+          {isLoading ? (
+            <View style={styles.loadingBlock}>
+              <Text style={styles.loadingText}>Memuat daftar pool...</Text>
+            </View>
+          ) : (
+            <View style={styles.poolList}>
+              {filteredPools.length === 0 ? (
+                <View style={[styles.poolCard, styles.emptyCard]}>
+                  <Text style={styles.emptyText}>Tidak ada pool yang cocok.</Text>
+                </View>
+              ) : (
+                filteredPools.map((pool) => (
+                  <BackendPoolCard key={pool.id} onJoin={() => handleJoinPool(pool)} pool={pool} />
+                ))
+              )}
+            </View>
+          )}
         </ScrollView>
 
         <Pressable
           accessibilityLabel="Buat pool baru"
           accessibilityRole="button"
-          onPress={() => showDummyNotice('Form buat pool baru masih dummy untuk sekarang.')}
+          onPress={handleCreatePool}
           style={styles.fab}
         >
-          <Text style={styles.fabText}>+</Text>
+          <Image accessibilityElementsHidden resizeMode="contain" source={{ uri: plusIcon }} style={styles.fabIcon} />
         </Pressable>
 
         <KoperasiBottomNav
@@ -156,81 +286,75 @@ export function CollectiveBuyScreen({
   );
 }
 
-type PoolCardProps = {
-  onAction: (message: string) => void;
-  pool: Pool;
-};
+function BackendPoolCard({ onJoin, pool }: { onJoin: () => void; pool: BackendPool }) {
+  const totalTargetVolume = pool.targetVolumeKg || 10000;
+  const currentVolume =
+    pool.currentVolumeKg ||
+    pool.orders?.reduce((acc, order) => acc + (order.orderItems?.[0]?.quantity || 0), 0) ||
+    0;
+  const progressPercent = Math.min(100, Math.round((currentVolume / totalTargetVolume) * 100));
+  const deadline = pool.deadlineAt || pool.deadline;
+  const deadlineStr = deadline ? new Date(deadline).toLocaleDateString('id-ID') : 'Segera';
+  const activePrice = pool.product?.priceTiers?.[0]?.pricePerKg || 9000;
 
-function PoolCard({ onAction, pool }: PoolCardProps) {
   return (
     <View style={styles.poolCard}>
       <View style={styles.poolAccent} />
       <View style={styles.poolHeader}>
         <View style={styles.supplierRow}>
           <View style={styles.supplierIcon}>
-            <Text style={styles.supplierIconText}>{pool.id === 2 ? 'TR' : 'PG'}</Text>
+            <Text style={styles.supplierIconText}>VM</Text>
           </View>
           <View style={styles.supplierTextWrap}>
-            <Text style={styles.supplierName}>{pool.supplier}</Text>
-            <Text style={styles.locationText}>{pool.location}</Text>
+            <Text style={styles.supplierName}>{pool.name || `Pool ${pool.product?.name || 'Pupuk'}`}</Text>
+            <Text style={styles.locationText}>{pool.product?.supplier?.name || 'Pemasok Terdaftar'}</Text>
           </View>
         </View>
-        <View style={styles.deadlineBadge}>
-          <View style={styles.deadlineDot} />
-          <Text style={styles.deadlineText}>{pool.deadline}</Text>
+        <View style={[styles.statusBadge, styles.statusSuccess]}>
+          <View style={styles.statusDot} />
+          <Text style={[styles.statusText, styles.statusSuccessText]}>{pool.status || 'ACTIVE'}</Text>
         </View>
       </View>
 
       <View style={styles.productBox}>
-        <InfoRow label="Produk" value={pool.product} />
-        <InfoRow isPrice label="Harga Target" value={pool.price} />
+        <InfoRow label="Produk" value={pool.product?.name || 'Pupuk'} />
+        <InfoRow isPrice label="Harga Tier Aktif" value={`Rp ${activePrice.toLocaleString('id-ID')}/kg`} />
+        <InfoRow label="Batas Waktu" value={deadlineStr} />
       </View>
 
       <View style={styles.progressBlock}>
         <View style={styles.progressHeader}>
           <View>
             <Text style={styles.progressLabel}>Progres Volume</Text>
-            <Text style={styles.progressText}>{pool.progressText}</Text>
+            <Text style={styles.progressText}>
+              {(currentVolume / 1000).toFixed(1)} / {(totalTargetVolume / 1000).toFixed(0)} Ton
+            </Text>
           </View>
-          <Text style={styles.progressPercent}>{pool.progress}%</Text>
+          <Text style={styles.progressPercent}>{progressPercent}%</Text>
         </View>
         <View style={styles.progressTrack}>
-          <View style={[styles.progressFill, { width: `${pool.progress}%` }]} />
+          <View style={[styles.progressFill, { width: `${progressPercent}%` }]} />
         </View>
       </View>
 
-      <Pressable
-        accessibilityRole="button"
-        onPress={() =>
-          onAction(
-            pool.action === 'join'
-              ? `Dummy: kamu memilih gabung ke ${pool.supplier}.`
-              : `Dummy: detail ${pool.supplier} akan dibuka nanti.`,
-          )
-        }
-        style={[styles.actionButton, pool.action === 'detail' && styles.secondaryActionButton]}
-      >
-        <Text style={[styles.actionText, pool.action === 'detail' && styles.secondaryActionText]}>
-          {pool.action === 'join' ? 'Gabung Pool Ini' : 'Lihat Detail'}
-        </Text>
+      <Pressable accessibilityRole="button" onPress={onJoin} style={styles.actionButton}>
+        <Text style={styles.actionText}>Gabung Pool Ini</Text>
       </Pressable>
     </View>
   );
 }
 
-type InfoRowProps = {
-  isPrice?: boolean;
-  label: string;
-  value: string;
-};
-
-function InfoRow({ isPrice = false, label, value }: InfoRowProps) {
+function InfoRow({ isPrice = false, label, value }: { isPrice?: boolean; label: string; value: string }) {
   return (
     <View style={styles.infoRow}>
       <Text style={styles.infoLabel}>{label}</Text>
       <Text style={[styles.infoValue, isPrice && styles.priceValue]}>{value}</Text>
     </View>
   );
+}
+
+function getErrorMessage(err: unknown, fallback: string) {
+  return err instanceof Error ? err.message : fallback;
 }
 
 const styles = StyleSheet.create({
@@ -268,6 +392,72 @@ const styles = StyleSheet.create({
     fontFamily: fonts.body,
     fontSize: 14,
     lineHeight: 20,
+  },
+  searchWrap: {
+    minHeight: 48,
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 10,
+    backgroundColor: colors.surfaceContainerLowest,
+    borderColor: colors.outlineVariant,
+    borderRadius: 12,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    ...cardShadow,
+  },
+  searchIcon: {
+    width: 18,
+    height: 18,
+    position: 'relative',
+  },
+  searchLens: {
+    width: 12,
+    height: 12,
+    borderColor: colors.outline,
+    borderRadius: 6,
+    borderWidth: 2,
+  },
+  searchHandle: {
+    position: 'absolute',
+    right: 1,
+    bottom: 1,
+    width: 7,
+    height: 2,
+    backgroundColor: colors.outline,
+    borderRadius: 1,
+    transform: [{ rotate: '45deg' }],
+  },
+  searchInput: {
+    flex: 1,
+    color: colors.onSurface,
+    fontFamily: fonts.body,
+    fontSize: 13,
+  },
+  filterButton: {
+    width: 34,
+    height: 34,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    borderRadius: 17,
+  },
+  filterLineLong: {
+    width: 18,
+    height: 2,
+    backgroundColor: colors.secondary,
+    borderRadius: 1,
+  },
+  filterLineShort: {
+    width: 12,
+    height: 2,
+    backgroundColor: colors.secondary,
+    borderRadius: 1,
+  },
+  filterLineMid: {
+    width: 15,
+    height: 2,
+    backgroundColor: colors.secondary,
+    borderRadius: 1,
   },
   tabs: {
     flexDirection: 'row',
@@ -312,12 +502,30 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     lineHeight: 16,
   },
+  loadingBlock: {
+    alignItems: 'center',
+    padding: 40,
+  },
+  loadingText: {
+    color: colors.primary,
+    fontFamily: fonts.body,
+    fontSize: 14,
+  },
+  emptyCard: {
+    alignItems: 'center',
+    padding: 24,
+  },
+  emptyText: {
+    color: colors.outline,
+    fontFamily: fonts.body,
+    fontSize: 13,
+  },
   poolList: {
     gap: 16,
   },
   poolCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.92)',
-    borderColor: 'rgba(193, 200, 194, 0.72)',
+    backgroundColor: colors.surfaceCard,
+    borderColor: 'rgba(193, 200, 194, 0.48)',
     borderRadius: 12,
     borderWidth: 1,
     gap: 16,
@@ -343,25 +551,22 @@ const styles = StyleSheet.create({
   },
   supplierRow: {
     flex: 1,
-    alignItems: 'center',
     flexDirection: 'row',
-    gap: 12,
+    gap: 10,
   },
   supplierIcon: {
-    width: 46,
-    height: 46,
+    width: 38,
+    height: 38,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.surfaceContainerLow,
-    borderColor: colors.surfaceVariant,
-    borderRadius: 10,
-    borderWidth: 1,
+    backgroundColor: colors.secondaryContainer,
+    borderRadius: 19,
   },
   supplierIconText: {
     color: colors.secondary,
     fontFamily: fonts.heading,
-    fontSize: 13,
-    fontWeight: '700',
+    fontSize: 12,
+    fontWeight: '800',
   },
   supplierTextWrap: {
     flex: 1,
@@ -370,9 +575,9 @@ const styles = StyleSheet.create({
   supplierName: {
     color: colors.primary,
     fontFamily: fonts.heading,
-    fontSize: 19,
+    fontSize: 18,
     fontWeight: '700',
-    lineHeight: 25,
+    lineHeight: 24,
   },
   locationText: {
     color: colors.onSurfaceVariant,
@@ -382,33 +587,35 @@ const styles = StyleSheet.create({
     lineHeight: 16,
     marginTop: 2,
   },
-  deadlineBadge: {
+  statusBadge: {
     alignItems: 'center',
     flexDirection: 'row',
     gap: 5,
-    backgroundColor: 'rgba(255, 183, 3, 0.1)',
-    borderColor: 'rgba(255, 183, 3, 0.25)',
     borderRadius: 999,
-    borderWidth: 1,
     paddingHorizontal: 9,
     paddingVertical: 6,
   },
-  deadlineDot: {
+  statusSuccess: {
+    backgroundColor: 'rgba(43, 147, 72, 0.12)',
+  },
+  statusDot: {
     width: 6,
     height: 6,
-    backgroundColor: colors.warningAmber,
+    backgroundColor: colors.successGreen,
     borderRadius: 3,
   },
-  deadlineText: {
-    color: colors.warningAmber,
+  statusText: {
     fontFamily: fonts.body,
     fontSize: 10,
-    fontWeight: '700',
+    fontWeight: '800',
     lineHeight: 12,
+  },
+  statusSuccessText: {
+    color: colors.successGreen,
   },
   productBox: {
     backgroundColor: colors.surfaceContainerLowest,
-    borderColor: 'rgba(225, 227, 228, 0.82)',
+    borderColor: colors.outlineVariant,
     borderRadius: 10,
     borderWidth: 1,
     gap: 8,
@@ -488,11 +695,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     borderRadius: 8,
   },
-  secondaryActionButton: {
-    backgroundColor: 'transparent',
-    borderColor: colors.secondary,
-    borderWidth: 1.5,
-  },
   actionText: {
     color: colors.onPrimary,
     fontFamily: fonts.body,
@@ -500,9 +702,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 0.4,
     lineHeight: 16,
-  },
-  secondaryActionText: {
-    color: colors.secondary,
   },
   fab: {
     position: 'absolute',
@@ -512,18 +711,9 @@ const styles = StyleSheet.create({
     height: 56,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.secondary,
-    borderColor: colors.surfaceContainerLowest,
-    borderRadius: 28,
-    borderWidth: 2,
-    boxShadow: '0 10px 22px rgba(27, 67, 50, 0.22)',
   },
-  fabText: {
-    color: colors.onPrimary,
-    fontFamily: fonts.heading,
-    fontSize: 34,
-    fontWeight: '600',
-    lineHeight: 38,
-    marginTop: -3,
+  fabIcon: {
+    width: 56,
+    height: 56,
   },
 });
