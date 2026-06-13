@@ -165,6 +165,27 @@ type RecordedOrder = {
   id: string;
 };
 
+const DEFAULT_FERTILIZER_OPTIONS = [
+  'Pupuk NPK Phonska',
+  'Pupuk NPK Phonska Plus',
+  'Pupuk Urea Granul',
+  'Pupuk Urea N46',
+  'Pupuk SP-36',
+  'Pupuk ZA',
+  'Pupuk KCl',
+  'Pupuk TSP',
+  'Pupuk KNO3',
+  'Pupuk Dolomit',
+  'Pupuk Organik Granul',
+  'Pupuk Organik Cair',
+];
+
+const MAX_PDF_SIZE_BYTES = 2 * 1024 * 1024;
+
+function mergeFertilizerOptions(productNames: string[]) {
+  return Array.from(new Set([...productNames, ...DEFAULT_FERTILIZER_OPTIONS]));
+}
+
 const cardShadow = {
   boxShadow: '0 4px 12px rgba(27, 67, 50, 0.05)',
 } as unknown as ViewStyle;
@@ -190,11 +211,15 @@ export function CollectiveBuyScreen({
 
   // States for proposal submission
   const [showSubmitModal, setShowSubmitModal] = useState(false);
-  const [productOptions, setProductOptions] = useState<string[]>(['Pupuk NPK Phonska', 'Pupuk Urea Granul']);
+  const [productOptions, setProductOptions] = useState<string[]>(DEFAULT_FERTILIZER_OPTIONS);
   const [fertilizerType, setFertilizerType] = useState('Pupuk NPK Phonska');
   const [targetVolumeInput, setTargetVolumeInput] = useState('');
   const [notesInput, setNotesInput] = useState('');
   const [pdfFile, setPdfFile] = useState<{ name: string; dataUrl?: string } | null>(null);
+  const [pdfUploadState, setPdfUploadState] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
+  const [proposalFeedback, setProposalFeedback] = useState('');
+  const [proposalFeedbackType, setProposalFeedbackType] = useState<'success' | 'error'>('error');
+  const [isSubmittingProposal, setIsSubmittingProposal] = useState(false);
   const [koperasiName, setKoperasiName] = useState('Koperasi Sumber Makmur');
 
   const loadPools = async () => {
@@ -225,7 +250,7 @@ export function CollectiveBuyScreen({
         setKoperasiName(profile.koperasi.name);
       }
       if (products && products.length > 0) {
-        const names = products.map((p) => p.name);
+        const names = mergeFertilizerOptions(products.map((p) => p.name));
         setProductOptions(names);
         if (!names.includes(fertilizerType)) {
           setFertilizerType(names[0]);
@@ -389,44 +414,135 @@ export function CollectiveBuyScreen({
     }
   };
 
+  const showProposalFeedback = (message: string, type: 'success' | 'error' = 'error') => {
+    setProposalFeedbackType(type);
+    setProposalFeedback(message);
+  };
+
+  const handlePdfUploadPress = () => {
+    setProposalFeedback('');
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'application/pdf';
+    input.onchange = (e: any) => {
+      const file = e.target.files?.[0];
+      if (!file) {
+        showProposalFeedback('Tidak ada file yang dipilih.');
+        return;
+      }
+
+      if (file.type !== 'application/pdf') {
+        setPdfFile(null);
+        setPdfUploadState('error');
+        showProposalFeedback('File harus berformat PDF.');
+        return;
+      }
+
+      if (file.size > MAX_PDF_SIZE_BYTES) {
+        setPdfFile(null);
+        setPdfUploadState('error');
+        showProposalFeedback('Ukuran PDF maksimal 2 MB agar proposal bisa disimpan di browser.');
+        return;
+      }
+
+      setPdfUploadState('uploading');
+      showProposalFeedback(`Mengunggah ${file.name}...`, 'success');
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        setPdfFile({
+          name: file.name,
+          dataUrl: reader.result as string,
+        });
+        setPdfUploadState('success');
+        showProposalFeedback(`PDF ${file.name} siap dilampirkan.`, 'success');
+      };
+      reader.onerror = () => {
+        setPdfFile(null);
+        setPdfUploadState('error');
+        showProposalFeedback('Gagal membaca PDF. Coba pilih file lain.');
+      };
+      reader.readAsDataURL(file);
+    };
+    input.click();
+  };
+
   const handleSubmitProposal = () => {
-    const volumeVal = parseFloat(targetVolumeInput.replace(/[^0-9.]/g, '')) || 0;
-    if (volumeVal <= 0) {
-      alert('Volume target harus lebih besar dari 0.');
+    setProposalFeedback('');
+
+    if (isSubmittingProposal) {
       return;
     }
 
-    const estValue = calculateEstimatedValue(fertilizerType, volumeVal);
-    const user = getCurrentUser();
+    if (pdfUploadState === 'uploading') {
+      showProposalFeedback('Tunggu sampai PDF selesai diunggah sebelum mengirim proposal.');
+      return;
+    }
 
-    const currentProposalsJson = localStorage.getItem('volumemate_proposals');
-    let currentProposals = currentProposalsJson ? JSON.parse(currentProposalsJson) : [...fallbackProposals];
+    if (!fertilizerType) {
+      showProposalFeedback('Pilih jenis pupuk terlebih dahulu.');
+      return;
+    }
 
-    const newProposal = {
-      cooperative: koperasiName || 'Koperasi Sumber Makmur',
-      location: user?.location || 'Kab. Jember, Jawa Timur',
-      product: fertilizerType,
-      target: `${volumeVal.toLocaleString('id-ID')} Kg`,
-      value: `Rp ${estValue.toLocaleString('id-ID')}`,
-      dateSubmitted: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) + ', ' + new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-      notes: notesInput || 'Tidak ada catatan tambahan.',
-      pdfName: pdfFile ? pdfFile.name : 'proposal_pengadaan.pdf',
-      pdfData: pdfFile ? pdfFile.dataUrl : undefined,
-      status: 'PENDING',
-      volumeKg: volumeVal,
-    };
+    const volumeVal = parseFloat(targetVolumeInput.replace(/[^0-9.]/g, '')) || 0;
+    if (volumeVal <= 0) {
+      showProposalFeedback('Volume target harus lebih besar dari 0 Kg.');
+      return;
+    }
 
-    currentProposals = [newProposal, ...currentProposals];
-    localStorage.setItem('volumemate_proposals', JSON.stringify(currentProposals));
+    if (!Number.isFinite(volumeVal)) {
+      showProposalFeedback('Format volume tidak valid.');
+      return;
+    }
 
-    setTargetVolumeInput('');
-    setNotesInput('');
-    setPdfFile(null);
-    setShowSubmitModal(false);
+    try {
+      setIsSubmittingProposal(true);
+      showProposalFeedback('Mengirim proposal ke Supplier...', 'success');
 
-    setNoticeType('success');
-    setNotice('Proposal pengadaan baru berhasil dikirim ke Supplier!');
-    window.setTimeout(() => setNotice(''), 3000);
+      const estValue = calculateEstimatedValue(fertilizerType, volumeVal);
+      const user = getCurrentUser();
+
+      const currentProposalsJson = localStorage.getItem('volumemate_proposals');
+      let currentProposals = currentProposalsJson ? JSON.parse(currentProposalsJson) : [...fallbackProposals];
+
+      const newProposal = {
+        cooperative: koperasiName || 'Koperasi Sumber Makmur',
+        location: user?.location || 'Kab. Jember, Jawa Timur',
+        product: fertilizerType,
+        target: `${volumeVal.toLocaleString('id-ID')} Kg`,
+        value: `Rp ${estValue.toLocaleString('id-ID')}`,
+        dateSubmitted: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) + ', ' + new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+        notes: notesInput || 'Tidak ada catatan tambahan.',
+        pdfName: pdfFile ? pdfFile.name : 'proposal_pengadaan.pdf',
+        pdfData: pdfFile ? pdfFile.dataUrl : undefined,
+        status: 'PENDING',
+        volumeKg: volumeVal,
+      };
+
+      currentProposals = [newProposal, ...currentProposals];
+      localStorage.setItem('volumemate_proposals', JSON.stringify(currentProposals));
+
+      setTargetVolumeInput('');
+      setNotesInput('');
+      setPdfFile(null);
+      setPdfUploadState('idle');
+      setProposalFeedback('');
+      setShowSubmitModal(false);
+
+      setNoticeType('success');
+      setNotice('Proposal pengadaan baru berhasil dikirim ke Supplier!');
+      window.setTimeout(() => setNotice(''), 3000);
+    } catch (err: unknown) {
+      const message = err instanceof DOMException && err.name === 'QuotaExceededError'
+        ? 'Gagal menyimpan proposal karena penyimpanan browser penuh. Gunakan PDF yang lebih kecil atau hapus proposal lama.'
+        : getErrorMessage(err, 'Gagal mengirim proposal. Coba lagi.');
+      showProposalFeedback(message);
+      setNoticeType('error');
+      setNotice(message);
+      window.setTimeout(() => setNotice(''), 4500);
+    } finally {
+      setIsSubmittingProposal(false);
+    }
   };
 
   const handleLogout = () => {
@@ -545,7 +661,10 @@ export function CollectiveBuyScreen({
         <Pressable
           accessibilityLabel="Buat pool baru"
           accessibilityRole="button"
-          onPress={() => setShowSubmitModal(true)}
+          onPress={() => {
+            setProposalFeedback('');
+            setShowSubmitModal(true);
+          }}
           style={styles.fab}
         >
           <Image accessibilityElementsHidden resizeMode="contain" source={{ uri: plusIcon }} style={styles.fabIcon} />
@@ -556,7 +675,13 @@ export function CollectiveBuyScreen({
             <View style={styles.modalContent}>
               <View style={styles.modalHeader}>
                 <Text style={styles.modalTitle}>Pengajuan Proposal</Text>
-                <Pressable onPress={() => setShowSubmitModal(false)} style={styles.closeButton}>
+                <Pressable
+                  onPress={() => {
+                    setShowSubmitModal(false);
+                    setProposalFeedback('');
+                  }}
+                  style={styles.closeButton}
+                >
                   <Text style={styles.closeButtonText}>✕</Text>
                 </Pressable>
               </View>
@@ -617,47 +742,67 @@ export function CollectiveBuyScreen({
                     <Text style={styles.formLabel}>Lampiran PDF Proposal</Text>
                     <Pressable
                       accessibilityRole="button"
-                      onPress={() => {
-                        const input = document.createElement('input');
-                        input.type = 'file';
-                        input.accept = 'application/pdf';
-                        input.onchange = (e: any) => {
-                          const file = e.target.files[0];
-                          if (file) {
-                            const reader = new FileReader();
-                            reader.onload = () => {
-                              setPdfFile({
-                                name: file.name,
-                                dataUrl: reader.result as string,
-                              });
-                            };
-                            reader.readAsDataURL(file);
-                          }
-                        };
-                        input.click();
-                      }}
-                      style={styles.uploadBox}
+                      disabled={pdfUploadState === 'uploading' || isSubmittingProposal}
+                      onPress={handlePdfUploadPress}
+                      style={[
+                        styles.uploadBox,
+                        pdfUploadState === 'uploading' && styles.uploadBoxDisabled,
+                        pdfUploadState === 'error' && styles.uploadBoxError,
+                      ]}
                     >
                       <Text style={styles.uploadBoxText}>
-                        {pdfFile ? `📄 ${pdfFile.name}` : '📁 Klik untuk Unggah PDF Proposal'}
+                        {pdfUploadState === 'uploading'
+                          ? 'Mengunggah PDF...'
+                          : pdfFile
+                            ? `PDF: ${pdfFile.name}`
+                            : 'Klik untuk Unggah PDF Proposal'}
                       </Text>
                     </Pressable>
+                    <Text style={styles.formHint}>Format PDF, maksimal 2 MB. Lampiran boleh dikosongkan.</Text>
                   </View>
+
+                  {proposalFeedback ? (
+                    <View style={[
+                      styles.modalFeedback,
+                      proposalFeedbackType === 'success' && styles.modalFeedbackSuccess,
+                    ]}>
+                      <Text style={[
+                        styles.modalFeedbackText,
+                        proposalFeedbackType === 'success' && styles.modalFeedbackTextSuccess,
+                      ]}>
+                        {proposalFeedback}
+                      </Text>
+                    </View>
+                  ) : null}
                 </View>
               </ScrollView>
 
               <View style={styles.modalFooter}>
                 <Pressable
-                  onPress={() => setShowSubmitModal(false)}
+                  disabled={isSubmittingProposal}
+                  onPress={() => {
+                    setShowSubmitModal(false);
+                    setProposalFeedback('');
+                  }}
                   style={styles.modalCancelBtn}
                 >
                   <Text style={styles.modalCancelText}>Batal</Text>
                 </Pressable>
                 <Pressable
+                  disabled={pdfUploadState === 'uploading' || isSubmittingProposal}
                   onPress={handleSubmitProposal}
-                  style={styles.modalSubmitBtn}
+                  style={[
+                    styles.modalSubmitBtn,
+                    (pdfUploadState === 'uploading' || isSubmittingProposal) && styles.modalSubmitBtnDisabled,
+                  ]}
                 >
-                  <Text style={styles.modalSubmitText}>Kirim Proposal</Text>
+                  <Text style={styles.modalSubmitText}>
+                    {isSubmittingProposal
+                      ? 'Mengirim...'
+                      : pdfUploadState === 'uploading'
+                        ? 'Tunggu Upload'
+                        : 'Kirim Proposal'}
+                  </Text>
                 </Pressable>
               </View>
             </View>
@@ -1207,17 +1352,22 @@ const styles = StyleSheet.create({
   },
   dropdownSelector: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 8,
   },
   dropdownOpt: {
-    flex: 1,
-    height: 38,
+    minHeight: 38,
+    minWidth: 112,
+    flexGrow: 1,
+    flexBasis: '31%',
     borderRadius: 8,
     borderWidth: 1,
     borderColor: colors.outlineVariant,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: colors.background,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
   },
   dropdownOptActive: {
     borderColor: colors.primary,
@@ -1228,6 +1378,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: colors.onSurfaceVariant,
     fontWeight: '600',
+    textAlign: 'center',
   },
   dropdownOptTextActive: {
     color: colors.onPrimary,
@@ -1242,11 +1393,48 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'rgba(1, 45, 29, 0.03)',
   },
+  uploadBoxDisabled: {
+    opacity: 0.65,
+  },
+  uploadBoxError: {
+    borderColor: colors.errorRed,
+    backgroundColor: 'rgba(186, 26, 26, 0.05)',
+  },
   uploadBoxText: {
     fontFamily: fonts.body,
     fontSize: 12,
     color: colors.primary,
     fontWeight: '600',
+    textAlign: 'center',
+    paddingHorizontal: 8,
+  },
+  formHint: {
+    color: colors.onSurfaceVariant,
+    fontFamily: fonts.body,
+    fontSize: 11,
+    lineHeight: 15,
+  },
+  modalFeedback: {
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#F5C6CB',
+    backgroundColor: '#F8D7DA',
+    paddingHorizontal: 10,
+    paddingVertical: 9,
+  },
+  modalFeedbackSuccess: {
+    borderColor: 'rgba(46, 125, 50, 0.22)',
+    backgroundColor: 'rgba(46, 125, 50, 0.08)',
+  },
+  modalFeedbackText: {
+    color: colors.errorRed,
+    fontFamily: fonts.body,
+    fontSize: 12,
+    fontWeight: '600',
+    lineHeight: 16,
+  },
+  modalFeedbackTextSuccess: {
+    color: colors.successGreen,
   },
   modalFooter: {
     flexDirection: 'row',
@@ -1277,6 +1465,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  modalSubmitBtnDisabled: {
+    opacity: 0.65,
   },
   modalSubmitText: {
     fontFamily: fonts.body,
