@@ -16,7 +16,7 @@ import { colors, fonts } from '../theme';
 
 type JoinPoolScreenProps = {
   onBackPress: () => void;
-  onConfirm: (poolId: number, contributionTon: number) => void;
+  onConfirm: (poolId: ProcurementPool['id'], contributionTon: number) => void;
   pool: ProcurementPool;
 };
 

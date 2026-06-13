@@ -266,14 +266,28 @@ Koperasi must input:
 
 This menu is for manual/offline transaction recording after the cooperative buys fertilizer outside the pool flow.
 
-Required fields:
+The current mobile UI uses a two-tab switch:
+
+```text
+Catat Pengeluaran
+Catat Pemasukan
+```
+
+Default tab:
+
+```text
+Catat Pengeluaran
+```
+
+Both tabs use the same required fields:
 
 - jenis pupuk,
 - jumlah in kg,
-- nama supplier,
 - tanggal transaksi,
 - total harga,
 - button: `Simpan Transaksi`.
+
+The UI no longer asks the user to input `nama supplier` in this screen. If the backend still requires `supplierName` for the current API shape, the frontend may send an internal placeholder based on the selected tab until the backend contract is updated.
 
 After saving:
 
@@ -296,6 +310,14 @@ Koperasi Audit Log contains:
    - canceled because target fund was not reached before deadline,
    - canceled because payment was not completed within 24 hours after target was reached,
    - success after all payments were submitted and supplier payout was processed.
+
+Current UI decisions:
+
+- no profile pictures/avatar stack in pool audit cards,
+- pool audit card title uses `{proposing_koperasi}`,
+- pool ID may be shown as secondary metadata,
+- no `Lihat Detail` button for pool history cards,
+- no filter chips in the Audit Log screen for the current MVP build.
 
 Audit Log should not include:
 

@@ -48,8 +48,8 @@ async function main() {
     await prisma.orderItem.deleteMany({});
     await prisma.order.deleteMany({});
     await prisma.collectivePool.deleteMany({});
-    await prisma.product.deleteMany({});
     await prisma.priceTier.deleteMany({});
+    await prisma.product.deleteMany({});
     await prisma.supplier.deleteMany({});
     await prisma.user.deleteMany({});
     await prisma.koperasi.deleteMany({});
@@ -122,10 +122,10 @@ async function main() {
     console.log('Produk pupuk berhasil dibuat.');
     await prisma.priceTier.createMany({
         data: [
-            { productId: pupukNPK.id, minVolume: 0, maxVolume: 50, pricePerKg: 10000 },
-            { productId: pupukNPK.id, minVolume: 50, maxVolume: 120, pricePerKg: 9200 },
-            { productId: pupukNPK.id, minVolume: 120, maxVolume: 200, pricePerKg: 8500 },
-            { productId: pupukNPK.id, minVolume: 200, maxVolume: null, pricePerKg: 7800 },
+            { productId: pupukNPK.id, minVolume: 0, maxVolume: 5000, pricePerKg: 10000 },
+            { productId: pupukNPK.id, minVolume: 5000, maxVolume: 15000, pricePerKg: 9200 },
+            { productId: pupukNPK.id, minVolume: 15000, maxVolume: 25000, pricePerKg: 8500 },
+            { productId: pupukNPK.id, minVolume: 25000, maxVolume: null, pricePerKg: 7000 },
         ],
     });
     await prisma.priceTier.createMany({

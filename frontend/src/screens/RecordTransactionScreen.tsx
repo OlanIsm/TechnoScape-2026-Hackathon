@@ -12,6 +12,7 @@ import {
 } from 'react-native-web';
 import { KoperasiBottomNav } from '../components/KoperasiBottomNav';
 import { MainHeader } from '../components/MainHeader';
+import { api } from '../services/api';
 import { colors, fonts } from '../theme';
 
 type RecordTransactionScreenProps = {
@@ -22,6 +23,7 @@ type RecordTransactionScreenProps = {
 };
 
 const fertilizerOptions = ['Urea', 'NPK', 'SP-36', 'ZA', 'Organik'];
+type TransactionTab = 'expense' | 'income';
 
 const cardShadow = {
   boxShadow: '0 4px 12px rgba(27, 67, 50, 0.05)',
@@ -34,9 +36,9 @@ export function RecordTransactionScreen({
   onLogoutPress,
 }: RecordTransactionScreenProps) {
   const { height } = useWindowDimensions();
+  const [activeTab, setActiveTab] = useState<TransactionTab>('expense');
   const [fertilizer, setFertilizer] = useState('Urea');
   const [quantity, setQuantity] = useState('');
-  const [supplier, setSupplier] = useState('');
   const [date, setDate] = useState('');
   const [totalPrice, setTotalPrice] = useState('');
   const [notice, setNotice] = useState('');
@@ -53,20 +55,31 @@ export function RecordTransactionScreen({
     return `Estimasi Rp ${Math.round(numericTotal / numericQuantity).toLocaleString('id-ID')} /kg`;
   }, [quantity, totalPrice]);
 
-  const saveTransaction = () => {
-    if (!quantity || !supplier || !date || !totalPrice) {
+  const saveTransaction = async () => {
+    if (!quantity || !date || !totalPrice) {
       setNotice('Semua field wajib diisi.');
       window.setTimeout(() => setNotice(''), 2600);
       return;
     }
 
-    setNotice('');
-    setQuantity('');
-    setSupplier('');
-    setDate('');
-    setTotalPrice('');
-    setSuccessToast('Transaksi berhasil dicatat.');
-    window.setTimeout(() => setSuccessToast(''), 2600);
+    try {
+      await api.recordTransaction({
+        jenisPupuk: fertilizer,
+        quantity: Number(quantity),
+        supplierName: activeTab === 'expense' ? 'Catat Pengeluaran' : 'Catat Pemasukan',
+        tanggal: date,
+        totalPrice: Number(totalPrice),
+      });
+      setNotice('');
+      setQuantity('');
+      setDate('');
+      setTotalPrice('');
+      setSuccessToast(`${activeTab === 'expense' ? 'Pengeluaran' : 'Pemasukan'} berhasil dicatat.`);
+      window.setTimeout(() => setSuccessToast(''), 2600);
+    } catch (err: unknown) {
+      setNotice(getErrorMessage(err, 'Gagal menyimpan transaksi.'));
+      window.setTimeout(() => setNotice(''), 3500);
+    }
   };
 
   return (
@@ -82,13 +95,32 @@ export function RecordTransactionScreen({
           <View style={styles.hero}>
             <Text style={styles.title}>Catat Transaksi Manual</Text>
             <Text style={styles.subtitle}>
-              Masukkan detail pengadaan pupuk untuk dicatat dalam log koperasi.
+              Masukkan detail pengeluaran atau pemasukan pupuk untuk dicatat dalam log koperasi.
             </Text>
           </View>
 
+          <View style={styles.tabs}>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => setActiveTab('expense')}
+              style={[styles.tabButton, activeTab === 'expense' && styles.tabButtonActive]}
+            >
+              <Text style={[styles.tabText, activeTab === 'expense' && styles.tabTextActive]}>
+                Catat Pengeluaran
+              </Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => setActiveTab('income')}
+              style={[styles.tabButton, activeTab === 'income' && styles.tabButtonActive]}
+            >
+              <Text style={[styles.tabText, activeTab === 'income' && styles.tabTextActive]}>Catat Pemasukan</Text>
+            </Pressable>
+          </View>
+
           {notice ? (
-            <View style={styles.notice}>
-              <Text style={styles.noticeText}>{notice}</Text>
+            <View style={[styles.notice, styles.errorNotice]}>
+              <Text style={[styles.noticeText, styles.errorNoticeText]}>{notice}</Text>
             </View>
           ) : null}
 
@@ -124,13 +156,12 @@ export function RecordTransactionScreen({
             />
 
             <Field
-              label="Nama Supplier"
-              onChangeText={setSupplier}
-              placeholder="Masukkan nama supplier"
-              value={supplier}
+              label="Tanggal Transaksi"
+              onChangeText={setDate}
+              placeholder="2026-10-15"
+              value={date}
+              type="date"
             />
-
-            <Field label="Tanggal Transaksi" onChangeText={setDate} placeholder="2026-10-15" value={date} />
 
             <Field
               inputMode="numeric"
@@ -144,7 +175,9 @@ export function RecordTransactionScreen({
             <View style={styles.summaryBox}>
               <View>
                 <Text style={styles.summaryLabel}>Ringkasan</Text>
-                <Text style={styles.summaryValue}>{fertilizer} dari {supplier || 'supplier belum diisi'}</Text>
+                <Text style={styles.summaryValue}>
+                  {activeTab === 'expense' ? 'Pengeluaran' : 'Pemasukan'} {fertilizer}
+                </Text>
               </View>
               <Text style={styles.summaryHint}>{estimatedPricePerKg}</Text>
             </View>
@@ -154,7 +187,9 @@ export function RecordTransactionScreen({
                 <View style={styles.saveIconTop} />
                 <View style={styles.saveIconLine} />
               </View>
-              <Text style={styles.saveText}>Simpan Transaksi</Text>
+              <Text style={styles.saveText}>
+                Simpan {activeTab === 'expense' ? 'Pengeluaran' : 'Pemasukan'}
+              </Text>
             </Pressable>
           </View>
         </ScrollView>
@@ -179,6 +214,10 @@ export function RecordTransactionScreen({
   );
 }
 
+function getErrorMessage(err: unknown, fallback: string) {
+  return err instanceof Error ? err.message : fallback;
+}
+
 type FieldProps = {
   inputMode?: 'numeric' | 'text';
   label: string;
@@ -186,23 +225,47 @@ type FieldProps = {
   placeholder: string;
   prefix?: string;
   value: string;
+  type?: string;
 };
 
-function Field({ inputMode = 'text', label, onChangeText, placeholder, prefix, value }: FieldProps) {
+function Field({ inputMode = 'text', label, onChangeText, placeholder, prefix, value, type }: FieldProps) {
   return (
     <View style={styles.fieldGroup}>
       <Text style={styles.label}>{label}</Text>
       <View style={styles.inputWrap}>
         {prefix ? <Text style={styles.prefix}>{prefix}</Text> : null}
-        <TextInput
-          accessibilityLabel={label}
-          inputMode={inputMode}
-          onChangeText={onChangeText}
-          placeholder={placeholder}
-          placeholderTextColor={colors.outline}
-          style={[styles.input, prefix ? styles.inputWithPrefix : undefined]}
-          value={value}
-        />
+        {type === 'date' ? (
+          <input
+            type="date"
+            value={value}
+            onChange={(e) => onChangeText(e.target.value)}
+            placeholder={placeholder}
+            style={{
+              flex: 1,
+              color: colors.onSurface,
+              fontFamily: fonts.body,
+              fontSize: '14px',
+              height: '46px',
+              paddingLeft: '14px',
+              paddingRight: '14px',
+              border: 'none',
+              outline: 'none',
+              backgroundColor: 'transparent',
+              width: '100%',
+              boxSizing: 'border-box',
+            }}
+          />
+        ) : (
+          <TextInput
+            accessibilityLabel={label}
+            inputMode={inputMode}
+            onChangeText={onChangeText}
+            placeholder={placeholder}
+            placeholderTextColor={colors.outline}
+            style={[styles.input, prefix ? styles.inputWithPrefix : undefined]}
+            value={value}
+          />
+        )}
       </View>
     </View>
   );
@@ -244,6 +307,35 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
   },
+  tabs: {
+    flexDirection: 'row',
+    backgroundColor: colors.surfaceContainerLow,
+    borderRadius: 10,
+    padding: 4,
+  },
+  tabButton: {
+    flex: 1,
+    minHeight: 42,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+    paddingHorizontal: 6,
+  },
+  tabButtonActive: {
+    backgroundColor: colors.surfaceCard,
+    ...cardShadow,
+  },
+  tabText: {
+    color: colors.onSurfaceVariant,
+    fontFamily: fonts.body,
+    fontSize: 12,
+    fontWeight: '700',
+    lineHeight: 16,
+    textAlign: 'center',
+  },
+  tabTextActive: {
+    color: colors.primary,
+  },
   notice: {
     backgroundColor: colors.secondaryContainer,
     borderColor: colors.secondaryFixedDim,
@@ -252,12 +344,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
   },
+  errorNotice: {
+    backgroundColor: '#F8D7DA',
+    borderColor: '#F5C6CB',
+  },
   noticeText: {
     color: colors.primary,
     fontFamily: fonts.body,
     fontSize: 12,
     fontWeight: '600',
     lineHeight: 16,
+  },
+  errorNoticeText: {
+    color: '#721C24',
   },
   successToast: {
     position: 'absolute',

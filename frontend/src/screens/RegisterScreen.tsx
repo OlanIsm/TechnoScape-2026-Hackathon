@@ -27,8 +27,8 @@ const steps = [
   { id: 2, label: 'Dokumen' },
 ] as const;
 
-function getErrorMessage(error: unknown, fallback: string) {
-  return error instanceof Error ? error.message : fallback;
+function getErrorMessage(err: unknown, fallback: string) {
+  return err instanceof Error ? err.message : fallback;
 }
 
 export function RegisterScreen({ onBackPress, onLoginPress }: RegisterScreenProps) {

@@ -11,6 +11,11 @@ import { SupplierMenuScreen } from './screens/MenuScreen';
 import { RecordTransactionScreen } from './screens/RecordTransactionScreen';
 import { RegisterScreen } from './screens/RegisterScreen';
 import { SplashScreen } from './screens/SplashScreen';
+import { api } from './services/api';
+
+type RecordedOrder = {
+  id: string;
+};
 
 type Screen =
   | 'splash'
@@ -71,7 +76,7 @@ function getInitialScreen(): Screen {
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>(getInitialScreen);
-  const [joinedPoolIds, setJoinedPoolIds] = useState<number[]>([2]);
+  const [joinedPoolIds, setJoinedPoolIds] = useState<Array<ProcurementPool['id']>>([2]);
   const [selectedJoinPool, setSelectedJoinPool] = useState<ProcurementPool>(pools[0]);
   const [selectedDetailPool, setSelectedDetailPool] = useState<ProcurementPool>(pools[1]);
   const [collectiveNotice, setCollectiveNotice] = useState('');
@@ -124,12 +129,35 @@ export default function App() {
     setScreen('collective-buy');
   };
 
-  const confirmJoinPool = (poolId: number, contributionTon: number) => {
-    setJoinedPoolIds((currentIds) => (currentIds.includes(poolId) ? currentIds : [...currentIds, poolId]));
-    setCollectiveNotice(`Berhasil bergabung ke pool dengan kontribusi ${contributionTon.toLocaleString('id-ID')} Ton.`);
-    setCollectiveInitialTab('mine');
-    window.location.hash = 'kolektif';
-    setScreen('collective-buy');
+  const confirmJoinPool = async (poolId: ProcurementPool['id'], contributionTon: number) => {
+    try {
+      const pool = selectedJoinPool;
+      if (!pool) return;
+
+      const quantityKg = contributionTon * 1000;
+      const unitPricePerKg = pool.unitPricePerTon / 1000;
+      const totalPrice = quantityKg * unitPricePerKg;
+
+      // 1. Record order in backend
+      const order = (await api.recordTransaction({
+        jenisPupuk: pool.product,
+        quantity: quantityKg,
+        supplierName: pool.supplier,
+        tanggal: new Date().toISOString().split('T')[0],
+        totalPrice: totalPrice,
+      })) as RecordedOrder;
+
+      // 2. Join pool in backend
+      await api.joinPool(String(poolId), order.id);
+
+      setJoinedPoolIds((currentIds) => (currentIds.includes(poolId) ? currentIds : [...currentIds, poolId]));
+      setCollectiveNotice(`Berhasil bergabung ke pool dengan kontribusi ${contributionTon.toLocaleString('id-ID')} Ton.`);
+      setCollectiveInitialTab('mine');
+      window.location.hash = 'kolektif';
+      setScreen('collective-buy');
+    } catch (err: unknown) {
+      alert('Gagal bergabung ke pool: ' + (err instanceof Error ? err.message : String(err)));
+    }
   };
 
   const goToRecordTransaction = () => {

@@ -184,14 +184,26 @@ If the amount exceeds remaining target, the system rejects the join request.
 
 ### Menu 3 — Pencatatan Transaksi
 
-This menu is for recording manual/offline purchases.
+This menu is for recording manual/offline stock movement and transaction value.
 
-Required fields:
+The screen has two tabs:
+
+```text
+Catat Pengeluaran
+Catat Pemasukan
+```
+
+Default tab:
+
+```text
+Catat Pengeluaran
+```
+
+Both tabs use the same required fields:
 
 ```text
 Jenis Pupuk
 Jumlah (kg)
-Nama Supplier
 Tanggal Transaksi
 Total Harga
 ```
@@ -209,6 +221,8 @@ the system:
 - updates dashboard data,
 - saves historical procurement data,
 - includes the transaction in audit/reporting records.
+
+The UI does not ask for supplier name in this screen. Supplier-related fields are handled internally or by backend defaults until the API is revised.
 
 ---
 
@@ -233,6 +247,13 @@ It should not include:
 - accepted but unfinished pool,
 - on-going payment window,
 - re-propose process that is not final.
+
+Current MVP UI rules:
+
+- no filter chips,
+- no profile pictures/avatar stack,
+- no `Lihat Detail` button on pool history cards,
+- pool history title is `{proposing_koperasi}`.
 
 ---
 

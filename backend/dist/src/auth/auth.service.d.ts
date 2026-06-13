@@ -57,5 +57,5 @@ export declare class AuthService {
         email: string;
         role: import("@prisma/client").$Enums.Role;
         koperasiId: string | null;
-    } | null>;
+    }>;
 }

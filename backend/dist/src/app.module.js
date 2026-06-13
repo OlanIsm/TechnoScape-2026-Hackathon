@@ -16,12 +16,13 @@ const supplier_module_1 = require("./supplier/supplier.module");
 const order_module_1 = require("./order/order.module");
 const auth_module_1 = require("./auth/auth.module");
 const dashboard_module_1 = require("./dashboard/dashboard.module");
+const volumemind_module_1 = require("./volumemind/volumemind.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
-        imports: [prisma_module_1.PrismaModule, users_module_1.UsersModule, supplier_module_1.SupplierModule, order_module_1.OrderModule, auth_module_1.AuthModule, dashboard_module_1.DashboardModule],
+        imports: [prisma_module_1.PrismaModule, users_module_1.UsersModule, supplier_module_1.SupplierModule, order_module_1.OrderModule, auth_module_1.AuthModule, dashboard_module_1.DashboardModule, volumemind_module_1.VolumemindModule],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],
     })

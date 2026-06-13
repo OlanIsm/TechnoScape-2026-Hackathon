@@ -43,8 +43,12 @@ export class OrderService {
       where: { id: userId },
     });
 
-    if (!user || !user.koperasiId) {
-      throw new BadRequestException('User tidak terasosiasi dengan Koperasi');
+    if (!user) {
+      throw new BadRequestException('Sesi Anda telah kedaluwarsa atau User tidak ditemukan. Silakan log out dan masuk kembali.');
+    }
+
+    if (!user.koperasiId) {
+      throw new BadRequestException('User Anda tidak terasosiasi dengan Koperasi mana pun di sistem.');
     }
 
     // Cari produk

@@ -1,6 +1,41 @@
 const API_BASE_URL = 'http://localhost:3000';
 
-type ApiPayload = Record<string, unknown>;
+type LoginResponse = {
+  access_token?: string;
+  user?: {
+    email?: string;
+    role?: string;
+  };
+};
+
+type RegisterPayload = {
+  acceptedTerms?: boolean;
+  address?: string;
+  documentName?: string;
+  email: string;
+  ktpName?: string;
+  name: string;
+  organizationName?: string;
+  password: string;
+  phone?: string;
+  responsibleName?: string;
+  role?: 'koperasi' | 'supplier';
+};
+
+type CreatePoolPayload = {
+  deadline: string;
+  name: string;
+  productId: string;
+  targetVolumeKg: number;
+};
+
+type ManualTransactionPayload = {
+  jenisPupuk: string;
+  quantity: number;
+  supplierName: string;
+  tanggal: string;
+  totalPrice: number;
+};
 
 export function getToken() {
   return localStorage.getItem('volumemate_token');
@@ -15,7 +50,7 @@ export function clearToken() {
   localStorage.removeItem('volumemate_user');
 }
 
-async function request(endpoint: string, options: RequestInit = {}) {
+async function request<T = unknown>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const token = getToken();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -31,20 +66,20 @@ async function request(endpoint: string, options: RequestInit = {}) {
   if (!response.ok) {
     let errMsg = 'Terjadi kesalahan pada server';
     try {
-      const errData = await response.json();
+      const errData = (await response.json()) as { message?: string };
       errMsg = errData.message || errMsg;
     } catch {
-      errMsg = 'Terjadi kesalahan pada server';
+      // Keep the default error message when the response body is not JSON.
     }
     throw new Error(errMsg);
   }
 
-  return response.json();
+  return response.json() as Promise<T>;
 }
 
 export const api = {
   async login(email: string, password: string) {
-    const data = await request('/auth/login', {
+    const data = await request<LoginResponse>('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
@@ -55,7 +90,7 @@ export const api = {
     return data;
   },
 
-  async register(data: ApiPayload) {
+  async register(data: RegisterPayload) {
     return request('/auth/register', {
       method: 'POST',
       body: JSON.stringify(data),
@@ -74,7 +109,7 @@ export const api = {
     return request('/orders/pools/active');
   },
 
-  async createPool(data: ApiPayload) {
+  async createPool(data: CreatePoolPayload) {
     return request('/orders/pools', {
       method: 'POST',
       body: JSON.stringify(data),
@@ -92,7 +127,7 @@ export const api = {
     return request('/suppliers');
   },
 
-  async recordTransaction(data: ApiPayload) {
+  async recordTransaction(data: ManualTransactionPayload) {
     return request('/orders/manual', {
       method: 'POST',
       body: JSON.stringify(data),

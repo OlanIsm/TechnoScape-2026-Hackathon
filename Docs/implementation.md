@@ -26,12 +26,15 @@ This implementation plan reflects the revised role and pool lifecycle:
 volumemate/
 ├── frontend/              # React + Vite mobile-only PWA
 ├── backend/               # NestJS + Prisma
-├── ai-engine/             # Python + scikit-learn service
-├── docs/
-│   ├── prd_updated_v3.md
-│   ├── diagram_updated_v3.md
-│   ├── implementation_plan_updated_v3.md
-│   └── roles_and_permissions_updated_v3.md
+├── VolumeMind/            # AI/model artifact area
+├── Docs/
+│   ├── api_contract.md
+│   ├── diagram.md
+│   ├── frontend_structure.md
+│   ├── implementation.md
+│   ├── prd.md
+│   ├── roles_and_permissions.md
+│   └── volumemind_integration_flow.md
 └── README.md
 ```
 
@@ -190,7 +193,7 @@ Responsibilities:
 
 - record final pool outcomes only,
 - record manual transactions,
-- support filters by supplier, fertilizer type, and date range,
+- support simple list display and export,
 - export audit records to CSV/Excel/PDF if needed.
 
 ---
@@ -323,7 +326,8 @@ id
 koperasi_id
 fertilizer_type
 quantity_kg
-supplier_name
+movement_type: EXPENSE | INCOME
+supplier_name nullable / legacy compatibility
 transaction_date
 total_price
 price_per_kg
@@ -553,22 +557,39 @@ Konfirmasi Pemesanan
 
 ### Pencatatan Transaksi
 
-Input fields:
+Current UI uses a two-tab switch:
+
+```text
+Catat Pengeluaran
+Catat Pemasukan
+```
+
+Default tab:
+
+```text
+Catat Pengeluaran
+```
+
+Both tabs use the same input fields:
 
 ```text
 Jenis Pupuk
 Jumlah (kg)
-Nama Supplier
 Tanggal Transaksi
 Total Harga
 Simpan Transaksi
 ```
 
+The current frontend does not show a `Nama Supplier` input in this screen. While the existing backend endpoint still accepts/requires `supplierName`, the frontend may pass an internal placeholder derived from the selected tab.
+
 ### Audit Log
 
 - final pool outcomes,
 - manual transaction records,
-- filters,
+- no filter chips in the current mobile MVP UI,
+- no profile pictures/avatar stack in pool history cards,
+- no `Lihat Detail` button for pool history cards,
+- pool history card title uses `{proposing_koperasi}`,
 - export if needed.
 
 ## 5.2 Supplier Navigation
@@ -654,7 +675,7 @@ Password and password hash must never be shown.
 - create Home dashboard,
 - create Dashboard VolumeMind forecast and recommended-buy section,
 - connect Dashboard recommendation section to mock AI/service data until API contract is finalized,
-- create Pencatatan Transaksi form,
+- create Pencatatan Transaksi form with `Catat Pengeluaran` and `Catat Pemasukan` tabs,
 - store manual transactions,
 - update dashboard metrics.
 
@@ -685,7 +706,7 @@ Password and password hash must never be shown.
 - final pool audit log,
 - transaction audit table,
 - supplier audit log,
-- filters and export.
+- export.
 
 ### Phase 7 — QA & Edge Case Testing
 

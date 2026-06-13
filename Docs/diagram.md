@@ -178,7 +178,11 @@ flowchart TD
 ```mermaid
 flowchart TD
     K[Verified Koperasi] --> TXFORM[Pencatatan Transaksi Menu]
-    TXFORM --> INPUT[Input Jenis Pupuk, Jumlah kg, Supplier Name, Transaction Date, Total Price]
+    TXFORM --> TAB{Select Tab}
+    TAB --> OUT[Catat Pengeluaran]
+    TAB --> IN[Catat Pemasukan]
+    OUT --> INPUT[Input Jenis Pupuk, Jumlah kg, Transaction Date, Total Price]
+    IN --> INPUT
     INPUT --> SAVE[Click Simpan Transaksi]
     SAVE --> DB[(Database)]
     DB --> DASH[Update Dashboard Metrics]

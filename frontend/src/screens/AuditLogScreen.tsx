@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Pressable,
   SafeAreaView,
@@ -12,6 +12,7 @@ import {
 import { KoperasiBottomNav } from '../components/KoperasiBottomNav';
 import { MainHeader } from '../components/MainHeader';
 import { colors, fonts } from '../theme';
+import { api } from '../services/api';
 
 type AuditLogScreenProps = {
   onCollectivePress: () => void;
@@ -27,6 +28,7 @@ type ManualLog = {
   supplier: string;
   time: string;
   total: string;
+  hash?: string;
 };
 
 type PoolLog = {
@@ -37,7 +39,16 @@ type PoolLog = {
   status: 'SUKSES' | 'GAGAL' | 'DIBATALKAN';
 };
 
-const manualLogs: Array<{ dateLabel: string; items: ManualLog[] }> = [
+type AuditLogEntry = {
+  action: string;
+  createdAt: string;
+  details: string;
+  id: string;
+};
+
+type AuditDetails = Record<string, string | number | boolean | null | undefined>;
+
+const dummyManualLogs: Array<{ dateLabel: string; items: ManualLog[] }> = [
   {
     dateLabel: 'HARI INI, 24 OKT 2026',
     items: [
@@ -48,6 +59,7 @@ const manualLogs: Array<{ dateLabel: string; items: ManualLog[] }> = [
         supplier: 'PT Agro Maju',
         time: '10:45 WIB',
         total: 'Rp 425 Jt',
+        hash: 'VM-UR-A7K2',
       },
       {
         amount: '120 Ton',
@@ -56,6 +68,7 @@ const manualLogs: Array<{ dateLabel: string; items: ManualLog[] }> = [
         supplier: 'CV Tani Subur',
         time: '08:30 WIB',
         total: 'Rp 1.2 M',
+        hash: 'VM-NP-B4R1',
       },
     ],
   },
@@ -69,12 +82,13 @@ const manualLogs: Array<{ dateLabel: string; items: ManualLog[] }> = [
         supplier: 'Kop. Makmur',
         time: '14:15 WIB',
         total: 'Rp 85 Jt',
+        hash: 'VM-OC-C3D9',
       },
     ],
   },
 ];
 
-const poolLogs: PoolLog[] = [
+const dummyPoolLogs: PoolLog[] = [
   {
     date: '21 Okt',
     description: 'Target volume 500 Ton Urea terpenuhi dengan 3 koperasi partisipan.',
@@ -102,6 +116,52 @@ const cardShadow = {
   boxShadow: '0 4px 12px rgba(27, 67, 50, 0.05)',
 } as unknown as ViewStyle;
 
+function formatTime(dateStr: string) {
+  const d = new Date(dateStr);
+  return d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB';
+}
+
+function formatDateLabel(dateStr: string) {
+  const d = new Date(dateStr);
+  const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
+  const formatted = d.toLocaleDateString('id-ID', options).toUpperCase();
+
+  const today = new Date();
+  const yesterday = new Date();
+  yesterday.setDate(today.getDate() - 1);
+
+  if (d.toDateString() === today.toDateString()) {
+    return `HARI INI, ${formatted}`;
+  } else if (d.toDateString() === yesterday.toDateString()) {
+    return `KEMARIN, ${formatted}`;
+  }
+  return formatted;
+}
+
+function formatDateShort(dateStr: string) {
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+}
+
+function parseAuditDetails(rawDetails: string): AuditDetails {
+  try {
+    const parsed = JSON.parse(rawDetails) as unknown;
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? (parsed as AuditDetails) : {};
+  } catch {
+    return {};
+  }
+}
+
+function detailText(details: AuditDetails, key: string, fallback = '') {
+  const value = details[key];
+  return typeof value === 'string' ? value : fallback;
+}
+
+function detailNumber(details: AuditDetails, key: string, fallback = 0) {
+  const value = details[key];
+  return typeof value === 'number' ? value : fallback;
+}
+
 export function AuditLogScreen({
   onCollectivePress,
   onHomePress,
@@ -111,11 +171,112 @@ export function AuditLogScreen({
   const { height } = useWindowDimensions();
   const [activeTab, setActiveTab] = useState<'manual' | 'pool'>('manual');
   const [notice, setNotice] = useState('');
+  const [logs, setLogs] = useState<AuditLogEntry[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const showNotice = (message: string) => {
     setNotice(message);
     window.setTimeout(() => setNotice(''), 2400);
   };
+
+  useEffect(() => {
+    async function loadLogs() {
+      try {
+        setIsLoading(true);
+        const data = (await api.getAuditLogs()) as AuditLogEntry[];
+        setLogs(data);
+      } catch (err) {
+        showNotice('Gagal memuat log audit: ' + (err instanceof Error ? err.message : String(err)));
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadLogs();
+  }, []);
+
+  const handleExport = () => {
+    try {
+      const url = api.exportCsvUrl();
+      window.open(url, '_blank');
+      showNotice('Mengunduh laporan CSV...');
+    } catch {
+      showNotice('Gagal mengekspor data.');
+    }
+  };
+
+  // Process manual logs
+  const manualActions = ['MANUAL_TRANSACTION', 'CREATE_ORDER', 'CONFIRM_ORDER'];
+  const filteredManualLogs = logs.filter((log) => manualActions.includes(log.action));
+
+  const manualItemsMapped = filteredManualLogs.map((log) => {
+    const details = parseAuditDetails(log.details);
+
+    const isManual = log.action === 'MANUAL_TRANSACTION';
+    const product = isManual ? detailText(details, 'jenisPupuk', 'Pupuk') : 'Pembelian Pupuk';
+    const supplier = isManual ? detailText(details, 'supplierName', 'Pemasok') : 'Sistem';
+    const amount = isManual ? `${detailNumber(details, 'quantity')} kg` : '-';
+    const total = `Rp ${detailNumber(details, 'totalPrice').toLocaleString('id-ID')}`;
+    const icon = isManual ? product.substring(0, 2).toUpperCase() : 'ORD';
+
+    return {
+      product,
+      supplier,
+      amount,
+      total,
+      time: formatTime(log.createdAt),
+      dateLabel: formatDateLabel(log.createdAt),
+      icon,
+      hash: `VM-${icon}-${log.id.substring(0, 4).toUpperCase()}`,
+    };
+  });
+
+  const groupedManualLogs: Array<{ dateLabel: string; items: ManualLog[] }> = [];
+  manualItemsMapped.forEach((item) => {
+    let group = groupedManualLogs.find((g) => g.dateLabel === item.dateLabel);
+    if (!group) {
+      group = { dateLabel: item.dateLabel, items: [] };
+      groupedManualLogs.push(group);
+    }
+    group.items.push(item);
+  });
+
+  // Process pool logs
+  const poolActions = ['JOIN_POOL', 'FINALIZE_POOL_SUCCESS', 'FINALIZE_POOL_FALLBACK_GRACE'];
+  const filteredPoolLogs = logs.filter((log) => poolActions.includes(log.action));
+
+  const mappedPoolLogs: PoolLog[] = filteredPoolLogs.map((log) => {
+    const details = parseAuditDetails(log.details);
+
+    let description = '';
+    let status: 'SUKSES' | 'GAGAL' | 'DIBATALKAN' = 'SUKSES';
+    const poolId = detailText(details, 'poolId');
+    const poolIdShort = poolId ? poolId.substring(0, 8) : log.id.substring(0, 8);
+
+    if (log.action === 'JOIN_POOL') {
+      description = `Koperasi bergabung ke pool. Volume total: ${detailNumber(details, 'totalVolumeKg')} kg. Harga saat ini: Rp ${detailNumber(details, 'activePricePerKg').toLocaleString('id-ID')}/kg.`;
+      status = 'SUKSES';
+    } else if (log.action === 'FINALIZE_POOL_SUCCESS') {
+      description = `Pool #${poolIdShort} diselesaikan sukses dengan total volume ${detailNumber(details, 'totalVolumeKg')} kg.`;
+      status = 'SUKSES';
+    } else if (log.action === 'FINALIZE_POOL_FALLBACK_GRACE') {
+      const extendedDeadline = detailText(details, 'extendedDeadline');
+      const deadlineStr = extendedDeadline ? formatDateShort(extendedDeadline) : '2 hari';
+      description = `Batas waktu pool terlampaui (${detailNumber(details, 'totalVolumeKg')} kg). Grace period aktif: deadline diperpanjang hingga ${deadlineStr}.`;
+      status = 'GAGAL';
+    }
+
+    return {
+      id: `Pool #${poolIdShort}`,
+      date: formatDateShort(log.createdAt),
+      description,
+      proposingKoperasi:
+        detailText(details, 'proposingKoperasi') || detailText(details, 'koperasiName', 'Koperasi Pengaju'),
+      status,
+    };
+  });
+
+  const manualLogsToRender = groupedManualLogs.length > 0 ? groupedManualLogs : dummyManualLogs;
+  const poolLogsToRender = mappedPoolLogs.length > 0 ? mappedPoolLogs : dummyPoolLogs;
 
   return (
     <SafeAreaView style={[styles.safeArea, { minHeight: height }]}>
@@ -134,21 +295,13 @@ export function AuditLogScreen({
             </View>
             <Pressable
               accessibilityRole="button"
-              onPress={() => showNotice('Dummy: export PDF/Excel akan tersedia setelah API audit siap.')}
+              onPress={handleExport}
               style={styles.exportButton}
             >
               <DownloadIcon />
-              <Text style={styles.exportText}>Eksport</Text>
+              <Text style={styles.exportText}>Ekspor CSV</Text>
             </Pressable>
           </View>
-
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View style={styles.filterRow}>
-              <FilterChip isActive label="Semua Tanggal" />
-              <FilterChip label="Semua Pemasok" />
-              <FilterChip label="Filter Lainnya" />
-            </View>
-          </ScrollView>
 
           <View style={styles.tabs}>
             <Pressable
@@ -173,7 +326,15 @@ export function AuditLogScreen({
             </View>
           ) : null}
 
-          {activeTab === 'manual' ? <ManualLogList /> : <PoolLogList />}
+          {isLoading ? (
+            <View style={styles.loadingContainer}>
+              <Text style={styles.loadingText}>Memuat log audit...</Text>
+            </View>
+          ) : activeTab === 'manual' ? (
+            <ManualLogList items={manualLogsToRender} />
+          ) : (
+            <PoolLogList items={poolLogsToRender} />
+          )}
         </ScrollView>
 
         <KoperasiBottomNav
@@ -187,17 +348,17 @@ export function AuditLogScreen({
   );
 }
 
-function ManualLogList() {
+function ManualLogList({ items }: { items: Array<{ dateLabel: string; items: ManualLog[] }> }) {
   return (
     <View style={styles.logList}>
-      {manualLogs.map((group) => (
+      {items.map((group) => (
         <View key={group.dateLabel} style={styles.dateGroup}>
           <View style={styles.dateSeparator}>
             <Text style={styles.dateLabel}>{group.dateLabel}</Text>
             <View style={styles.separatorLine} />
           </View>
-          {group.items.map((item) => (
-            <ManualLogCard item={item} key={`${group.dateLabel}-${item.product}`} />
+          {group.items.map((item, idx) => (
+            <ManualLogCard item={item} key={`${group.dateLabel}-${item.product}-${idx}`} />
           ))}
         </View>
       ))}
@@ -208,9 +369,6 @@ function ManualLogList() {
 function ManualLogCard({ item }: { item: ManualLog }) {
   return (
     <View style={styles.manualCard}>
-      <View style={styles.logIconCircle}>
-        <Text style={styles.logIconText}>{item.icon}</Text>
-      </View>
       <View style={styles.logContent}>
         <Text numberOfLines={1} style={styles.logTitle}>
           {item.product}
@@ -218,7 +376,7 @@ function ManualLogCard({ item }: { item: ManualLog }) {
         <Text style={styles.logMeta}>
           {item.supplier} - {item.time}
         </Text>
-        <Text style={styles.hashText}>Hash: VM-{item.icon}-A7K2</Text>
+        <Text style={styles.hashText}>Hash: {item.hash || 'VM-GEN-XXXX'}</Text>
       </View>
       <View style={styles.amountBlock}>
         <Text style={styles.amountText}>{item.amount}</Text>
@@ -228,11 +386,15 @@ function ManualLogCard({ item }: { item: ManualLog }) {
   );
 }
 
-function PoolLogList() {
+type PoolLogListProps = {
+  items: PoolLog[];
+};
+
+function PoolLogList({ items }: PoolLogListProps) {
   return (
     <View style={styles.poolList}>
-      {poolLogs.map((log) => (
-        <View key={log.id} style={[styles.poolCard, getPoolCardStyle(log.status)]}>
+      {items.map((log, idx) => (
+        <View key={`${log.id}-${idx}`} style={[styles.poolCard, getPoolCardStyle(log.status)]}>
           <View style={styles.poolTopRow}>
             <View>
               <View style={[styles.statusBadge, getStatusStyle(log.status)]}>
@@ -253,14 +415,6 @@ function PoolLogList() {
   );
 }
 
-function FilterChip({ isActive = false, label }: { isActive?: boolean; label: string }) {
-  return (
-    <View style={[styles.filterChip, isActive && styles.filterChipActive]}>
-      <Text style={[styles.filterText, isActive && styles.filterTextActive]}>{label}</Text>
-      <Text style={[styles.chevron, isActive && styles.chevronActive]}>v</Text>
-    </View>
-  );
-}
 
 function DownloadIcon() {
   return (
@@ -404,46 +558,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.secondary,
     borderRadius: 1,
   },
-  filterRow: {
-    flexDirection: 'row',
-    gap: 8,
-    paddingRight: 4,
-  },
-  filterChip: {
-    minHeight: 38,
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 7,
-    backgroundColor: colors.surfaceContainerLowest,
-    borderColor: colors.outlineVariant,
-    borderRadius: 999,
-    borderWidth: 1,
-    paddingHorizontal: 14,
-  },
-  filterChipActive: {
-    backgroundColor: colors.secondary,
-    borderColor: colors.secondary,
-  },
-  filterText: {
-    color: colors.onSurface,
-    fontFamily: fonts.body,
-    fontSize: 13,
-    fontWeight: '600',
-    lineHeight: 18,
-  },
-  filterTextActive: {
-    color: colors.onPrimary,
-  },
-  chevron: {
-    color: colors.onSurfaceVariant,
-    fontFamily: fonts.body,
-    fontSize: 11,
-    fontWeight: '700',
-    lineHeight: 12,
-  },
-  chevronActive: {
-    color: colors.onPrimary,
-  },
   tabs: {
     flexDirection: 'row',
     backgroundColor: colors.surfaceContainerLow,
@@ -522,20 +636,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 13,
     ...cardShadow,
-  },
-  logIconCircle: {
-    width: 48,
-    height: 48,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.secondaryContainer,
-    borderRadius: 24,
-  },
-  logIconText: {
-    color: colors.secondary,
-    fontFamily: fonts.heading,
-    fontSize: 13,
-    fontWeight: '700',
   },
   logContent: {
     flex: 1,
@@ -681,5 +781,16 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     lineHeight: 16,
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+  },
+  loadingText: {
+    color: colors.primary,
+    fontFamily: fonts.body,
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

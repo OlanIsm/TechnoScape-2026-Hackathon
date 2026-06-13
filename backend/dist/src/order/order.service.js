@@ -38,8 +38,11 @@ let OrderService = class OrderService {
         const user = await this.prisma.user.findUnique({
             where: { id: userId },
         });
-        if (!user || !user.koperasiId) {
-            throw new common_1.BadRequestException('User tidak terasosiasi dengan Koperasi');
+        if (!user) {
+            throw new common_1.BadRequestException('Sesi Anda telah kedaluwarsa atau User tidak ditemukan. Silakan log out dan masuk kembali.');
+        }
+        if (!user.koperasiId) {
+            throw new common_1.BadRequestException('User Anda tidak terasosiasi dengan Koperasi mana pun di sistem.');
         }
         let product = await this.prisma.product.findFirst({
             where: {

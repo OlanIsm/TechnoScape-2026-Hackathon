@@ -11,4 +11,5 @@ export declare class DashboardController {
         akurasiPrediksi: number;
         rekomendasiVolumeMind: any;
     }>;
+    getVolumeMindSummary(query: any): Promise<any>;
 }

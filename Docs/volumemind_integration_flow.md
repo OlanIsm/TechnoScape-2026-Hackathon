@@ -1,81 +1,179 @@
-# 🌿 VolumeMate: Alur Integrasi AI di Dunia Nyata (Real-World Use Case)
-**Bagaimana VolumeMind AI Bekerja dari Hulu ke Hilir di Aplikasi Produksi**
+# VolumeMind Integration Flow — VolumeMate
 
-Dokumen ini menjelaskan alur interaksi data akhir (*end-to-end workflow*) antara pengguna, frontend, backend NestJS, database, dan AI Engine di aplikasi nyata.
+VolumeMind is the AI recommendation layer for VolumeMate.
+
+Important product rule:
+
+```text
+VolumeMind is shown only on Koperasi Dashboard.
+```
+
+There is no separate AI menu and no standalone AI input form in the current MVP.
 
 ---
 
-## 1. Diagram Alur Sistem (System Architecture Flow)
+## 1. User Experience
 
-Berikut adalah bagaimana data mengalir saat Admin Koperasi menekan tombol di aplikasi:
+Koperasi opens the mobile Dashboard and sees a VolumeMind card.
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Admin as Admin Koperasi (React App)
-    participant Nest as Backend (NestJS API)
-    participant DB as Database (PostgreSQL)
-    participant Weather as BMKG / Weather API
-    participant AI as AI Engine (FastAPI)
+The user does not manually enter AI parameters such as fertilizer type, target month, rainfall, or land size on a separate page.
 
-    Admin->>Nest: 1. Minta Rekomendasi Pengadaan (Koperasi, Pupuk, Tanggal target)
-    activate Nest
-    Nest->>DB: 2. Ambil profil koperasi (Luas lahan) & data supplier aktif
-    DB-->>Nest: Data Koperasi & Supplier Tiers
-    Nest->>Weather: 3. Ambil data rata-rata curah hujan daerah koperasi
-    Weather-->>Nest: Curah Hujan (mm)
-    
-    Nest->>AI: 4. POST /predict (tanggal, id_koperasi, jenis_pupuk, curah_hujan, luas_lahan)
-    AI-->>Nest: predicted_demand_kg (Hasil ramalan kebutuhan pupuk)
-    
-    Nest->>AI: 5. POST /recommend (predicted_demand, suppliers, target_date)
-    Note over AI: Hitung Supplier Termurah,<br/>Volume Hack, & Timing Beli
-    AI-->>Nest: Rekomendasi Lengkap (Supplier, Volume, Biaya, Hemat, Waktu Beli)
-    
-    Nest->>Admin: 6. Kirim Rekomendasi & Dasbor Visual
-    deactivate Nest
-    Admin->>Admin: Tampilkan Kartu Rekomendasi & Waktu Pemesanan
-    Admin->>Nest: 7. Konfirmasi Beli!
-    Nest->>DB: 8. Catat transaksi ke Immutable Audit Log (PostgreSQL)
+The Dashboard card should show a concise recommendation:
+
+```text
+Prediksi Kebutuhan Bulan Depan
+Rekomendasi Pemasok
+Kuantitas Optimal
+Estimasi Biaya
+Potensi Penghematan
+Akurasi Prediksi
+Konfirmasi Pemesanan
+```
+
+If data is insufficient:
+
+```text
+Data belum cukup untuk rekomendasi AI. Tambahkan transaksi atau data lahan terlebih dahulu.
 ```
 
 ---
 
-## 2. Alur Penggunaan Nyata Langkah-demi-Langkah (Real-World Steps)
+## 2. Data Sources
 
-### Langkah 1: Input Pengguna di Dasbor (Frontend React)
-Admin Koperasi Sumber Makmur membuka aplikasi PWA VolumeMate di HP/komputernya:
-*   Admin memilih jenis pupuk: **"Pupuk NPK Phonska"**.
-*   Admin memilih tanggal target penggunaan pupuk: **Oktober 2026** (karena bersiap menghadapi awal musim tanam Rendengan).
-*   Admin klik tombol **"Hitung Pengadaan Optimal"**.
+VolumeMind reads data from database/system sources:
 
-### Langkah 2: Pengambilan Data Otomatis (Backend NestJS)
-Backend NestJS menerima request tersebut dan bekerja di balik layar:
-1.  **Mengambil Data Lahan**: Mengambil total luas lahan aktif milik anggota Koperasi Sumber Makmur dari database PostgreSQL (misal: 500 Hektar).
-2.  **Mengambil Data Cuaca**: Memanggil API cuaca BMKG/OpenWeatherMap untuk mengambil estimasi curah hujan di wilayah koordinat koperasi pada bulan Oktober (misal: 300 mm).
-3.  **Mengambil Data Supplier**: Mengambil data daftar supplier pupuk aktif beserta tier harganya dari database.
+```text
+Koperasi profile
+Koperasi location
+member/active land data if available
+manual transaction records
+collective-buy pool history
+final pool outcomes
+verified supplier data
+supplier price tiers
+rainfall forecast from BMKG/OpenWeather/mock provider
+planting season inferred from month/location
+```
 
-### Langkah 3: Eksekusi Model AI (FastAPI / `/predict`)
-NestJS mengirimkan data tersebut ke AI Engine (FastAPI):
-*   FastAPI memuat model `demand_forecasting_model.joblib`.
-*   Model membaca bahwa di bulan **Oktober** (musim tanam **Rendengan**) dengan curah hujan **300 mm** dan lahan **500 Hektar**, Koperasi Sumber Makmur secara historis membutuhkan sekitar **9.500 kg** pupuk NPK.
-*   FastAPI mengembalikan angka **9.500 kg** ke NestJS.
+The frontend does not collect these values through a dedicated AI form.
 
-### Langkah 4: Optimasi Biaya & Waktu (FastAPI / `/recommend`)
-NestJS mengirimkan angka 9.500 kg tersebut beserta daftar supplier ke endpoint `/recommend` di FastAPI:
-*   AI menghitung bahwa supplier **PT Petrokimia** adalah yang termurah dengan harga Rp 9.200/kg.
-*   **Perhitungan Volume Hack**: AI mendeteksi bahwa jika koperasi membulatkan pembelian ke **10.000 kg**, harga per kg turun menjadi Rp 8.500/kg (Total biaya turun dari Rp 87,4 juta menjadi Rp 85 juta).
-*   **Perhitungan Timing**: AI mendeteksi bahwa total pesanan besar (10 ton), sehingga menyarankan pemesanan dilakukan **2 bulan lebih cepat (Agustus/September)** untuk memesan slot truk logistik dan menghindari antrean gudang supplier.
+---
 
-### Langkah 5: Tampilan Dasbor yang Actionable (Frontend React)
-Admin melihat rekomendasi di layar HP-nya dengan jelas:
-> 💡 **Rekomendasi VolumeMind AI:**
-> *   **Prediksi Kebutuhan Anggota**: 9.500 kg NPK.
-> *   **Saran Pembelian**: Beli **10.000 kg** (Volume Hack aktif - hemat Rp 2,4 juta daripada beli 9.500 kg).
-> *   **Supplier Terpilih**: PT Petrokimia Gresik.
-> *   **Waktu Pemesanan Terbaik**: Pesan antara bulan **Agustus hingga September 2026** (1-2 bulan sebelum target penggunaan Oktober) demi kelancaran pengiriman logistik.
+## 3. Backend Flow
 
-### Langkah 6: Eksekusi Transaksi Aman
-Jika Admin setuju, dia menekan tombol **"Konfirmasi Pemesanan"**:
-*   Sistem mencatat transaksi ini ke tabel database PostgreSQL dengan status **Immutable** (tidak bisa diubah atau dihapus) untuk mencegah manipulasi keuangan koperasi oleh pengurus nakal.
-*   Log transaksi otomatis masuk ke **Supplier Audit Log** yang siap diekspor menjadi laporan pertanggungjawaban PDF untuk rapat tahunan anggota koperasi.
+```mermaid
+sequenceDiagram
+    autonumber
+    actor K as Koperasi User
+    participant FE as Mobile Frontend
+    participant API as NestJS Backend
+    participant DB as Database
+    participant Weather as Weather API or Mock Provider
+    participant AI as VolumeMind Model/Service
+
+    K->>FE: Open Dashboard
+    FE->>API: GET /dashboard
+    API->>DB: Read koperasi profile, transactions, pools, suppliers, price tiers
+    API->>Weather: Fetch rainfall forecast if location is available
+    Weather-->>API: rainfall_forecast_mm
+    API->>AI: Predict demand and optimize purchase recommendation
+    AI-->>API: forecast + recommended buy
+    API-->>FE: Dashboard metrics + VolumeMind recommendation
+    FE-->>K: Show VolumeMind card
+```
+
+---
+
+## 4. Recommended Backend Output
+
+The frontend currently expects a field similar to:
+
+```json
+{
+  "akurasiPrediksi": 94,
+  "rekomendasiVolumeMind": {
+    "supplierName": "PT Agro Nusa",
+    "angka_kg": 12500,
+    "totalCost": 68750000,
+    "savingsRp": 4200000,
+    "bulan_1": "Bulan Depan",
+    "explanation": "Pembelian 12.5 ton mencapai tier harga lebih murah.",
+    "isVolumeHack": true
+  }
+}
+```
+
+Recommended future normalized shape:
+
+```json
+{
+  "volumeMind": {
+    "forecastedDemandKg": 9500,
+    "recommendedPurchaseKg": 10000,
+    "selectedSupplierName": "PT Petrokimia Gresik",
+    "estimatedTotalCost": 85000000,
+    "estimatedSaving": 2400000,
+    "bestOrderWindow": "Agustus - September 2026",
+    "accuracy": 94,
+    "reason": "Target 10 ton mencapai tier grosir supplier."
+  }
+}
+```
+
+---
+
+## 5. Model Responsibilities
+
+VolumeMind performs two background calculations:
+
+### 5.1 Demand Forecast
+
+Predict upcoming fertilizer need based on stored Koperasi data:
+
+```text
+historical manual transactions
+historical pool outcomes
+seasonality
+rainfall forecast
+land/profile data if available
+```
+
+### 5.2 Recommended Buy Optimization
+
+Compare forecasted demand against supplier price tiers.
+
+Example:
+
+```text
+Forecast demand: 9,500 kg NPK
+Supplier discount tier: 10,000 kg
+Recommendation: buy 10,000 kg
+Reason: total cost is lower despite buying more volume
+```
+
+---
+
+## 6. Frontend Rule
+
+VolumeMind UI belongs to:
+
+```text
+frontend/src/screens/KoperasiDashboardScreen.tsx
+```
+
+Do not add:
+
+```text
+VolumeMind menu
+AI input page
+AI wizard
+manual forecast form
+```
+
+The only user action currently planned from the Dashboard card is:
+
+```text
+Konfirmasi Pemesanan
+```
+
+For MVP, this can create a draft order/proposal or trigger a placeholder notice until backend flow is finalized.
