@@ -27,47 +27,54 @@ type Screen =
   | 'pool-detail'
   | 'record-transaction'
   | 'audit-log'
-  | 'supplier-menu'
+  | 'supplier-audit'
+  | 'supplier-proposal'
   | 'admin';
 
 function getInitialScreen(): Screen {
-  if (window.location.hash === '#login') {
+  const hash = decodeURIComponent(window.location.hash).toLowerCase();
+
+  if (hash === '#login') {
     return 'login';
   }
 
-  if (window.location.hash === '#register') {
+  if (hash === '#register') {
     return 'register';
   }
 
-  if (window.location.hash === '#koperasi') {
+  if (hash === '#koperasi') {
     return 'koperasi-dashboard';
   }
 
-  if (window.location.hash === '#kolektif') {
+  if (hash === '#kolektif') {
     return 'collective-buy';
   }
 
-  if (window.location.hash === '#gabung-pool') {
+  if (hash === '#gabung-pool') {
     return 'join-pool';
   }
 
-  if (window.location.hash === '#detail-pool') {
+  if (hash === '#detail-pool') {
     return 'pool-detail';
   }
 
-  if (window.location.hash === '#catat') {
+  if (hash === '#catat') {
     return 'record-transaction';
   }
 
-  if (window.location.hash === '#log') {
+  if (hash === '#log') {
     return 'audit-log';
   }
 
-  if (window.location.hash === '#supplier') {
-    return 'supplier-menu';
+  if (hash === '#supplier' || hash === '#manajemen-proposal' || hash === '#manajemen proposal') {
+    return 'supplier-proposal';
   }
 
-  if (window.location.hash === '#admin') {
+  if (hash === '#log-audit-supplier' || hash === '#log audit supplier') {
+    return 'supplier-audit';
+  }
+
+  if (hash === '#admin') {
     return 'admin';
   }
 
@@ -171,8 +178,8 @@ export default function App() {
   };
 
   const goToSupplierMenu = () => {
-    window.location.hash = 'supplier';
-    setScreen('supplier-menu');
+    window.location.hash = 'manajemen-proposal';
+    setScreen('supplier-proposal');
   };
 
   const goToAdmin = () => {
@@ -259,8 +266,12 @@ export default function App() {
     );
   }
 
-  if (screen === 'supplier-menu') {
-    return <SupplierMenuScreen onLogoutPress={goToLogin} />;
+  if (screen === 'supplier-proposal') {
+    return <SupplierMenuScreen initialMenu="proposal" onLogoutPress={goToLogin} />;
+  }
+
+  if (screen === 'supplier-audit') {
+    return <SupplierMenuScreen initialMenu="audit" onLogoutPress={goToLogin} />;
   }
 
   if (screen === 'admin') {

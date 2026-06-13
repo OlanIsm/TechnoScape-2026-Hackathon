@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
+  Image,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -9,10 +10,13 @@ import {
   View,
   type ViewStyle,
 } from 'react-native-web';
+import auditLogIcon from '../assets/audit_log_icon.svg';
+import homeIcon from '../assets/home_icon.svg';
 import { MainHeader } from '../components/MainHeader';
 import { colors, fonts } from '../theme';
 
 type SupplierMenuScreenProps = {
+  initialMenu?: SupplierMenu;
   onLogoutPress: () => void;
 };
 
@@ -138,15 +142,24 @@ const cardShadow = {
   boxShadow: '0 4px 12px rgba(27, 67, 50, 0.05)',
 } as unknown as ViewStyle;
 
-export function SupplierMenuScreen({ onLogoutPress }: SupplierMenuScreenProps) {
+export function SupplierMenuScreen({ initialMenu = 'proposal', onLogoutPress }: SupplierMenuScreenProps) {
   const { height } = useWindowDimensions();
   const [activeTab, setActiveTab] = useState<'pending' | 'running'>('pending');
-  const [activeMenu, setActiveMenu] = useState<SupplierMenu>('proposal');
+  const [activeMenu, setActiveMenu] = useState<SupplierMenu>(initialMenu);
   const [notice, setNotice] = useState('');
+
+  useEffect(() => {
+    setActiveMenu(initialMenu);
+  }, [initialMenu]);
 
   const showNotice = (message: string) => {
     setNotice(message);
     window.setTimeout(() => setNotice(''), 2400);
+  };
+
+  const changeMenu = (menu: SupplierMenu) => {
+    setActiveMenu(menu);
+    window.location.hash = menu === 'proposal' ? 'manajemen-proposal' : 'log-audit-supplier';
   };
 
   return (
@@ -178,22 +191,27 @@ export function SupplierMenuScreen({ onLogoutPress }: SupplierMenuScreenProps) {
 
         <View style={styles.bottomNav}>
           {[
-            { key: 'proposal', label: 'Proposal' },
-            { key: 'audit', label: 'Audit Log' },
-          ].map((item, index) => {
+            { icon: homeIcon, key: 'proposal', label: 'Manajemen Proposal' },
+            { icon: auditLogIcon, key: 'audit', label: 'Audit Log' },
+          ].map((item) => {
             const isActive = item.key === activeMenu;
 
             return (
-            <Pressable
-              accessibilityRole="button"
-              key={item.key}
-              onPress={() => setActiveMenu(item.key as SupplierMenu)}
-              style={styles.navItem}
-            >
-              {isActive ? <View style={styles.activeDot} /> : null}
-              <SupplierNavIcon index={index} isActive={isActive} />
-              <Text style={[styles.navText, isActive && styles.navTextActive]}>{item.label}</Text>
-            </Pressable>
+              <Pressable
+                accessibilityLabel={item.label}
+                accessibilityRole="button"
+                key={item.key}
+                onPress={() => changeMenu(item.key as SupplierMenu)}
+                style={styles.navItem}
+              >
+                {isActive ? <View style={styles.activePill} /> : null}
+                <Image
+                  accessibilityElementsHidden
+                  resizeMode="contain"
+                  source={{ uri: item.icon }}
+                  style={[styles.navIcon, isActive && styles.navIconActive]}
+                />
+              </Pressable>
             );
           })}
         </View>
@@ -470,27 +488,6 @@ function InfoBlock({ label, value }: { label: string; value: string }) {
     <View style={styles.infoBlock}>
       <Text style={styles.infoLabel}>{label}</Text>
       <Text style={styles.infoValue}>{value}</Text>
-    </View>
-  );
-}
-
-function SupplierNavIcon({ index, isActive }: { index: number; isActive: boolean }) {
-  const color = isActive ? colors.secondary : colors.onSurfaceVariant;
-
-  if (index === 0) {
-    return (
-      <View style={[styles.collectiveIcon, { borderColor: color }]}>
-        <View style={[styles.collectiveDot, { backgroundColor: color, left: 3, top: 5 }]} />
-        <View style={[styles.collectiveDot, { backgroundColor: color, right: 3, top: 5 }]} />
-        <View style={[styles.collectiveDotLarge, { backgroundColor: color }]} />
-      </View>
-    );
-  }
-
-  return (
-    <View style={[styles.logIcon, { borderColor: color }]}>
-      <View style={[styles.logSlash, { backgroundColor: color }]} />
-      <View style={[styles.logLine, { backgroundColor: color }]} />
     </View>
   );
 }
@@ -1200,127 +1197,41 @@ const styles = StyleSheet.create({
   },
   bottomNav: {
     position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    minHeight: 64,
+    bottom: 12,
+    left: 32,
+    right: 32,
+    height: 64,
     alignItems: 'center',
     flexDirection: 'row',
     backgroundColor: colors.surfaceContainerLowest,
-    borderTopColor: 'rgba(193, 200, 194, 0.5)',
-    borderTopWidth: 1,
+    borderColor: colors.secondary,
+    borderRadius: 999,
+    borderWidth: 1,
     justifyContent: 'space-around',
-    paddingHorizontal: 12,
-    boxShadow: '0 -4px 12px rgba(27, 67, 50, 0.05)',
+    paddingHorizontal: 14,
+    boxShadow: '0 8px 15px rgba(96, 76, 49, 0.35)',
   },
   navItem: {
     flex: 1,
-    minHeight: 58,
+    height: 56,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 3,
     position: 'relative',
   },
-  activeDot: {
+  activePill: {
     position: 'absolute',
-    bottom: 5,
-    width: 5,
-    height: 5,
-    backgroundColor: colors.primary,
-    borderRadius: 3,
+    width: 58,
+    height: 58,
+    backgroundColor: '#e8e2e2',
+    borderRadius: 999,
+    boxShadow: '0 7px 12px rgba(96, 76, 49, 0.22)',
   },
-  homeIcon: {
-    width: 22,
-    height: 22,
-    alignItems: 'center',
-    justifyContent: 'flex-end',
+  navIcon: {
+    width: 28,
+    height: 28,
   },
-  homeRoof: {
-    width: 0,
-    height: 0,
-    borderLeftWidth: 9,
-    borderRightWidth: 9,
-    borderBottomWidth: 8,
-    borderLeftColor: 'transparent',
-    borderRightColor: 'transparent',
-  },
-  homeBase: {
-    width: 14,
-    height: 11,
-    borderBottomLeftRadius: 2,
-    borderBottomRightRadius: 2,
-  },
-  collectiveIcon: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    borderWidth: 1.5,
-    position: 'relative',
-  },
-  collectiveDot: {
-    position: 'absolute',
-    width: 5,
-    height: 5,
-    borderRadius: 3,
-  },
-  collectiveDotLarge: {
-    position: 'absolute',
-    left: 8,
-    bottom: 4,
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-  },
-  noteIcon: {
-    width: 22,
-    height: 22,
-    justifyContent: 'center',
-    gap: 3,
-  },
-  noteLine: {
-    height: 2,
-    borderRadius: 1,
-  },
-  notePencil: {
-    width: 9,
-    height: 2,
-    borderRadius: 1,
-    transform: [{ rotate: '-35deg' }],
-    alignSelf: 'flex-end',
-  },
-  logIcon: {
-    width: 20,
-    height: 16,
-    borderRadius: 2,
-    borderWidth: 1.5,
-    position: 'relative',
-  },
-  logSlash: {
-    position: 'absolute',
-    left: 3,
-    top: 6,
-    width: 14,
-    height: 2,
-    borderRadius: 1,
-    transform: [{ rotate: '28deg' }],
-  },
-  logLine: {
-    position: 'absolute',
-    right: 3,
-    bottom: 3,
-    width: 8,
-    height: 2,
-    borderRadius: 1,
-  },
-  navText: {
-    color: colors.onSurfaceVariant,
-    fontFamily: fonts.body,
-    fontSize: 11,
-    fontWeight: '500',
-    lineHeight: 14,
-  },
-  navTextActive: {
-    color: colors.secondary,
-    fontWeight: '800',
+  navIconActive: {
+    width: 30,
+    height: 30,
   },
 });
