@@ -1,14 +1,20 @@
 import {
+  Image,
   Pressable,
   SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
   useWindowDimensions,
   View,
   type ViewStyle,
 } from 'react-native-web';
-import { BrandMark } from '../components/BrandMark';
+import growIcon from '../assets/grow_icon.svg';
+import quantityIcon from '../assets/quantity_icon.svg';
+import storeIcon from '../assets/store_icon.svg';
+import upIcon from '../assets/up_icon.svg';
 import { KoperasiBottomNav } from '../components/KoperasiBottomNav';
+import { MainHeader } from '../components/MainHeader';
 import { colors, fonts } from '../theme';
 
 type KoperasiDashboardScreenProps = {
@@ -32,23 +38,14 @@ export function KoperasiDashboardScreen({
 
   return (
     <SafeAreaView style={[styles.safeArea, { minHeight: height }]}>
-      <View style={styles.shell}>
-        <View style={styles.topBar}>
-          <View style={styles.profileRow}>
-            <View style={styles.avatar}>
-              <BrandMark size={28} />
-            </View>
-            <View>
-              <Text style={styles.orgName}>KUD Tani Makmur</Text>
-              <Text style={styles.statusText}>Koperasi disetujui</Text>
-            </View>
-          </View>
-          <Pressable accessibilityRole="button" onPress={onLogoutPress} style={styles.logoutButton}>
-            <Text style={styles.logoutText}>Keluar</Text>
-          </Pressable>
-        </View>
+      <View style={[styles.shell, { height }]}>
+        <MainHeader onLogoutPress={onLogoutPress} />
 
-        <View style={styles.content}>
+        <ScrollView
+          contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={false}
+          style={styles.contentScroll}
+        >
           <View style={styles.hero}>
             <Text style={styles.title}>Beranda</Text>
             <Text style={styles.subtitle}>
@@ -60,12 +57,14 @@ export function KoperasiDashboardScreen({
             <MetricCard
               accentColor={colors.primary}
               label="Total Belanja"
+              supportingIcon={growIcon}
               supportingText="+12% dari bulan lalu"
               value="Rp 145.5Jt"
             />
             <MetricCard
               accentColor={colors.soilBrown}
               label="Volume Pupuk"
+              supportingIcon={upIcon}
               supportingText="Target pencatatan 85%"
               value="24.5 Ton"
             />
@@ -73,7 +72,7 @@ export function KoperasiDashboardScreen({
 
           <VolumeMindCard />
           <PoolActiveCard />
-        </View>
+        </ScrollView>
 
         <KoperasiBottomNav
           activeTab="home"
@@ -89,16 +88,20 @@ export function KoperasiDashboardScreen({
 type MetricCardProps = {
   accentColor: string;
   label: string;
+  supportingIcon: string;
   supportingText: string;
   value: string;
 };
 
-function MetricCard({ accentColor, label, supportingText, value }: MetricCardProps) {
+function MetricCard({ accentColor, label, supportingIcon, supportingText, value }: MetricCardProps) {
   return (
     <View style={styles.metricCard}>
       <Text style={styles.metricLabel}>{label}</Text>
       <Text style={[styles.metricValue, { color: accentColor }]}>{value}</Text>
-      <Text style={styles.metricSupporting}>{supportingText}</Text>
+      <View style={styles.metricSupportingRow}>
+        <Image accessibilityElementsHidden resizeMode="contain" source={{ uri: supportingIcon }} style={styles.metricTrendIcon} />
+        <Text style={styles.metricSupporting}>{supportingText}</Text>
+      </View>
     </View>
   );
 }
@@ -107,61 +110,41 @@ function VolumeMindCard() {
   return (
     <View style={styles.volumeMindCard}>
       <View style={styles.volumeMindHeader}>
-        <View style={styles.volumeMindTitleRow}>
-          <View style={styles.volumeIcon}>
-            <Text style={styles.volumeIconText}>VM</Text>
-          </View>
-          <View>
-            <Text style={styles.volumeTitle}>VolumeMind</Text>
-            <Text style={styles.volumeSubtitle}>Prediksi Kebutuhan Bulan Depan</Text>
-          </View>
+        <View style={styles.volumeMindCopy}>
+          <Text style={styles.volumeTitle}>VolumeMind</Text>
+          <Text style={styles.volumeSubtitle}>Prediksi Kebutuhan Bulan Depan</Text>
         </View>
         <View style={styles.accuracyBadge}>
-          <Text style={styles.accuracyText}>AKURASI</Text>
-          <Text style={styles.accuracyValue}>94%</Text>
+          <Text style={styles.accuracyText}>AKURASI 94%</Text>
         </View>
       </View>
 
       <View style={styles.recommendationBox}>
         <View style={styles.recommendationGrid}>
-          <InfoCell label="Rekomendasi Pemasok" value="PT Agro Nusa" />
-          <InfoCell label="Kuantitas Optimal" value="12.5 Ton (Urea)" />
+          <InfoCell icon={storeIcon} label="Rekomendasi Pemasok" value="PT Agro Nusa" />
+          <InfoCell icon={quantityIcon} label="Kuantitas Optimal" value="12.5 Ton (Urea)" />
           <InfoCell label="Estimasi Biaya" value="Rp 68.750.000" />
           <InfoCell isSaving label="Potensi Penghematan" value="Rp 4.2Jt" />
         </View>
       </View>
-
-      <Pressable accessibilityRole="button" onPress={() => undefined} style={styles.confirmButton}>
-        <CartIcon />
-        <Text style={styles.confirmText}>KONFIRMASI PEMESANAN</Text>
-      </Pressable>
     </View>
   );
 }
 
 type InfoCellProps = {
+  icon?: string;
   isSaving?: boolean;
   label: string;
   value: string;
 };
 
-function InfoCell({ isSaving = false, label, value }: InfoCellProps) {
+function InfoCell({ icon, isSaving = false, label, value }: InfoCellProps) {
   return (
     <View style={styles.infoCell}>
       <Text style={[styles.infoLabel, isSaving && styles.savingLabel]}>{label}</Text>
-      <Text style={[styles.infoValue, isSaving && styles.savingValue]}>{value}</Text>
-    </View>
-  );
-}
-
-function CartIcon() {
-  return (
-    <View style={styles.cartIcon}>
-      <View style={styles.cartHandle} />
-      <View style={styles.cartBasket} />
-      <View style={styles.cartWheelRow}>
-        <View style={styles.cartWheel} />
-        <View style={styles.cartWheel} />
+      <View style={styles.infoValueRow}>
+        {icon ? <Image accessibilityElementsHidden resizeMode="contain" source={{ uri: icon }} style={styles.infoIcon} /> : null}
+        <Text style={[styles.infoValue, isSaving && styles.savingValue]}>{value}</Text>
       </View>
     </View>
   );
@@ -213,65 +196,20 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   shell: {
-    minHeight: '100%',
     width: '100%',
     maxWidth: 430,
     alignSelf: 'center',
-    paddingBottom: 84,
-  },
-  topBar: {
-    minHeight: 72,
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-  },
-  profileRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 12,
-  },
-  avatar: {
-    width: 44,
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.primaryContainer,
-    borderRadius: 22,
-  },
-  orgName: {
-    color: colors.primary,
-    fontFamily: fonts.heading,
-    fontSize: 20,
-    fontWeight: '600',
-    lineHeight: 28,
-  },
-  statusText: {
-    color: colors.successGreen,
-    fontFamily: fonts.body,
-    fontSize: 11,
-    fontWeight: '500',
-    lineHeight: 14,
-  },
-  logoutButton: {
-    minHeight: 40,
-    justifyContent: 'center',
-    borderColor: colors.outlineVariant,
-    borderRadius: 8,
-    borderWidth: 1,
-    paddingHorizontal: 14,
-  },
-  logoutText: {
-    color: colors.primary,
-    fontFamily: fonts.body,
-    fontSize: 12,
-    fontWeight: '600',
-    lineHeight: 16,
+    paddingBottom: 72,
+    position: 'relative',
   },
   content: {
     gap: 16,
+    paddingBottom: 96,
     paddingHorizontal: 16,
     paddingTop: 8,
+  },
+  contentScroll: {
+    flex: 1,
   },
   hero: {
     gap: 6,
@@ -322,97 +260,102 @@ const styles = StyleSheet.create({
   },
   metricSupporting: {
     color: colors.successGreen,
+    flexShrink: 1,
     fontFamily: fonts.body,
     fontSize: 11,
     fontWeight: '500',
     lineHeight: 14,
   },
+  metricSupportingRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 5,
+  },
+  metricTrendIcon: {
+    width: 12,
+    height: 12,
+  },
   volumeMindCard: {
-    backgroundColor: '#eaf7ff',
-    borderColor: '#d1e7ef',
+    backgroundColor: '#b7dcff',
+    borderColor: colors.primary,
     borderRadius: 12,
     borderWidth: 1,
     gap: 12,
-    padding: 16,
+    padding: 18,
     ...cardShadow,
   },
   volumeMindHeader: {
-    alignItems: 'flex-start',
+    alignItems: 'center',
     flexDirection: 'row',
+    gap: 12,
     justifyContent: 'space-between',
   },
-  volumeMindTitleRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 10,
-  },
-  volumeIcon: {
-    width: 34,
-    height: 34,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.tertiaryContainer,
-    borderRadius: 17,
-  },
-  volumeIconText: {
-    color: colors.onPrimary,
-    fontFamily: fonts.body,
-    fontSize: 10,
-    fontWeight: '700',
+  volumeMindCopy: {
+    flex: 1,
   },
   volumeTitle: {
-    color: colors.tertiary,
+    color: colors.onSurface,
     fontFamily: fonts.heading,
-    fontSize: 20,
-    fontWeight: '600',
-    lineHeight: 24,
+    fontSize: 28,
+    fontWeight: '800',
+    lineHeight: 34,
   },
   volumeSubtitle: {
-    color: colors.tertiary,
+    color: colors.onSurface,
     fontFamily: fonts.body,
-    fontSize: 11,
-    lineHeight: 14,
+    fontSize: 14,
+    lineHeight: 20,
+    marginTop: 2,
   },
   accuracyBadge: {
-    minWidth: 86,
-    backgroundColor: 'rgba(43, 147, 72, 0.18)',
-    borderRadius: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 40,
+    minWidth: 104,
+    backgroundColor: 'rgba(43, 147, 72, 0.34)',
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
   },
   accuracyText: {
-    color: colors.successGreen,
+    color: colors.primary,
     fontFamily: fonts.body,
-    fontSize: 10,
-    fontWeight: '700',
-    lineHeight: 11,
-  },
-  accuracyValue: {
-    color: colors.successGreen,
-    fontFamily: fonts.body,
-    fontSize: 13,
-    fontWeight: '700',
-    lineHeight: 14,
+    fontSize: 14,
+    fontWeight: '800',
+    lineHeight: 18,
   },
   recommendationBox: {
     backgroundColor: colors.surfaceCard,
-    borderRadius: 8,
-    padding: 14,
+    borderRadius: 12,
+    paddingHorizontal: 13,
+    paddingVertical: 11,
   },
   recommendationGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    rowGap: 12,
+    rowGap: 18,
   },
   infoCell: {
     width: '50%',
+    minWidth: 0,
+    paddingRight: 8,
   },
   infoLabel: {
     color: colors.outline,
     fontFamily: fonts.body,
-    fontSize: 10,
+    fontSize: 8,
     fontWeight: '600',
-    lineHeight: 14,
+    lineHeight: 11,
+  },
+  infoValueRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 6,
+    marginTop: 6,
+  },
+  infoIcon: {
+    width: 13,
+    height: 13,
   },
   savingLabel: {
     color: colors.successGreen,
@@ -420,75 +363,13 @@ const styles = StyleSheet.create({
   infoValue: {
     color: colors.primary,
     fontFamily: fonts.body,
-    fontSize: 13,
+    flexShrink: 1,
+    fontSize: 16,
     fontWeight: '700',
-    lineHeight: 18,
-    marginTop: 2,
+    lineHeight: 21,
   },
   savingValue: {
     color: colors.successGreen,
-    fontFamily: fonts.heading,
-    fontSize: 20,
-    lineHeight: 28,
-  },
-  confirmButton: {
-    minHeight: 46,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
-    gap: 8,
-    backgroundColor: colors.primary,
-    borderRadius: 8,
-  },
-  cartIcon: {
-    width: 16,
-    height: 16,
-    position: 'relative',
-  },
-  cartHandle: {
-    position: 'absolute',
-    left: 0,
-    top: 2,
-    width: 5,
-    height: 2,
-    backgroundColor: colors.onPrimary,
-    borderRadius: 1,
-    transform: [{ rotate: '28deg' }],
-  },
-  cartBasket: {
-    position: 'absolute',
-    left: 4,
-    top: 5,
-    width: 10,
-    height: 6,
-    borderBottomColor: colors.onPrimary,
-    borderBottomWidth: 2,
-    borderLeftColor: colors.onPrimary,
-    borderLeftWidth: 2,
-    borderRightColor: colors.onPrimary,
-    borderRightWidth: 2,
-    borderRadius: 1,
-  },
-  cartWheelRow: {
-    position: 'absolute',
-    left: 5,
-    bottom: 1,
-    flexDirection: 'row',
-    gap: 4,
-  },
-  cartWheel: {
-    width: 3,
-    height: 3,
-    backgroundColor: colors.onPrimary,
-    borderRadius: 2,
-  },
-  confirmText: {
-    color: colors.onPrimary,
-    fontFamily: fonts.body,
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 0.4,
-    lineHeight: 16,
   },
   poolSection: {
     gap: 10,

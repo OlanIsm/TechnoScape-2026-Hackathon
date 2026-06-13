@@ -5,13 +5,12 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   useWindowDimensions,
   View,
   type ViewStyle,
 } from 'react-native-web';
-import { BrandMark } from '../components/BrandMark';
 import { KoperasiBottomNav } from '../components/KoperasiBottomNav';
+import { MainHeader } from '../components/MainHeader';
 import { colors, fonts } from '../theme';
 
 type CollectiveBuyScreenProps = {
@@ -30,8 +29,6 @@ type Pool = {
   product: string;
   progress: number;
   progressText: string;
-  status: string;
-  statusType: 'warning' | 'success';
   supplier: string;
 };
 
@@ -45,21 +42,17 @@ const pools: Pool[] = [
     product: 'Urea Non-Subsidi 50kg',
     progress: 60,
     progressText: '600 / 1000 Ton',
-    status: '2 Hari Lagi',
-    statusType: 'warning',
     supplier: 'PT Pupuk Kaltim',
   },
   {
     action: 'detail',
-    deadline: 'Hampir Penuh',
+    deadline: '12 Jam Lagi',
     id: 2,
     location: 'Surabaya, Jatim',
     price: 'Rp 650.000 /sak',
     product: 'NPK Mutiara 16-16-16',
     progress: 85,
     progressText: '425 / 500 Ton',
-    status: 'Hampir Penuh',
-    statusType: 'success',
     supplier: 'CV Tani Subur Jaya',
   },
   {
@@ -71,8 +64,6 @@ const pools: Pool[] = [
     product: 'SP-36 Super 50kg',
     progress: 42,
     progressText: '210 / 500 Ton',
-    status: 'Terbuka',
-    statusType: 'success',
     supplier: 'PT Agro Nusa',
   },
 ];
@@ -101,17 +92,7 @@ export function CollectiveBuyScreen({
   return (
     <SafeAreaView style={[styles.safeArea, { minHeight: height }]}>
       <View style={[styles.shell, { height }]}>
-        <View style={styles.topBar}>
-          <View style={styles.brandRow}>
-            <View style={styles.brandIcon}>
-              <BrandMark size={28} />
-            </View>
-            <Text style={styles.brandText}>VolumeMate</Text>
-          </View>
-          <Pressable accessibilityRole="button" onPress={onLogoutPress} style={styles.logoutButton}>
-            <Text style={styles.logoutText}>Keluar</Text>
-          </Pressable>
-        </View>
+        <MainHeader onLogoutPress={onLogoutPress} />
 
         <ScrollView
           contentContainerStyle={styles.scrollContent}
@@ -123,28 +104,6 @@ export function CollectiveBuyScreen({
             <Text style={styles.subtitle}>
               Gabung dengan pool lain untuk mencapai target volume dan mendapatkan harga grosir terbaik.
             </Text>
-          </View>
-
-          <View style={styles.searchWrap}>
-            <View style={styles.searchIcon}>
-              <View style={styles.searchLens} />
-              <View style={styles.searchHandle} />
-            </View>
-            <TextInput
-              accessibilityLabel="Cari supplier atau jenis pupuk"
-              placeholder="Cari supplier atau jenis pupuk..."
-              placeholderTextColor={colors.outline}
-              style={styles.searchInput}
-            />
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => showDummyNotice('Filter pool akan aktif setelah API tersedia.')}
-              style={styles.filterButton}
-            >
-              <View style={styles.filterLineLong} />
-              <View style={styles.filterLineShort} />
-              <View style={styles.filterLineMid} />
-            </Pressable>
           </View>
 
           <View style={styles.tabs}>
@@ -203,9 +162,6 @@ type PoolCardProps = {
 };
 
 function PoolCard({ onAction, pool }: PoolCardProps) {
-  const statusStyle = pool.statusType === 'warning' ? styles.statusWarning : styles.statusSuccess;
-  const statusTextStyle = pool.statusType === 'warning' ? styles.statusWarningText : styles.statusSuccessText;
-
   return (
     <View style={styles.poolCard}>
       <View style={styles.poolAccent} />
@@ -219,9 +175,9 @@ function PoolCard({ onAction, pool }: PoolCardProps) {
             <Text style={styles.locationText}>{pool.location}</Text>
           </View>
         </View>
-        <View style={[styles.statusBadge, statusStyle]}>
-          <View style={[styles.statusDot, pool.statusType === 'warning' && styles.statusDotWarning]} />
-          <Text style={[styles.statusText, statusTextStyle]}>{pool.status}</Text>
+        <View style={styles.deadlineBadge}>
+          <View style={styles.deadlineDot} />
+          <Text style={styles.deadlineText}>{pool.deadline}</Text>
         </View>
       </View>
 
@@ -288,48 +244,6 @@ const styles = StyleSheet.create({
     paddingBottom: 72,
     position: 'relative',
   },
-  topBar: {
-    minHeight: 66,
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-  },
-  brandRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 10,
-  },
-  brandIcon: {
-    width: 42,
-    height: 42,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.secondaryContainer,
-    borderRadius: 21,
-  },
-  brandText: {
-    color: colors.primary,
-    fontFamily: fonts.heading,
-    fontSize: 26,
-    fontWeight: '700',
-    lineHeight: 34,
-  },
-  logoutButton: {
-    minHeight: 38,
-    justifyContent: 'center',
-    borderColor: colors.outlineVariant,
-    borderRadius: 8,
-    borderWidth: 1,
-    paddingHorizontal: 13,
-  },
-  logoutText: {
-    color: colors.primary,
-    fontFamily: fonts.body,
-    fontSize: 12,
-    fontWeight: '600',
-    lineHeight: 16,
-  },
   content: {
     flex: 1,
   },
@@ -354,79 +268,6 @@ const styles = StyleSheet.create({
     fontFamily: fonts.body,
     fontSize: 14,
     lineHeight: 20,
-  },
-  searchWrap: {
-    minHeight: 50,
-    alignItems: 'center',
-    flexDirection: 'row',
-    backgroundColor: colors.surfaceCard,
-    borderColor: colors.surfaceVariant,
-    borderRadius: 10,
-    borderWidth: 1,
-    paddingLeft: 14,
-    paddingRight: 6,
-    ...cardShadow,
-  },
-  searchIcon: {
-    width: 22,
-    height: 22,
-    marginRight: 8,
-    position: 'relative',
-  },
-  searchLens: {
-    position: 'absolute',
-    left: 2,
-    top: 2,
-    width: 13,
-    height: 13,
-    borderColor: colors.outline,
-    borderRadius: 7,
-    borderWidth: 2,
-  },
-  searchHandle: {
-    position: 'absolute',
-    right: 3,
-    bottom: 3,
-    width: 8,
-    height: 2,
-    backgroundColor: colors.outline,
-    borderRadius: 1,
-    transform: [{ rotate: '45deg' }],
-  },
-  searchInput: {
-    flex: 1,
-    borderWidth: 0,
-    color: colors.onSurface,
-    fontFamily: fonts.body,
-    fontSize: 14,
-    height: 48,
-  },
-  filterButton: {
-    width: 38,
-    height: 38,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 8,
-  },
-  filterLineLong: {
-    width: 18,
-    height: 2,
-    backgroundColor: colors.secondary,
-    borderRadius: 1,
-  },
-  filterLineShort: {
-    width: 10,
-    height: 2,
-    backgroundColor: colors.secondary,
-    borderRadius: 1,
-    marginTop: 4,
-  },
-  filterLineMid: {
-    width: 14,
-    height: 2,
-    backgroundColor: colors.secondary,
-    borderRadius: 1,
-    marginTop: 4,
   },
   tabs: {
     flexDirection: 'row',
@@ -541,43 +382,29 @@ const styles = StyleSheet.create({
     lineHeight: 16,
     marginTop: 2,
   },
-  statusBadge: {
+  deadlineBadge: {
     alignItems: 'center',
     flexDirection: 'row',
     gap: 5,
+    backgroundColor: 'rgba(255, 183, 3, 0.1)',
+    borderColor: 'rgba(255, 183, 3, 0.25)',
     borderRadius: 999,
     borderWidth: 1,
     paddingHorizontal: 9,
     paddingVertical: 6,
   },
-  statusWarning: {
-    backgroundColor: 'rgba(255, 183, 3, 0.1)',
-    borderColor: 'rgba(255, 183, 3, 0.25)',
-  },
-  statusSuccess: {
-    backgroundColor: 'rgba(43, 147, 72, 0.1)',
-    borderColor: 'rgba(43, 147, 72, 0.22)',
-  },
-  statusDot: {
+  deadlineDot: {
     width: 6,
     height: 6,
-    backgroundColor: colors.successGreen,
+    backgroundColor: colors.warningAmber,
     borderRadius: 3,
   },
-  statusDotWarning: {
-    backgroundColor: colors.warningAmber,
-  },
-  statusText: {
+  deadlineText: {
+    color: colors.warningAmber,
     fontFamily: fonts.body,
     fontSize: 10,
     fontWeight: '700',
     lineHeight: 12,
-  },
-  statusWarningText: {
-    color: colors.warningAmber,
-  },
-  statusSuccessText: {
-    color: colors.successGreen,
   },
   productBox: {
     backgroundColor: colors.surfaceContainerLowest,

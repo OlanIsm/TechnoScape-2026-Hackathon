@@ -1,81 +1,28 @@
-import { StyleSheet, View, type ViewStyle } from 'react-native-web';
-import { colors } from '../theme';
+import { Image, StyleSheet, type ImageStyle } from 'react-native-web';
+import blackLogo from '../assets/black_volumemate_icon.svg';
+import whiteLogo from '../assets/white_volumemate_icon.svg';
 
 type BrandMarkProps = {
   size?: number;
-  style?: ViewStyle;
+  style?: ImageStyle;
+  tone?: 'black' | 'white';
 };
 
-export function BrandMark({ size = 56, style }: BrandMarkProps) {
-  const scale = size / 56;
+const logoRatio = 561 / 141;
 
+export function BrandMark({ size = 34, style, tone = 'black' }: BrandMarkProps) {
   return (
-    <View style={[styles.canvas, { height: size, width: size }, style]} accessibilityElementsHidden>
-      <View
-        style={[
-          styles.leaf,
-          styles.leafLeft,
-          {
-            borderBottomLeftRadius: 24 * scale,
-            borderBottomRightRadius: 4 * scale,
-            borderTopLeftRadius: 24 * scale,
-            borderTopRightRadius: 24 * scale,
-            height: 38 * scale,
-            left: 8 * scale,
-            top: 8 * scale,
-            width: 24 * scale,
-          },
-        ]}
-      />
-      <View
-        style={[
-          styles.leaf,
-          styles.leafRight,
-          {
-            borderBottomLeftRadius: 24 * scale,
-            borderBottomRightRadius: 4 * scale,
-            borderTopLeftRadius: 24 * scale,
-            borderTopRightRadius: 24 * scale,
-            height: 38 * scale,
-            right: 8 * scale,
-            top: 8 * scale,
-            width: 24 * scale,
-          },
-        ]}
-      />
-      <View
-        style={[
-          styles.stem,
-          {
-            borderRadius: 2 * scale,
-            bottom: 4 * scale,
-            height: 24 * scale,
-            left: 27 * scale,
-            width: 3 * scale,
-          },
-        ]}
-      />
-    </View>
+    <Image
+      accessibilityLabel="VolumeMate"
+      resizeMode="contain"
+      source={{ uri: tone === 'white' ? whiteLogo : blackLogo }}
+      style={[styles.logo, { height: size, width: size * logoRatio }, style]}
+    />
   );
 }
 
 const styles = StyleSheet.create({
-  canvas: {
-    position: 'relative',
-  },
-  leaf: {
-    position: 'absolute',
-  },
-  leafLeft: {
-    backgroundColor: colors.secondaryFixedDim,
-    transform: [{ rotate: '-34deg' }],
-  },
-  leafRight: {
-    backgroundColor: colors.secondary,
-    transform: [{ rotate: '34deg' }],
-  },
-  stem: {
-    position: 'absolute',
-    backgroundColor: colors.primaryContainer,
+  logo: {
+    flexShrink: 0,
   },
 });
