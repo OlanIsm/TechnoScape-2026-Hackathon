@@ -429,14 +429,14 @@ function PendingProposalCard({
           onPress={() => onAction(`Dummy: proposal ${proposal.cooperative} ditolak.`)}
           style={styles.rejectButton}
         >
-          <Text style={styles.rejectText}>Decline</Text>
+          <Text style={styles.rejectText}>Tolak</Text>
         </Pressable>
         <Pressable
           accessibilityRole="button"
           onPress={() => onAction(`Dummy: proposal ${proposal.cooperative} diterima.`)}
           style={styles.acceptButton}
         >
-          <Text style={styles.acceptButtonText}>Accept</Text>
+          <Text style={styles.acceptButtonText}>Terima</Text>
         </Pressable>
       </View>
     </View>
