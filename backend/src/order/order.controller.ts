@@ -72,7 +72,10 @@ export class OrderController {
   }
 
   @Post('pools')
-  async createPool(@Body() data: Prisma.CollectivePoolUncheckedCreateInput) {
+  async createPool(
+    @Body()
+    data: Prisma.CollectivePoolUncheckedCreateInput & { supplierEmail?: string },
+  ) {
     return this.orderService.createPool(data);
   }
 

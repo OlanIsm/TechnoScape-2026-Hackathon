@@ -27,6 +27,8 @@ type KoperasiDashboardScreenProps = {
 };
 
 type PoolOrder = {
+  cooperative?: string;
+  koperasiId?: string;
   orderItems?: Array<{ quantity?: number }>;
 };
 
@@ -42,6 +44,14 @@ type BackendPool = {
   };
   status?: string;
   targetVolumeKg?: number;
+};
+
+type LocalApprovedPool = {
+  deadline?: string;
+  id: string;
+  name: string;
+  orders?: PoolOrder[];
+  target: string;
 };
 
 type VolumeMindRecommendation = {
@@ -71,6 +81,7 @@ type PendingProposal = {
   dateSubmitted?: string;
   product: string;
   status?: string;
+  supplierEmail?: string;
   target: string;
   value: string;
 };
@@ -172,8 +183,13 @@ export function KoperasiDashboardScreen({
         ]);
 
         const localPoolsJson = localStorage.getItem('volumemate_approved_pools');
-        const localPools = localPoolsJson ? JSON.parse(localPoolsJson) : [];
-        const mappedLocalPools = localPools.map(mapLocalPoolToBackendPool);
+        const localPools = (localPoolsJson ? JSON.parse(localPoolsJson) : []) as LocalApprovedPool[];
+        const mappedLocalPools = localPools
+          .filter((pool) => {
+            const orders = Array.isArray(pool.orders) ? pool.orders : [];
+            return orders.some((order: PoolOrder) => order.cooperative === dash.koperasiName);
+          })
+          .map(mapLocalPoolToBackendPool);
 
         const combinedPools = [...pools];
         mappedLocalPools.forEach((lp: BackendPool) => {
@@ -582,7 +598,8 @@ function PendingApprovalCard({
                 </View>
               </View>
               <Text style={styles.pendingProposalDate}>
-                Diajukan {proposal.dateSubmitted || 'hari ini'} - menunggu review supplier
+                Diajukan {proposal.dateSubmitted || 'hari ini'} - menunggu tinjauan pemasok
+                {proposal.supplierEmail ? ` (${proposal.supplierEmail})` : ''}
               </Text>
             </View>
           ))}
