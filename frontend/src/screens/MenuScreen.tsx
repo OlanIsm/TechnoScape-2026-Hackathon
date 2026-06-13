@@ -24,6 +24,7 @@ type PendingProposal = {
   target: string;
   value: string;
   dateSubmitted?: string;
+  koperasiId?: string;
   notes?: string;
   pdfName?: string;
   pdfData?: string;
@@ -32,8 +33,14 @@ type PendingProposal = {
 };
 
 type RunningPool = {
+  deadline?: string;
   id: string;
   name: string;
+  orders?: Array<{
+    cooperative?: string;
+    koperasiId?: string;
+    orderItems?: Array<{ quantity?: number }>;
+  }>;
   progress: number;
   status: 'OPEN FOR KOPERASI' | 'PAYMENT WAITING';
   target: string;
@@ -441,6 +448,14 @@ export function SupplierMenuScreen({ onLogoutPress }: SupplierMenuScreenProps) {
     const newPool: RunningPool = {
       id: `#PL-2026-${Math.floor(100 + Math.random() * 900)}`,
       name: `Pool ${proposal.product.split(' ')[0]} ${proposal.cooperative.replace('Koperasi ', '').replace('KUD ', '')}`,
+      deadline: deadlineText,
+      orders: [
+        {
+          cooperative: proposal.cooperative,
+          koperasiId: proposal.koperasiId || proposal.cooperative,
+          orderItems: [{ quantity: 0 }],
+        },
+      ],
       progress: 0,
       status: 'OPEN FOR KOPERASI',
       target: `0 / ${proposal.target}`,

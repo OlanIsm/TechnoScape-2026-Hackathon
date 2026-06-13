@@ -134,6 +134,7 @@ type CollectiveBuyScreenProps = {
 };
 
 type PoolOrder = {
+  cooperative?: string;
   orderItems?: Array<{ quantity?: number }>;
   koperasiId?: string;
 };
@@ -522,6 +523,7 @@ export function CollectiveBuyScreen({
         notes: notesInput || 'Tidak ada catatan tambahan.',
         pdfName: pdfFile ? pdfFile.name : 'proposal_pengadaan.pdf',
         pdfData: pdfFile ? pdfFile.dataUrl : undefined,
+        koperasiId: myKoperasiId || undefined,
         status: 'PENDING',
         supplierEmail,
         volumeKg: volumeVal,
@@ -574,7 +576,11 @@ export function CollectiveBuyScreen({
     }
 
     if (activeTab === 'mine') {
-      return pool.orders?.some((order) => order.koperasiId === myKoperasiId);
+      return pool.orders?.some((order) => {
+        const matchesId = myKoperasiId ? order.koperasiId === myKoperasiId : false;
+        const matchesName = order.cooperative === koperasiName;
+        return matchesId || matchesName;
+      });
     }
 
     return true;
