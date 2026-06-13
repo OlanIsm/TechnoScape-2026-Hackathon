@@ -40,9 +40,9 @@ export declare class OrderController {
         productId: string;
         totalPrice: number;
         quantity: number;
-        pricePerKg: number;
-        buyerName: string;
         tanggal: Date;
+        buyerName: string;
+        pricePerKg: number;
         notes: string | null;
     }>;
     confirmOrder(id: string, userId?: string): Promise<{
@@ -79,9 +79,9 @@ export declare class OrderController {
             createdAt: Date;
             updatedAt: Date;
             productId: string;
+            pricePerKg: number;
             minVolume: number;
             maxVolume: number | null;
-            pricePerKg: number;
         }[];
     } & {
         id: string;
@@ -104,9 +104,9 @@ export declare class OrderController {
     getAuditLogs(): Promise<{
         id: string;
         createdAt: Date;
+        userId: string | null;
         action: string;
         details: string;
-        userId: string | null;
     }[]>;
     exportCsv(req: any, res: ExpressResponse): Promise<ExpressResponse<any, Record<string, any>>>;
 }

@@ -43,8 +43,8 @@ export declare class SupplierController {
         createdAt: Date;
         updatedAt: Date;
         productId: string;
+        pricePerKg: number;
         minVolume: number;
         maxVolume: number | null;
-        pricePerKg: number;
     }>;
 }
