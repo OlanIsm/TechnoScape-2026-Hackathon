@@ -19,9 +19,6 @@ import { api } from '../services/api';
 
 type Role = 'koperasi' | 'supplier';
 
-function getErrorMessage(error: unknown, fallback: string) {
-  return error instanceof Error ? error.message : fallback;
-}
 
 const steps = [
   { id: '1', label: 'Akun', isActive: true },
