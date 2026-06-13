@@ -10,6 +10,7 @@ import {
   View,
   type ViewStyle,
 } from 'react-native-web';
+import { NonMenuHeader } from '../components/NonMenuHeader';
 import type { ProcurementPool } from '../data/pools';
 import { colors, fonts } from '../theme';
 
@@ -48,6 +49,7 @@ export function JoinPoolScreen({ onBackPress, onConfirm, pool }: JoinPoolScreenP
   return (
     <SafeAreaView style={[styles.safeArea, { minHeight: height }]}>
       <View style={[styles.shell, { minHeight: height }]}>
+        <NonMenuHeader onBackPress={onBackPress} title="Gabung Pool" />
         <View style={styles.header}>
           <Pressable accessibilityLabel="Kembali" accessibilityRole="button" onPress={onBackPress} style={styles.backButton}>
             <Text style={styles.backIcon}>‹</Text>
@@ -153,6 +155,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   header: {
+    display: 'none',
     minHeight: 76,
     alignItems: 'center',
     flexDirection: 'row',
