@@ -17,9 +17,6 @@ export function PoolCard({ onAction, pool }: PoolCardProps) {
       <View style={styles.poolAccent} />
       <View style={styles.poolHeader}>
         <View style={styles.supplierRow}>
-          <View style={styles.supplierIcon}>
-            <Text style={styles.supplierIconText}>{pool.id === 2 ? 'TR' : 'PG'}</Text>
-          </View>
           <View style={styles.supplierTextWrap}>
             <Text style={styles.supplierName}>{pool.supplier}</Text>
             <Text style={styles.locationText}>{pool.location}</Text>
@@ -106,25 +103,6 @@ const styles = StyleSheet.create({
   },
   supplierRow: {
     flex: 1,
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 12,
-  },
-  supplierIcon: {
-    width: 46,
-    height: 46,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.surfaceContainerLow,
-    borderColor: colors.surfaceVariant,
-    borderRadius: 10,
-    borderWidth: 1,
-  },
-  supplierIconText: {
-    color: colors.secondary,
-    fontFamily: fonts.heading,
-    fontSize: 13,
-    fontWeight: '700',
   },
   supplierTextWrap: {
     flex: 1,
