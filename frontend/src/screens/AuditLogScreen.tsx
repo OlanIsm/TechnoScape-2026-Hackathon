@@ -33,6 +33,7 @@ type PoolLog = {
   date: string;
   description: string;
   id: string;
+  proposingKoperasi: string;
   status: 'SUKSES' | 'GAGAL' | 'DIBATALKAN';
 };
 
@@ -78,18 +79,21 @@ const poolLogs: PoolLog[] = [
     date: '21 Okt',
     description: 'Target volume 500 Ton Urea terpenuhi dengan 3 koperasi partisipan.',
     id: 'Pool #P-2026-089',
+    proposingKoperasi: 'Koperasi Sumber Makmur',
     status: 'SUKSES',
   },
   {
     date: '18 Okt',
     description: 'Batas waktu terlampaui. Target 200 Ton NPK hanya terkumpul 80 Ton.',
     id: 'Pool #P-2026-088',
+    proposingKoperasi: 'Koperasi Tani Subur',
     status: 'GAGAL',
   },
   {
     date: '15 Okt',
     description: 'Dibatalkan oleh inisiator setelah supplier mengubah batas minimum volume.',
     id: 'Pool #P-2026-087',
+    proposingKoperasi: 'Koperasi Mutiara Desa',
     status: 'DIBATALKAN',
   },
 ];
@@ -238,23 +242,14 @@ function PoolLogList({ onDetailPress }: PoolLogListProps) {
               <View style={[styles.statusBadge, getStatusStyle(log.status)]}>
                 <Text style={[styles.statusText, getStatusTextStyle(log.status)]}>{log.status}</Text>
               </View>
-              <Text style={styles.poolTitle}>{log.id}</Text>
+              <Text style={styles.poolTitle}>{log.proposingKoperasi}</Text>
+              <Text style={styles.poolIdText}>{log.id}</Text>
             </View>
             <Text style={styles.poolDate}>{log.date}</Text>
           </View>
           <Text style={styles.poolDescription}>{log.description}</Text>
           <View style={styles.poolFooter}>
-            <View style={styles.avatarStack}>
-              <View style={styles.avatarDot}>
-                <Text style={styles.avatarText}>SM</Text>
-              </View>
-              <View style={[styles.avatarDot, styles.avatarOffset]}>
-                <Text style={styles.avatarText}>TN</Text>
-              </View>
-              <View style={[styles.avatarDot, styles.avatarOffset]}>
-                <Text style={styles.avatarText}>+1</Text>
-              </View>
-            </View>
+            <Text style={styles.proposerLabel}>Pengaju: {log.proposingKoperasi}</Text>
             <Pressable
               accessibilityRole="button"
               onPress={() => onDetailPress(`Dummy: detail ${log.id} akan dibuka nanti.`)}
@@ -662,6 +657,14 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     marginTop: 7,
   },
+  poolIdText: {
+    color: colors.outline,
+    fontFamily: fonts.body,
+    fontSize: 11,
+    fontWeight: '700',
+    lineHeight: 15,
+    marginTop: 2,
+  },
   poolDate: {
     color: colors.outline,
     fontFamily: fonts.body,
@@ -683,28 +686,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingTop: 11,
   },
-  avatarStack: {
-    flexDirection: 'row',
-  },
-  avatarDot: {
-    width: 30,
-    height: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.secondaryContainer,
-    borderColor: colors.surfaceCard,
-    borderRadius: 15,
-    borderWidth: 2,
-  },
-  avatarOffset: {
-    marginLeft: -8,
-  },
-  avatarText: {
+  proposerLabel: {
     color: colors.secondary,
     fontFamily: fonts.body,
-    fontSize: 9,
-    fontWeight: '800',
-    lineHeight: 11,
+    fontSize: 12,
+    fontWeight: '700',
+    lineHeight: 16,
   },
   detailButton: {
     minHeight: 34,
