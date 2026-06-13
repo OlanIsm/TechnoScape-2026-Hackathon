@@ -79,67 +79,35 @@ def home():
 @app.post("/predict", response_model=PredictResponse)
 def predict_demand(request: PredictRequest):
     global model
+    if model is None:
+        raise HTTPException(status_code=503, detail="Model belum siap atau tidak ditemukan di server.")
     
-    # Try using ML model first
-    if model is not None:
-        try:
-            # Parse tanggal kronologis ke tahun & bulan untuk model ML
-            try:
-                parsed_date = pd.to_datetime(request.tanggal)
-                tahun = parsed_date.year
-                bulan = parsed_date.month
-            except Exception:
-                raise HTTPException(status_code=400, detail="Format tanggal salah. Gunakan format YYYY-MM-DD.")
-                
-            # Buat dataframe dari request input
-            input_data = pd.DataFrame([{
-                'tahun': tahun,
-                'bulan': bulan,
-                'id_koperasi': request.id_koperasi,
-                'jenis_pupuk': request.jenis_pupuk,
-                'curah_hujan_mm': request.curah_hujan_mm,
-                'musim_tanam': request.musim_tanam,
-                'luas_lahan_hektar': request.luas_lahan_hektar
-            }])
-            
-            # Prediksi kebutuhan
-            prediction = model.predict(input_data)[0]
-            predicted_kg = round(max(0.0, float(prediction)), 1)
-            
-            return PredictResponse(
-                predicted_demand_kg=predicted_kg,
-                message="Prediksi berhasil dihitung menggunakan model ML."
-            )
-        except Exception as e:
-            print(f"ML Prediction failed: {e}. Falling back to heuristic.")
-            
-    # Heuristic Fallback (if model is None or if prediction raises an error)
     try:
+        # Parse tanggal kronologis ke tahun & bulan untuk model ML
         try:
             parsed_date = pd.to_datetime(request.tanggal)
+            tahun = parsed_date.year
             bulan = parsed_date.month
         except Exception:
             raise HTTPException(status_code=400, detail="Format tanggal salah. Gunakan format YYYY-MM-DD.")
             
-        base_demand_per_hectare = 250.0
-        if "urea" in request.jenis_pupuk.lower():
-            base_demand_per_hectare = 175.0
-        elif "npk" in request.jenis_pupuk.lower():
-            base_demand_per_hectare = 275.0
-            
-        predicted_kg = request.luas_lahan_hektar * base_demand_per_hectare
+        # Buat dataframe dari request input (tanpa 'tahun' sesuai spesifikasi model baru)
+        input_data = pd.DataFrame([{
+            'bulan': bulan,
+            'id_koperasi': request.id_koperasi,
+            'jenis_pupuk': request.jenis_pupuk,
+            'curah_hujan_mm': request.curah_hujan_mm,
+            'musim_tanam': request.musim_tanam,
+            'luas_lahan_hektar': request.luas_lahan_hektar
+        }])
         
-        # Seasonal multiplier
-        if bulan in [10, 11, 12, 1, 2, 3]:
-            predicted_kg *= 1.15
-        else:
-            predicted_kg *= 0.85
-            
-        predicted_kg = round(max(0.0, predicted_kg), 1)
+        # Prediksi kebutuhan
+        prediction = model.predict(input_data)[0]
+        predicted_kg = round(max(0.0, float(prediction)), 1)
         
         return PredictResponse(
             predicted_demand_kg=predicted_kg,
-            message="Prediksi berhasil dihitung menggunakan algoritma heuristik VolumeMind."
+            message="Prediksi berhasil dihitung."
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Terjadi kesalahan saat memprediksi: {str(e)}")
