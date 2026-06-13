@@ -16,6 +16,7 @@ exports.OrderController = void 0;
 const common_1 = require("@nestjs/common");
 const order_service_1 = require("./order.service");
 const client_1 = require("@prisma/client");
+const auth_guard_1 = require("../auth/auth.guard");
 let OrderController = class OrderController {
     orderService;
     constructor(orderService) {
@@ -38,6 +39,13 @@ let OrderController = class OrderController {
     }
     async getAuditLogs() {
         return this.orderService.getAuditLogs();
+    }
+    async exportCsv(req, res) {
+        const userId = req.user.sub;
+        const csvData = await this.orderService.exportOrdersToCsv(userId);
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', 'attachment; filename=laporan_transaksi.csv');
+        return res.status(200).send(csvData);
     }
 };
 exports.OrderController = OrderController;
@@ -84,6 +92,15 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], OrderController.prototype, "getAuditLogs", null);
+__decorate([
+    (0, common_1.UseGuards)(auth_guard_1.AuthGuard),
+    (0, common_1.Get)('export-csv'),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Response)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], OrderController.prototype, "exportCsv", null);
 exports.OrderController = OrderController = __decorate([
     (0, common_1.Controller)('orders'),
     __metadata("design:paramtypes", [order_service_1.OrderService])

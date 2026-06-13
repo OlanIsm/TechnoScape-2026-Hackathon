@@ -4,35 +4,35 @@ export declare class SupplierController {
     private readonly supplierService;
     constructor(supplierService: SupplierService);
     createSupplier(data: Prisma.SupplierCreateInput): Promise<{
-        name: string;
         id: string;
-        email: string | null;
+        name: string;
+        address: string;
         createdAt: Date;
         updatedAt: Date;
-        address: string;
+        email: string | null;
         phone: string;
     }>;
     findAllSuppliers(): Promise<{
-        name: string;
         id: string;
-        email: string | null;
+        name: string;
+        address: string;
         createdAt: Date;
         updatedAt: Date;
-        address: string;
+        email: string | null;
         phone: string;
     }[]>;
     findSupplierById(id: string): Promise<{
-        name: string;
         id: string;
-        email: string | null;
+        name: string;
+        address: string;
         createdAt: Date;
         updatedAt: Date;
-        address: string;
+        email: string | null;
         phone: string;
     }>;
     createProduct(data: Prisma.ProductUncheckedCreateInput): Promise<{
-        name: string;
         id: string;
+        name: string;
         createdAt: Date;
         updatedAt: Date;
         description: string | null;
@@ -42,9 +42,9 @@ export declare class SupplierController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        productId: string;
         minVolume: number;
         maxVolume: number | null;
         pricePerKg: number;
-        productId: string;
     }>;
 }

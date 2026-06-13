@@ -108,6 +108,41 @@ let OrderService = class OrderService {
             include: { user: true },
         });
     }
+    async exportOrdersToCsv(userId) {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+            include: { koperasi: true },
+        });
+        if (!user || !user.koperasiId) {
+            return 'Order ID,Tanggal Transaksi,Nama Produk,Kuantitas (kg),Harga Satuan (Rp/kg),Total Harga (Rp),Status,Nama Pool Patungan\n';
+        }
+        const orders = await this.prisma.order.findMany({
+            where: { koperasiId: user.koperasiId },
+            include: {
+                orderItems: {
+                    include: { product: true },
+                },
+                collectivePool: true,
+            },
+            orderBy: { createdAt: 'desc' },
+        });
+        let csv = 'Order ID,Tanggal Transaksi,Nama Produk,Kuantitas (kg),Harga Satuan (Rp/kg),Total Harga (Rp),Status,Nama Pool Patungan\n';
+        for (const order of orders) {
+            const dateStr = order.createdAt.toISOString().split('T')[0];
+            const statusStr = order.status;
+            const poolName = order.collectivePool ? order.collectivePool.name : '-';
+            for (const item of order.orderItems) {
+                const productName = item.product.name;
+                const quantity = item.quantity;
+                const pricePerKg = item.priceAtPurchase;
+                const totalItemPrice = quantity * pricePerKg;
+                const escapedProductName = productName.replace(/"/g, '""');
+                const escapedPoolName = poolName.replace(/"/g, '""');
+                csv += `"${order.id}","${dateStr}","${escapedProductName}",${quantity},${pricePerKg},${totalItemPrice},"${statusStr}","${escapedPoolName}"\n`;
+            }
+        }
+        return csv;
+    }
 };
 exports.OrderService = OrderService;
 exports.OrderService = OrderService = __decorate([

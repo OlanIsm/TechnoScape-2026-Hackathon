@@ -1,6 +1,8 @@
-import { Controller, Post, Get, Body, Param, Query } from '@nestjs/common';
+import { Controller, Post, Get, Body, Param, Query, UseGuards, Request, Response } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { Prisma } from '@prisma/client';
+import type { Response as ExpressResponse } from 'express';
+import { AuthGuard } from '../auth/auth.guard';
 
 @Controller('orders')
 export class OrderController {
@@ -41,5 +43,15 @@ export class OrderController {
   @Get('audit-logs')
   async getAuditLogs() {
     return this.orderService.getAuditLogs();
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('export-csv')
+  async exportCsv(@Request() req, @Response() res: ExpressResponse) {
+    const userId = req.user.sub;
+    const csvData = await this.orderService.exportOrdersToCsv(userId);
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename=laporan_transaksi.csv');
+    return res.status(200).send(csvData);
   }
 }
