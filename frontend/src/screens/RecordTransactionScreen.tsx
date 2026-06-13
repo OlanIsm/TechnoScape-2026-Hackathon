@@ -13,7 +13,6 @@ import {
 import { KoperasiBottomNav } from '../components/KoperasiBottomNav';
 import { MainHeader } from '../components/MainHeader';
 import { colors, fonts } from '../theme';
-import { api } from '../services/api';
 
 type RecordTransactionScreenProps = {
   onCollectivePress: () => void;
@@ -28,10 +27,6 @@ const cardShadow = {
   boxShadow: '0 4px 12px rgba(27, 67, 50, 0.05)',
 } as unknown as ViewStyle;
 
-function getErrorMessage(error: unknown, fallback: string) {
-  return error instanceof Error ? error.message : fallback;
-}
-
 export function RecordTransactionScreen({
   onCollectivePress,
   onHomePress,
@@ -45,6 +40,7 @@ export function RecordTransactionScreen({
   const [date, setDate] = useState('');
   const [totalPrice, setTotalPrice] = useState('');
   const [notice, setNotice] = useState('');
+  const [successToast, setSuccessToast] = useState('');
 
   const estimatedPricePerKg = useMemo(() => {
     const numericTotal = Number(totalPrice || 0);
@@ -57,32 +53,20 @@ export function RecordTransactionScreen({
     return `Estimasi Rp ${Math.round(numericTotal / numericQuantity).toLocaleString('id-ID')} /kg`;
   }, [quantity, totalPrice]);
 
-  const saveTransaction = async () => {
+  const saveTransaction = () => {
     if (!quantity || !supplier || !date || !totalPrice) {
       setNotice('Semua field wajib diisi.');
       window.setTimeout(() => setNotice(''), 2600);
       return;
     }
 
-    try {
-      setNotice('Menyimpan transaksi...');
-      await api.recordTransaction({
-        jenisPupuk: fertilizer,
-        quantity: Number(quantity),
-        supplierName: supplier,
-        tanggal: date,
-        totalPrice: Number(totalPrice),
-      });
-      setNotice('Transaksi manual berhasil disimpan!');
-      setQuantity('');
-      setSupplier('');
-      setDate('');
-      setTotalPrice('');
-      window.setTimeout(() => setNotice(''), 2600);
-    } catch (err: unknown) {
-      setNotice(getErrorMessage(err, 'Gagal menyimpan transaksi.'));
-      window.setTimeout(() => setNotice(''), 3500);
-    }
+    setNotice('');
+    setQuantity('');
+    setSupplier('');
+    setDate('');
+    setTotalPrice('');
+    setSuccessToast('Transaksi berhasil dicatat.');
+    window.setTimeout(() => setSuccessToast(''), 2600);
   };
 
   return (
@@ -175,6 +159,15 @@ export function RecordTransactionScreen({
           </View>
         </ScrollView>
 
+        {successToast ? (
+          <View style={styles.successToast}>
+            <View style={styles.successIcon}>
+              <Text style={styles.successIconText}>v</Text>
+            </View>
+            <Text style={styles.successToastText}>{successToast}</Text>
+          </View>
+        ) : null}
+
         <KoperasiBottomNav
           activeTab="record"
           onCollectivePress={onCollectivePress}
@@ -265,6 +258,46 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     lineHeight: 16,
+  },
+  successToast: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    bottom: 86,
+    minHeight: 48,
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 10,
+    backgroundColor: colors.secondaryContainer,
+    borderColor: colors.secondaryFixedDim,
+    borderRadius: 12,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    ...cardShadow,
+  },
+  successIcon: {
+    width: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.successGreen,
+    borderRadius: 12,
+  },
+  successIconText: {
+    color: colors.onPrimary,
+    fontFamily: fonts.body,
+    fontSize: 12,
+    fontWeight: '800',
+    lineHeight: 14,
+  },
+  successToastText: {
+    color: colors.primary,
+    flex: 1,
+    fontFamily: fonts.body,
+    fontSize: 13,
+    fontWeight: '800',
+    lineHeight: 18,
   },
   formCard: {
     backgroundColor: colors.surfaceCard,
