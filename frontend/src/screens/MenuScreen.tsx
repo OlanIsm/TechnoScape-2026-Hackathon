@@ -429,14 +429,14 @@ function PendingProposalCard({
           onPress={() => onAction(`Dummy: proposal ${proposal.cooperative} ditolak.`)}
           style={styles.rejectButton}
         >
-          <Text style={styles.rejectText}>Tolak</Text>
+          <Text style={styles.rejectText}>Decline</Text>
         </Pressable>
         <Pressable
           accessibilityRole="button"
-          onPress={() => onAction(`Dummy: review detail ${proposal.cooperative} akan dibuka nanti.`)}
-          style={styles.primaryButton}
+          onPress={() => onAction(`Dummy: proposal ${proposal.cooperative} diterima.`)}
+          style={styles.acceptButton}
         >
-          <Text style={styles.primaryButtonText}>Review Detail</Text>
+          <Text style={styles.acceptButtonText}>Accept</Text>
         </Pressable>
       </View>
     </View>
@@ -791,27 +791,27 @@ const styles = StyleSheet.create({
     minHeight: 44,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.surfaceCard,
-    borderColor: colors.primary,
+    backgroundColor: colors.errorRed,
+    borderColor: colors.errorRed,
     borderRadius: 9,
     borderWidth: 1,
   },
   rejectText: {
-    color: colors.primary,
+    color: colors.onPrimary,
     fontFamily: fonts.body,
     fontSize: 12,
     fontWeight: '800',
     lineHeight: 16,
   },
-  primaryButton: {
+  acceptButton: {
     flex: 1,
     minHeight: 44,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.primary,
+    backgroundColor: colors.successGreen,
     borderRadius: 9,
   },
-  primaryButtonText: {
+  acceptButtonText: {
     color: colors.onPrimary,
     fontFamily: fonts.body,
     fontSize: 12,
