@@ -10,8 +10,8 @@ import {
   View,
   type ViewStyle,
 } from 'react-native-web';
-import { BrandMark } from '../components/BrandMark';
 import { KoperasiBottomNav } from '../components/KoperasiBottomNav';
+import { MainHeader } from '../components/MainHeader';
 import { colors, fonts } from '../theme';
 
 type CollectiveBuyScreenProps = {
@@ -101,14 +101,7 @@ export function CollectiveBuyScreen({
   return (
     <SafeAreaView style={[styles.safeArea, { minHeight: height }]}>
       <View style={[styles.shell, { height }]}>
-        <View style={styles.topBar}>
-          <View style={styles.brandRow}>
-            <BrandMark size={34} />
-          </View>
-          <Pressable accessibilityRole="button" onPress={onLogoutPress} style={styles.logoutButton}>
-            <Text style={styles.logoutText}>Keluar</Text>
-          </Pressable>
-        </View>
+        <MainHeader onLogoutPress={onLogoutPress} />
 
         <ScrollView
           contentContainerStyle={styles.scrollContent}
@@ -284,33 +277,6 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     paddingBottom: 72,
     position: 'relative',
-  },
-  topBar: {
-    minHeight: 66,
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-  },
-  brandRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 10,
-  },
-  logoutButton: {
-    minHeight: 38,
-    justifyContent: 'center',
-    borderColor: colors.outlineVariant,
-    borderRadius: 8,
-    borderWidth: 1,
-    paddingHorizontal: 13,
-  },
-  logoutText: {
-    color: colors.primary,
-    fontFamily: fonts.body,
-    fontSize: 12,
-    fontWeight: '600',
-    lineHeight: 16,
   },
   content: {
     flex: 1,

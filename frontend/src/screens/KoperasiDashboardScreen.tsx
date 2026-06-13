@@ -8,8 +8,8 @@ import {
   View,
   type ViewStyle,
 } from 'react-native-web';
-import { BrandMark } from '../components/BrandMark';
 import { KoperasiBottomNav } from '../components/KoperasiBottomNav';
+import { MainHeader } from '../components/MainHeader';
 import { colors, fonts } from '../theme';
 
 type KoperasiDashboardScreenProps = {
@@ -34,14 +34,7 @@ export function KoperasiDashboardScreen({
   return (
     <SafeAreaView style={[styles.safeArea, { minHeight: height }]}>
       <View style={[styles.shell, { height }]}>
-        <View style={styles.topBar}>
-          <View style={styles.profileRow}>
-            <BrandMark size={34} />
-          </View>
-          <Pressable accessibilityRole="button" onPress={onLogoutPress} style={styles.logoutButton}>
-            <Text style={styles.logoutText}>Keluar</Text>
-          </Pressable>
-        </View>
+        <MainHeader onLogoutPress={onLogoutPress} />
 
         <ScrollView
           contentContainerStyle={styles.content}
@@ -217,33 +210,6 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     paddingBottom: 72,
     position: 'relative',
-  },
-  topBar: {
-    minHeight: 72,
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-  },
-  profileRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 12,
-  },
-  logoutButton: {
-    minHeight: 40,
-    justifyContent: 'center',
-    borderColor: colors.outlineVariant,
-    borderRadius: 8,
-    borderWidth: 1,
-    paddingHorizontal: 14,
-  },
-  logoutText: {
-    color: colors.primary,
-    fontFamily: fonts.body,
-    fontSize: 12,
-    fontWeight: '600',
-    lineHeight: 16,
   },
   content: {
     gap: 16,
