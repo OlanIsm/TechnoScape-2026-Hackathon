@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useState, useEffect } from 'react';
 import {
   Pressable,
@@ -11,7 +12,15 @@ import {
   type ViewStyle,
 } from 'react-native-web';
 import { BrandMark } from '../components/BrandMark';
+=======
+import { useState } from 'react';
+import { Image, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, useWindowDimensions, View, type ViewStyle } from 'react-native-web';
+import plusIcon from '../assets/plus_icon.svg';
+>>>>>>> f53dd0f77fb50e4b647bf08268e7b5ad2c6a65fb
 import { KoperasiBottomNav } from '../components/KoperasiBottomNav';
+import { MainHeader } from '../components/MainHeader';
+import { PoolCard } from '../components/PoolCard';
+import { pools } from '../data/pools';
 import { colors, fonts } from '../theme';
 import { api } from '../services/api';
 
@@ -140,6 +149,7 @@ export function CollectiveBuyScreen({
   return (
     <SafeAreaView style={[styles.safeArea, { minHeight: height }]}>
       <View style={[styles.shell, { height }]}>
+<<<<<<< HEAD
         <View style={styles.topBar}>
           <View style={styles.brandRow}>
             <View style={styles.brandIcon}>
@@ -151,6 +161,9 @@ export function CollectiveBuyScreen({
             <Text style={styles.logoutText}>Keluar</Text>
           </Pressable>
         </View>
+=======
+        <MainHeader onLogoutPress={onLogoutPress} />
+>>>>>>> f53dd0f77fb50e4b647bf08268e7b5ad2c6a65fb
 
         <ScrollView
           contentContainerStyle={styles.scrollContent}
@@ -164,6 +177,7 @@ export function CollectiveBuyScreen({
             </Text>
           </View>
 
+<<<<<<< HEAD
           <View style={styles.searchWrap}>
             <View style={styles.searchIcon}>
               <View style={styles.searchLens} />
@@ -188,6 +202,8 @@ export function CollectiveBuyScreen({
             </Pressable>
           </View>
 
+=======
+>>>>>>> f53dd0f77fb50e4b647bf08268e7b5ad2c6a65fb
           <View style={styles.tabs}>
             <Pressable
               accessibilityRole="button"
@@ -238,7 +254,7 @@ export function CollectiveBuyScreen({
           onPress={handleCreatePool}
           style={styles.fab}
         >
-          <Text style={styles.fabText}>+</Text>
+          <Image accessibilityElementsHidden resizeMode="contain" source={{ uri: plusIcon }} style={styles.fabIcon} />
         </Pressable>
 
         <KoperasiBottomNav
@@ -252,6 +268,7 @@ export function CollectiveBuyScreen({
   );
 }
 
+<<<<<<< HEAD
 type PoolCardProps = {
   onJoin: () => void;
   pool: any;
@@ -334,6 +351,8 @@ function InfoRow({ isPrice = false, label, value }: InfoRowProps) {
   );
 }
 
+=======
+>>>>>>> f53dd0f77fb50e4b647bf08268e7b5ad2c6a65fb
 const styles = StyleSheet.create({
   safeArea: {
     backgroundColor: colors.background,
@@ -344,48 +363,6 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     paddingBottom: 72,
     position: 'relative',
-  },
-  topBar: {
-    minHeight: 66,
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-  },
-  brandRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 10,
-  },
-  brandIcon: {
-    width: 42,
-    height: 42,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.secondaryContainer,
-    borderRadius: 21,
-  },
-  brandText: {
-    color: colors.primary,
-    fontFamily: fonts.heading,
-    fontSize: 26,
-    fontWeight: '700',
-    lineHeight: 34,
-  },
-  logoutButton: {
-    minHeight: 38,
-    justifyContent: 'center',
-    borderColor: colors.outlineVariant,
-    borderRadius: 8,
-    borderWidth: 1,
-    paddingHorizontal: 13,
-  },
-  logoutText: {
-    color: colors.primary,
-    fontFamily: fonts.body,
-    fontSize: 12,
-    fontWeight: '600',
-    lineHeight: 16,
   },
   content: {
     flex: 1,
@@ -411,79 +388,6 @@ const styles = StyleSheet.create({
     fontFamily: fonts.body,
     fontSize: 14,
     lineHeight: 20,
-  },
-  searchWrap: {
-    minHeight: 50,
-    alignItems: 'center',
-    flexDirection: 'row',
-    backgroundColor: colors.surfaceCard,
-    borderColor: colors.surfaceVariant,
-    borderRadius: 10,
-    borderWidth: 1,
-    paddingLeft: 14,
-    paddingRight: 6,
-    ...cardShadow,
-  },
-  searchIcon: {
-    width: 22,
-    height: 22,
-    marginRight: 8,
-    position: 'relative',
-  },
-  searchLens: {
-    position: 'absolute',
-    left: 2,
-    top: 2,
-    width: 13,
-    height: 13,
-    borderColor: colors.outline,
-    borderRadius: 7,
-    borderWidth: 2,
-  },
-  searchHandle: {
-    position: 'absolute',
-    right: 3,
-    bottom: 3,
-    width: 8,
-    height: 2,
-    backgroundColor: colors.outline,
-    borderRadius: 1,
-    transform: [{ rotate: '45deg' }],
-  },
-  searchInput: {
-    flex: 1,
-    borderWidth: 0,
-    color: colors.onSurface,
-    fontFamily: fonts.body,
-    fontSize: 14,
-    height: 48,
-  },
-  filterButton: {
-    width: 38,
-    height: 38,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 8,
-  },
-  filterLineLong: {
-    width: 18,
-    height: 2,
-    backgroundColor: colors.secondary,
-    borderRadius: 1,
-  },
-  filterLineShort: {
-    width: 10,
-    height: 2,
-    backgroundColor: colors.secondary,
-    borderRadius: 1,
-    marginTop: 4,
-  },
-  filterLineMid: {
-    width: 14,
-    height: 2,
-    backgroundColor: colors.secondary,
-    borderRadius: 1,
-    marginTop: 4,
   },
   tabs: {
     flexDirection: 'row',
@@ -531,209 +435,6 @@ const styles = StyleSheet.create({
   poolList: {
     gap: 16,
   },
-  poolCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.92)',
-    borderColor: 'rgba(193, 200, 194, 0.72)',
-    borderRadius: 12,
-    borderWidth: 1,
-    gap: 16,
-    overflow: 'hidden',
-    padding: 18,
-    position: 'relative',
-    ...cardShadow,
-  },
-  poolAccent: {
-    position: 'absolute',
-    right: -24,
-    top: -24,
-    width: 96,
-    height: 96,
-    backgroundColor: 'rgba(174, 238, 203, 0.52)',
-    borderBottomLeftRadius: 96,
-  },
-  poolHeader: {
-    alignItems: 'flex-start',
-    flexDirection: 'row',
-    gap: 10,
-    justifyContent: 'space-between',
-  },
-  supplierRow: {
-    flex: 1,
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 12,
-  },
-  supplierIcon: {
-    width: 46,
-    height: 46,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.surfaceContainerLow,
-    borderColor: colors.surfaceVariant,
-    borderRadius: 10,
-    borderWidth: 1,
-  },
-  supplierIconText: {
-    color: colors.secondary,
-    fontFamily: fonts.heading,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  supplierTextWrap: {
-    flex: 1,
-    minWidth: 0,
-  },
-  supplierName: {
-    color: colors.primary,
-    fontFamily: fonts.heading,
-    fontSize: 19,
-    fontWeight: '700',
-    lineHeight: 25,
-  },
-  locationText: {
-    color: colors.onSurfaceVariant,
-    fontFamily: fonts.body,
-    fontSize: 12,
-    fontWeight: '600',
-    lineHeight: 16,
-    marginTop: 2,
-  },
-  statusBadge: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 5,
-    borderRadius: 999,
-    borderWidth: 1,
-    paddingHorizontal: 9,
-    paddingVertical: 6,
-  },
-  statusWarning: {
-    backgroundColor: 'rgba(255, 183, 3, 0.1)',
-    borderColor: 'rgba(255, 183, 3, 0.25)',
-  },
-  statusSuccess: {
-    backgroundColor: 'rgba(43, 147, 72, 0.1)',
-    borderColor: 'rgba(43, 147, 72, 0.22)',
-  },
-  statusDot: {
-    width: 6,
-    height: 6,
-    backgroundColor: colors.successGreen,
-    borderRadius: 3,
-  },
-  statusDotWarning: {
-    backgroundColor: colors.warningAmber,
-  },
-  statusText: {
-    fontFamily: fonts.body,
-    fontSize: 10,
-    fontWeight: '700',
-    lineHeight: 12,
-  },
-  statusWarningText: {
-    color: colors.warningAmber,
-  },
-  statusSuccessText: {
-    color: colors.successGreen,
-  },
-  productBox: {
-    backgroundColor: colors.surfaceContainerLowest,
-    borderColor: 'rgba(225, 227, 228, 0.82)',
-    borderRadius: 10,
-    borderWidth: 1,
-    gap: 8,
-    padding: 12,
-  },
-  infoRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 10,
-    justifyContent: 'space-between',
-  },
-  infoLabel: {
-    color: colors.onSurfaceVariant,
-    fontFamily: fonts.body,
-    fontSize: 11,
-    fontWeight: '500',
-    lineHeight: 14,
-  },
-  infoValue: {
-    color: colors.primary,
-    flex: 1,
-    fontFamily: fonts.body,
-    fontSize: 12,
-    fontWeight: '700',
-    lineHeight: 16,
-    textAlign: 'right',
-  },
-  priceValue: {
-    color: colors.successGreen,
-    fontSize: 13,
-  },
-  progressBlock: {
-    gap: 8,
-  },
-  progressHeader: {
-    alignItems: 'flex-end',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  progressLabel: {
-    color: colors.onSurfaceVariant,
-    fontFamily: fonts.body,
-    fontSize: 11,
-    fontWeight: '500',
-    lineHeight: 14,
-  },
-  progressText: {
-    color: colors.primary,
-    fontFamily: fonts.body,
-    fontSize: 12,
-    fontWeight: '700',
-    lineHeight: 17,
-    marginTop: 2,
-  },
-  progressPercent: {
-    color: colors.secondary,
-    fontFamily: fonts.heading,
-    fontSize: 20,
-    fontWeight: '700',
-    lineHeight: 26,
-  },
-  progressTrack: {
-    height: 8,
-    backgroundColor: colors.surfaceVariant,
-    borderRadius: 999,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: colors.secondary,
-    borderRadius: 999,
-  },
-  actionButton: {
-    minHeight: 46,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.primary,
-    borderRadius: 8,
-  },
-  secondaryActionButton: {
-    backgroundColor: 'transparent',
-    borderColor: colors.secondary,
-    borderWidth: 1.5,
-  },
-  actionText: {
-    color: colors.onPrimary,
-    fontFamily: fonts.body,
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 0.4,
-    lineHeight: 16,
-  },
-  secondaryActionText: {
-    color: colors.secondary,
-  },
   fab: {
     position: 'absolute',
     right: 18,
@@ -742,18 +443,9 @@ const styles = StyleSheet.create({
     height: 56,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.secondary,
-    borderColor: colors.surfaceContainerLowest,
-    borderRadius: 28,
-    borderWidth: 2,
-    boxShadow: '0 10px 22px rgba(27, 67, 50, 0.22)',
   },
-  fabText: {
-    color: colors.onPrimary,
-    fontFamily: fonts.heading,
-    fontSize: 34,
-    fontWeight: '600',
-    lineHeight: 38,
-    marginTop: -3,
+  fabIcon: {
+    width: 56,
+    height: 56,
   },
 });

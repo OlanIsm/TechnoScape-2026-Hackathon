@@ -99,10 +99,7 @@ export function LoginScreen({
       <View style={styles.page}>
         <View style={styles.card}>
           <View style={styles.header}>
-            <View style={styles.logoCircle}>
-              <BrandMark size={38} />
-            </View>
-            <Text style={styles.brand}>VolumeMate</Text>
+            <BrandMark size={42} />
             <Text style={styles.subtitle}>Solusi Pengadaan Agrikultur Modern</Text>
           </View>
 
@@ -215,22 +212,6 @@ const styles = StyleSheet.create({
   header: {
     alignItems: 'center',
     gap: 8,
-  },
-  logoCircle: {
-    width: 64,
-    height: 64,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.primaryContainer,
-    borderRadius: 32,
-    marginBottom: 8,
-  },
-  brand: {
-    color: colors.primary,
-    fontFamily: fonts.heading,
-    fontSize: 30,
-    fontWeight: '700',
-    lineHeight: 38,
   },
   subtitle: {
     color: colors.onSurfaceVariant,

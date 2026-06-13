@@ -1,15 +1,22 @@
 import { useState, useEffect } from 'react';
 import {
-  Pressable,
+  Image,
   SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
   useWindowDimensions,
   View,
   type ViewStyle,
 } from 'react-native-web';
-import { BrandMark } from '../components/BrandMark';
+import growIcon from '../assets/grow_icon.svg';
+import quantityIcon from '../assets/quantity_icon.svg';
+import storeIcon from '../assets/store_icon.svg';
+import upIcon from '../assets/up_icon.svg';
 import { KoperasiBottomNav } from '../components/KoperasiBottomNav';
+import { MainHeader } from '../components/MainHeader';
+import { PoolCard } from '../components/PoolCard';
+import { pools } from '../data/pools';
 import { colors, fonts } from '../theme';
 import { api } from '../services/api';
 
@@ -64,6 +71,7 @@ export function KoperasiDashboardScreen({
 
   return (
     <SafeAreaView style={[styles.safeArea, { minHeight: height }]}>
+<<<<<<< HEAD
       <View style={styles.shell}>
         <View style={styles.topBar}>
           <View style={styles.profileRow}>
@@ -87,6 +95,38 @@ export function KoperasiDashboardScreen({
         ) : error ? (
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 40 }}>
             <Text style={{ fontFamily: fonts.body, color: colors.errorRed, fontSize: 14, textAlign: 'center' }}>{error}</Text>
+=======
+      <View style={[styles.shell, { height }]}>
+        <MainHeader onLogoutPress={onLogoutPress} />
+
+        <ScrollView
+          contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={false}
+          style={styles.contentScroll}
+        >
+          <View style={styles.hero}>
+            <Text style={styles.title}>Beranda</Text>
+            <Text style={styles.subtitle}>
+              Ringkasan pengadaan berdasarkan transaksi koperasi yang sudah dicatat.
+            </Text>
+          </View>
+
+          <View style={styles.metricGrid}>
+            <MetricCard
+              accentColor={colors.primary}
+              label="Total Belanja"
+              supportingIcon={growIcon}
+              supportingText="+12% dari bulan lalu"
+              value="Rp 145.5Jt"
+            />
+            <MetricCard
+              accentColor={colors.soilBrown}
+              label="Volume Pupuk"
+              supportingIcon={upIcon}
+              supportingText="Target pencatatan 85%"
+              value="24.5 Ton"
+            />
+>>>>>>> f53dd0f77fb50e4b647bf08268e7b5ad2c6a65fb
           </View>
         ) : (
           <View style={styles.content}>
@@ -97,6 +137,7 @@ export function KoperasiDashboardScreen({
               </Text>
             </View>
 
+<<<<<<< HEAD
             <View style={styles.metricGrid}>
               <MetricCard
                 accentColor={colors.primary}
@@ -116,6 +157,11 @@ export function KoperasiDashboardScreen({
             <PoolActiveCard pool={currentPool} onDetailPress={onCollectivePress} />
           </View>
         )}
+=======
+          <VolumeMindCard />
+          <PoolActiveCard />
+        </ScrollView>
+>>>>>>> f53dd0f77fb50e4b647bf08268e7b5ad2c6a65fb
 
         <KoperasiBottomNav
           activeTab="home"
@@ -131,16 +177,20 @@ export function KoperasiDashboardScreen({
 type MetricCardProps = {
   accentColor: string;
   label: string;
+  supportingIcon: string;
   supportingText: string;
   value: string;
 };
 
-function MetricCard({ accentColor, label, supportingText, value }: MetricCardProps) {
+function MetricCard({ accentColor, label, supportingIcon, supportingText, value }: MetricCardProps) {
   return (
     <View style={styles.metricCard}>
       <Text style={styles.metricLabel}>{label}</Text>
       <Text style={[styles.metricValue, { color: accentColor }]}>{value}</Text>
-      <Text style={styles.metricSupporting}>{supportingText}</Text>
+      <View style={styles.metricSupportingRow}>
+        <Image accessibilityElementsHidden resizeMode="contain" source={{ uri: supportingIcon }} style={styles.metricTrendIcon} />
+        <Text style={styles.metricSupporting}>{supportingText}</Text>
+      </View>
     </View>
   );
 }
@@ -155,6 +205,7 @@ function VolumeMindCard({ data, accuracy }: { data: any; accuracy: number }) {
   return (
     <View style={styles.volumeMindCard}>
       <View style={styles.volumeMindHeader}>
+<<<<<<< HEAD
         <View style={styles.volumeMindTitleRow}>
           <View style={styles.volumeIcon}>
             <Text style={styles.volumeIconText}>VM</Text>
@@ -167,15 +218,30 @@ function VolumeMindCard({ data, accuracy }: { data: any; accuracy: number }) {
         <View style={styles.accuracyBadge}>
           <Text style={styles.accuracyText}>AKURASI</Text>
           <Text style={styles.accuracyValue}>{accuracy.toFixed(1)}%</Text>
+=======
+        <View style={styles.volumeMindCopy}>
+          <Text style={styles.volumeTitle}>VolumeMind</Text>
+          <Text style={styles.volumeSubtitle}>Prediksi Kebutuhan Bulan Depan</Text>
+        </View>
+        <View style={styles.accuracyBadge}>
+          <Text style={styles.accuracyText}>AKURASI 94%</Text>
+>>>>>>> f53dd0f77fb50e4b647bf08268e7b5ad2c6a65fb
         </View>
       </View>
 
       <View style={styles.recommendationBox}>
         <View style={styles.recommendationGrid}>
+<<<<<<< HEAD
           <InfoCell label="Rekomendasi Pemasok" value={data.supplierName} />
           <InfoCell label="Kuantitas Optimal" value={`${volumeTon} Ton (NPK)`} />
           <InfoCell label="Estimasi Biaya" value={`Rp ${data.totalCost.toLocaleString('id-ID')}`} />
           <InfoCell isSaving label={data.isVolumeHack ? "Hemat (Volume Hack)" : "Potensi Penghematan"} value={savingsText} />
+=======
+          <InfoCell icon={storeIcon} label="Rekomendasi Pemasok" value="PT Agro Nusa" />
+          <InfoCell icon={quantityIcon} label="Kuantitas Optimal" value="12.5 Ton (Urea)" />
+          <InfoCell label="Estimasi Biaya" value="Rp 68.750.000" />
+          <InfoCell isSaving label="Potensi Penghematan" value="Rp 4.2Jt" />
+>>>>>>> f53dd0f77fb50e4b647bf08268e7b5ad2c6a65fb
         </View>
         {data.explanation ? (
           <Text style={{ marginTop: 10, fontSize: 11, color: colors.outline, fontStyle: 'italic', lineHeight: 15 }}>
@@ -183,43 +249,30 @@ function VolumeMindCard({ data, accuracy }: { data: any; accuracy: number }) {
           </Text>
         ) : null}
       </View>
-
-      <Pressable accessibilityRole="button" onPress={() => undefined} style={styles.confirmButton}>
-        <CartIcon />
-        <Text style={styles.confirmText}>KONFIRMASI PEMESANAN</Text>
-      </Pressable>
     </View>
   );
 }
 
 type InfoCellProps = {
+  icon?: string;
   isSaving?: boolean;
   label: string;
   value: string;
 };
 
-function InfoCell({ isSaving = false, label, value }: InfoCellProps) {
+function InfoCell({ icon, isSaving = false, label, value }: InfoCellProps) {
   return (
     <View style={styles.infoCell}>
       <Text style={[styles.infoLabel, isSaving && styles.savingLabel]}>{label}</Text>
-      <Text style={[styles.infoValue, isSaving && styles.savingValue]}>{value}</Text>
-    </View>
-  );
-}
-
-function CartIcon() {
-  return (
-    <View style={styles.cartIcon}>
-      <View style={styles.cartHandle} />
-      <View style={styles.cartBasket} />
-      <View style={styles.cartWheelRow}>
-        <View style={styles.cartWheel} />
-        <View style={styles.cartWheel} />
+      <View style={styles.infoValueRow}>
+        {icon ? <Image accessibilityElementsHidden resizeMode="contain" source={{ uri: icon }} style={styles.infoIcon} /> : null}
+        <Text style={[styles.infoValue, isSaving && styles.savingValue]}>{value}</Text>
       </View>
     </View>
   );
 }
 
+<<<<<<< HEAD
 function PoolActiveCard({ pool, onDetailPress }: { pool: any; onDetailPress: () => void }) {
   if (!pool) {
     return (
@@ -239,11 +292,16 @@ function PoolActiveCard({ pool, onDetailPress }: { pool: any; onDetailPress: () 
   const totalVolume = pool.targetVolumeKg || 1000;
   const currentVolume = pool.currentVolumeKg || 0;
   const progressPercent = Math.min(100, Math.round((currentVolume / totalVolume) * 100));
+=======
+function PoolActiveCard() {
+  const activePool = pools[1];
+>>>>>>> f53dd0f77fb50e4b647bf08268e7b5ad2c6a65fb
 
   return (
     <View style={styles.poolSection}>
       <View style={styles.poolHeader}>
         <Text style={styles.poolTitle}>Pool Aktif</Text>
+<<<<<<< HEAD
         <Pressable onPress={onDetailPress}>
           <Text style={styles.seeAll}>Lihat Semua &gt;</Text>
         </Pressable>
@@ -286,6 +344,11 @@ function PoolActiveCard({ pool, onDetailPress }: { pool: any; onDetailPress: () 
           <Text style={styles.detailButtonText}>IKUTI POOL PATUNGAN</Text>
         </Pressable>
       </View>
+=======
+      </View>
+
+      <PoolCard onAction={() => undefined} pool={activePool} />
+>>>>>>> f53dd0f77fb50e4b647bf08268e7b5ad2c6a65fb
     </View>
   );
 }
@@ -295,65 +358,20 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   shell: {
-    minHeight: '100%',
     width: '100%',
     maxWidth: 430,
     alignSelf: 'center',
-    paddingBottom: 84,
-  },
-  topBar: {
-    minHeight: 72,
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-  },
-  profileRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 12,
-  },
-  avatar: {
-    width: 44,
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.primaryContainer,
-    borderRadius: 22,
-  },
-  orgName: {
-    color: colors.primary,
-    fontFamily: fonts.heading,
-    fontSize: 20,
-    fontWeight: '600',
-    lineHeight: 28,
-  },
-  statusText: {
-    color: colors.successGreen,
-    fontFamily: fonts.body,
-    fontSize: 11,
-    fontWeight: '500',
-    lineHeight: 14,
-  },
-  logoutButton: {
-    minHeight: 40,
-    justifyContent: 'center',
-    borderColor: colors.outlineVariant,
-    borderRadius: 8,
-    borderWidth: 1,
-    paddingHorizontal: 14,
-  },
-  logoutText: {
-    color: colors.primary,
-    fontFamily: fonts.body,
-    fontSize: 12,
-    fontWeight: '600',
-    lineHeight: 16,
+    paddingBottom: 72,
+    position: 'relative',
   },
   content: {
     gap: 16,
+    paddingBottom: 96,
     paddingHorizontal: 16,
     paddingTop: 8,
+  },
+  contentScroll: {
+    flex: 1,
   },
   hero: {
     gap: 6,
@@ -404,97 +422,102 @@ const styles = StyleSheet.create({
   },
   metricSupporting: {
     color: colors.successGreen,
+    flexShrink: 1,
     fontFamily: fonts.body,
     fontSize: 11,
     fontWeight: '500',
     lineHeight: 14,
   },
+  metricSupportingRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 5,
+  },
+  metricTrendIcon: {
+    width: 12,
+    height: 12,
+  },
   volumeMindCard: {
-    backgroundColor: '#eaf7ff',
-    borderColor: '#d1e7ef',
+    backgroundColor: '#b7dcff',
+    borderColor: colors.primary,
     borderRadius: 12,
     borderWidth: 1,
     gap: 12,
-    padding: 16,
+    padding: 18,
     ...cardShadow,
   },
   volumeMindHeader: {
-    alignItems: 'flex-start',
+    alignItems: 'center',
     flexDirection: 'row',
+    gap: 12,
     justifyContent: 'space-between',
   },
-  volumeMindTitleRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 10,
-  },
-  volumeIcon: {
-    width: 34,
-    height: 34,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.tertiaryContainer,
-    borderRadius: 17,
-  },
-  volumeIconText: {
-    color: colors.onPrimary,
-    fontFamily: fonts.body,
-    fontSize: 10,
-    fontWeight: '700',
+  volumeMindCopy: {
+    flex: 1,
   },
   volumeTitle: {
-    color: colors.tertiary,
+    color: colors.onSurface,
     fontFamily: fonts.heading,
-    fontSize: 20,
-    fontWeight: '600',
-    lineHeight: 24,
+    fontSize: 28,
+    fontWeight: '800',
+    lineHeight: 34,
   },
   volumeSubtitle: {
-    color: colors.tertiary,
+    color: colors.onSurface,
     fontFamily: fonts.body,
-    fontSize: 11,
-    lineHeight: 14,
+    fontSize: 14,
+    lineHeight: 20,
+    marginTop: 2,
   },
   accuracyBadge: {
-    minWidth: 86,
-    backgroundColor: 'rgba(43, 147, 72, 0.18)',
-    borderRadius: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 40,
+    minWidth: 104,
+    backgroundColor: 'rgba(43, 147, 72, 0.34)',
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
   },
   accuracyText: {
-    color: colors.successGreen,
+    color: colors.primary,
     fontFamily: fonts.body,
-    fontSize: 10,
-    fontWeight: '700',
-    lineHeight: 11,
-  },
-  accuracyValue: {
-    color: colors.successGreen,
-    fontFamily: fonts.body,
-    fontSize: 13,
-    fontWeight: '700',
-    lineHeight: 14,
+    fontSize: 14,
+    fontWeight: '800',
+    lineHeight: 18,
   },
   recommendationBox: {
     backgroundColor: colors.surfaceCard,
-    borderRadius: 8,
-    padding: 14,
+    borderRadius: 12,
+    paddingHorizontal: 13,
+    paddingVertical: 11,
   },
   recommendationGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    rowGap: 12,
+    rowGap: 18,
   },
   infoCell: {
     width: '50%',
+    minWidth: 0,
+    paddingRight: 8,
   },
   infoLabel: {
     color: colors.outline,
     fontFamily: fonts.body,
-    fontSize: 10,
+    fontSize: 8,
     fontWeight: '600',
-    lineHeight: 14,
+    lineHeight: 11,
+  },
+  infoValueRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 6,
+    marginTop: 6,
+  },
+  infoIcon: {
+    width: 13,
+    height: 13,
   },
   savingLabel: {
     color: colors.successGreen,
@@ -502,75 +525,13 @@ const styles = StyleSheet.create({
   infoValue: {
     color: colors.primary,
     fontFamily: fonts.body,
-    fontSize: 13,
+    flexShrink: 1,
+    fontSize: 16,
     fontWeight: '700',
-    lineHeight: 18,
-    marginTop: 2,
+    lineHeight: 21,
   },
   savingValue: {
     color: colors.successGreen,
-    fontFamily: fonts.heading,
-    fontSize: 20,
-    lineHeight: 28,
-  },
-  confirmButton: {
-    minHeight: 46,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
-    gap: 8,
-    backgroundColor: colors.primary,
-    borderRadius: 8,
-  },
-  cartIcon: {
-    width: 16,
-    height: 16,
-    position: 'relative',
-  },
-  cartHandle: {
-    position: 'absolute',
-    left: 0,
-    top: 2,
-    width: 5,
-    height: 2,
-    backgroundColor: colors.onPrimary,
-    borderRadius: 1,
-    transform: [{ rotate: '28deg' }],
-  },
-  cartBasket: {
-    position: 'absolute',
-    left: 4,
-    top: 5,
-    width: 10,
-    height: 6,
-    borderBottomColor: colors.onPrimary,
-    borderBottomWidth: 2,
-    borderLeftColor: colors.onPrimary,
-    borderLeftWidth: 2,
-    borderRightColor: colors.onPrimary,
-    borderRightWidth: 2,
-    borderRadius: 1,
-  },
-  cartWheelRow: {
-    position: 'absolute',
-    left: 5,
-    bottom: 1,
-    flexDirection: 'row',
-    gap: 4,
-  },
-  cartWheel: {
-    width: 3,
-    height: 3,
-    backgroundColor: colors.onPrimary,
-    borderRadius: 2,
-  },
-  confirmText: {
-    color: colors.onPrimary,
-    fontFamily: fonts.body,
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 0.4,
-    lineHeight: 16,
   },
   poolSection: {
     gap: 10,
@@ -586,132 +547,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '600',
     lineHeight: 28,
-  },
-  seeAll: {
-    color: colors.primary,
-    fontFamily: fonts.body,
-    fontSize: 10,
-    fontWeight: '600',
-    lineHeight: 14,
-  },
-  poolCard: {
-    backgroundColor: colors.surfaceCard,
-    borderColor: colors.surfaceContainerHigh,
-    borderRadius: 8,
-    borderWidth: 1,
-    gap: 12,
-    padding: 16,
-    ...cardShadow,
-  },
-  poolTopRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  poolMetaRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 4,
-  },
-  pendingBadge: {
-    backgroundColor: 'rgba(255, 183, 3, 0.18)',
-    borderRadius: 4,
-    paddingHorizontal: 6,
-    paddingVertical: 3,
-  },
-  pendingText: {
-    color: colors.warningAmber,
-    fontFamily: fonts.body,
-    fontSize: 10,
-    fontWeight: '700',
-    lineHeight: 12,
-  },
-  poolDeadline: {
-    color: colors.onSurfaceVariant,
-    fontFamily: fonts.body,
-    fontSize: 11,
-    lineHeight: 14,
-  },
-  poolName: {
-    color: colors.primary,
-    fontFamily: fonts.heading,
-    fontSize: 18,
-    fontWeight: '600',
-    lineHeight: 24,
-  },
-  groupIcon: {
-    width: 44,
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.surfaceContainerLow,
-    borderColor: colors.outlineVariant,
-    borderRadius: 22,
-    borderWidth: 1,
-    position: 'relative',
-  },
-  groupIconText: {
-    color: colors.primary,
-    fontFamily: fonts.body,
-    fontSize: 11,
-    fontWeight: '700',
-  },
-  groupDot: {
-    position: 'absolute',
-    right: 3,
-    bottom: 3,
-    width: 10,
-    height: 10,
-    backgroundColor: colors.secondary,
-    borderColor: colors.surfaceCard,
-    borderRadius: 5,
-    borderWidth: 2,
-  },
-  progressMeta: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  progressLabel: {
-    color: colors.outline,
-    fontFamily: fonts.body,
-    fontSize: 11,
-    lineHeight: 14,
-  },
-  progressValue: {
-    color: colors.primary,
-    fontFamily: fonts.body,
-    fontSize: 11,
-    fontWeight: '700',
-    lineHeight: 14,
-  },
-  progressTrack: {
-    height: 6,
-    backgroundColor: colors.surfaceContainerHigh,
-    borderRadius: 999,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    width: '65%',
-    height: '100%',
-    backgroundColor: colors.secondary,
-    borderRadius: 999,
-  },
-  detailButton: {
-    minHeight: 42,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderColor: colors.secondary,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
-  detailButtonText: {
-    color: colors.secondary,
-    fontFamily: fonts.body,
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 0.4,
-    lineHeight: 16,
   },
   bottomNav: {
     position: 'absolute',
