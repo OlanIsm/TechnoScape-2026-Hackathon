@@ -1,2 +1,14 @@
 AGENTS.md
 image/
+
+# Vite cache
+frontend/.vite/
+frontend/node_modules/
+
+# Local tool/cache
+.playwright-mcp/
+
+# VS Code local settings
+.vscode/
+.vscode/
+.playwright-mcp/

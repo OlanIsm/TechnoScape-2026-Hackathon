@@ -1,113 +1,217 @@
-# Flowchart Diagram — VolumeMate
+# Flowchart Diagram — VolumeMate Updated
 
-Dokumen ini menjelaskan alur kerja (workflow) utama dari platform VolumeMate, yang mencakup manajemen data, pelacakan harga, mesin rekomendasi AI, sistem pembelian kolektif, pencatatan transaksi aman, dan toleransi jaringan (offline mode).
+This document describes the updated VolumeMate flow with:
+
+- mobile-only web/PWA MVP direction,
+- Admin manual approval for Koperasi and Supplier registration,
+- Admin account manually created in database,
+- Supplier active account,
+- VolumeMind AI forecast and recommended buy shown only on Dashboard,
+- Koperasi pool proposal,
+- Supplier accept/reject,
+- Supplier deadline setting,
+- open collective buying pool,
+- 24-hour payment window,
+- platform payout to Supplier minus platform tax/fee,
+- audit log for final outcomes only.
 
 ---
 
-## Alur Kerja Aplikasi (Application Flowchart)
-
-Berikut adalah diagram flowchart yang menggambarkan interaksi pengguna dan proses sistem di dalam platform VolumeMate:
+## 1. Registration & Admin Verification Flow
 
 ```mermaid
-graph TD
-    %% Define Nodes and Labels
-    U["Admin Koperasi"]
-    M["Anggota Koperasi / Petani"]
-    SUP["Supplier dan Price Tiers"]
-    KOP_VOL["Volume Pesanan Koperasi"]
-    TRK["Volume Price Tracker Dashboard"]
-    CALC["Kalkulator Biaya Real-time"]
-    HIST[("Histori Transaksi")]
-    AI_FC["Demand Forecasting Model"]
-    AI_REC["Optimal Buy Recommendation"]
-    POOL["Collective Purchase Pool"]
-    AGG["Volume Aggregator"]
-    UNFULFILLED{"Target Volume Tercapai?"}
-    NEG_FLOW{"Pilih Opsi Tindakan"}
-    CANCEL_POOL["Pool: CANCELLED"]
-    SPLIT["Split Billing dan Distribution"]
-    CONN_CHECK{"Koneksi Internet?"}
-    TX["Order: CONFIRMED"]
-    DB_LOC[("IndexedDB Browser")]
-    SYNC["Auto Sync saat Online"]
-    AUD[("Audit Log Append-Only")]
-    EXP["Ekspor Laporan PDF dan Excel"]
+flowchart TD
+    A[User Registers as Koperasi or Supplier] --> B[Input Gmail, Password, Role, Accept Terms of Service]
+    B --> B2[Input Organization Name, Responsible Person, Phone, KTP Photo, Legal Proof PDF]
+    B2 --> C[Account Status: PENDING_ADMIN_APPROVAL]
+    C --> D[Admin Opens Pending Account Approval Menu]
+    D --> D2[Admin Reviews All Registration Inputs Except Password]
+    D2 --> D3[Admin Opens KTP Photo and Legal Proof PDF]
+    D3 -->|Approve| E[Account Status: ACTIVE]
+    D3 -->|Reject| F[Account Status: REJECTED]
+    E --> G[User Can Access Role-Based App Features]
+```
 
-    %% Define Node Classes
-    class U,M admin;
-    class AI_FC,AI_REC ai;
-    class POOL,AGG,UNFULFILLED,NEG_FLOW,CANCEL_POOL,SPLIT collb;
-    class HIST,AUD db;
-    class CONN_CHECK,DB_LOC,SYNC offline;
+Admin account setup:
 
-    %% Styling Classes
-    classDef admin fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1;
-    classDef ai fill:#f3e5f5,stroke:#4a148c,stroke-width:2px,color:#4a148c;
-    classDef collb fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20;
-    classDef db fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#e65100;
-    classDef offline fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#b71c1c;
-
-    %% Connections
-    U -->|Input Manual Data Offline| SUP
-    M -->|Pesan Pupuk Eceran| KOP_VOL
-    KOP_VOL --> TRK
-    SUP --> TRK
-    TRK -->|Progress Bar dan Estimasi Harga| CALC
-
-    HIST --> AI_FC
-    AI_FC -->|Prediksi Kebutuhan Musim Depan| AI_REC
-    SUP --> AI_REC
-    AI_REC -->|Rekomendasi: Waktu, Volume, dan Supplier Terbaik| U
-
-    U -->|Buat / Gabung Pool| POOL
-    POOL -->|Agregasi Volume Otomatis| AGG
-    AGG -->|Cek Tier Harga Lebih Murah| SUP
-    POOL -->|Deadline Tercapai| UNFULFILLED
-
-    UNFULFILLED -->|Ya| SPLIT
-    UNFULFILLED -->|Tidak| NEG_FLOW
-
-    NEG_FLOW -->|Extend Deadline| POOL
-    NEG_FLOW -->|Adjust to Nearest Tier| SPLIT
-    NEG_FLOW -->|Cancel Pool| CANCEL_POOL
-
-    TRK -->|Konfirmasi Pesanan| CONN_CHECK
-    SPLIT -->|Konfirmasi Pesanan Pool| CONN_CHECK
-
-    CONN_CHECK -->|Online| TX
-    CONN_CHECK -->|Offline| DB_LOC
-    DB_LOC -->|Offline Queue| SYNC
-    SYNC --> TX
-
-    TX -->|Immutable Ledger| AUD
-    AUD --> EXP
+```mermaid
+flowchart TD
+    TECH[Technical Team] --> DB[Insert Admin User Directly in Database]
+    DB --> ROLE[role = ADMIN]
+    DB --> ACTIVE[status = ACTIVE]
+    ACTIVE --> ADMIN[Admin Can Login to Pending Account Approval Menu]
 ```
 
 ---
 
-## Deskripsi Alur
+## 2. Koperasi Collective Buy Flow
 
-1. **Modul Pelacakan Harga (Volume Price Tracker)**:
-   * Admin Koperasi memasukkan data profil supplier dan struktur tier harga secara manual berdasarkan negosiasi offline.
-   * Anggota koperasi (petani/toko gerai) melakukan pemesanan pupuk eceran ke koperasi.
-   * Dasbor melacak total volume pesanan saat ini dan menunjukkan estimasi biaya real-time serta jarak volume yang dibutuhkan untuk mencapai tier harga berikutnya.
+```mermaid
+flowchart TD
+    K[Verified Koperasi] --> CB[Open Collective Buy Menu]
+    CB --> L[List Open Pools]
+    CB --> P[Click Floating Plus Button]
+    P --> S[Select Verified Supplier by Unique Supplier Name]
+    S --> I[Input Pool Details: Product, Target Volume, Target Fund, Initial Fund]
+    I --> PP[Pool Status: PENDING_SUPPLIER_APPROVAL]
+    PP --> SM[Appears in Supplier Pending Menu]
+```
 
-2. **VolumeMind AI Engine**:
-   * Sistem menganalisis histori transaksi yang tersimpan di PostgreSQL.
-   * Model demand forecasting memprediksi jumlah kebutuhan pupuk untuk musim tanam mendatang.
-   * Berdasarkan prediksi kebutuhan dan data tier harga supplier, sistem memberikan rekomendasi pembelian optimal (kapan harus membeli, seberapa banyak volume, dan dari supplier mana).
+---
 
-3. **Pembelian Kolektif (Collective Buying Power)**:
-   * Admin Koperasi dapat membuat atau bergabung dengan kelompok pembelian bersama (Cooperative Pool).
-   * Volume pesanan dari beberapa koperasi digabungkan oleh sistem untuk memenuhi tier volume yang lebih tinggi agar mendapatkan harga per unit yang lebih murah.
-   * Setelah batas waktu (deadline) tercapai, tagihan dibagi secara proporsional (split billing) kepada masing-masing koperasi yang berpartisipasi.
+## 2a. Dashboard VolumeMind AI Recommendation Flow
 
-4. **Toleransi Jaringan (Offline Mode)**:
-   * Sebelum pesanan dikirim, sistem mendeteksi status koneksi internet.
-   * Jika tidak ada jaringan (offline), data pesanan disimpan sementara di penyimpanan lokal browser (IndexedDB).
-   * Ketika koneksi internet pulih, service worker melakukan sinkronisasi otomatis untuk mengirimkan data antrean pesanan ke server backend.
+```mermaid
+flowchart TD
+    K[Verified Koperasi Opens Dashboard] --> DB[System Reads Koperasi Database Records]
+    DB --> PROFILE[Profile, Location, Member Land Data]
+    DB --> HISTORY[Manual Transactions and Pool History]
+    DB --> TIERS[Supplier Price Tiers]
+    PROFILE --> WEATHER[System Fetches Rainfall Forecast by Location]
+    PROFILE --> SEASON[System Detects Planting Season]
 
-5. **Keamanan dan Audit**:
-   * Setiap pesanan yang dikonfirmasi akan dicatat ke dalam database dengan status yang tidak dapat diubah atau dihapus (immutable ledger).
-   * Perubahan status pengiriman atau pembayaran dicatat secara append-only di dalam tabel Audit Log untuk menjaga transparansi.
-   * Laporan transaksi bulanan/tahunan dapat diekspor ke format PDF atau Excel.
+    WEATHER --> AI[VolumeMind AI Engine]
+    SEASON --> AI
+    HISTORY --> AI
+    TIERS --> AI
+    AI --> PREDICT[Forecast Fertilizer Demand]
+    PREDICT --> OPTIMIZE[Recommend Buy Quantity, Supplier, Timing, Saving]
+    OPTIMIZE --> OUTPUT[Show Forecast and Recommended Buy on Dashboard]
+    OUTPUT --> CONFIRM{Koperasi Confirms Recommendation?}
+    CONFIRM -->|Yes| DRAFT[Create Draft Order or Pool Proposal]
+    CONFIRM -->|No| IDLE[Keep Dashboard Recommendation Visible]
+```
+
+Recommended output fields:
+
+```text
+Forecasted fertilizer demand
+Selected supplier
+Recommended quantity
+Estimated total cost
+Potential saving
+Best order window
+Recommendation reason
+```
+
+---
+
+## 3. Supplier Pool Approval Flow
+
+```mermaid
+flowchart TD
+    SM[Supplier Pending Menu] --> PD[View Pool Proposal Detail]
+    PD --> DEC{Accept or Reject?}
+
+    DEC -->|Reject| RJ[DECLINED_BY_SUPPLIER]
+    RJ --> AUD1[Written to Audit Log]
+
+    DEC -->|No Action for 7 Days| AUTO[AUTO_DECLINED_NO_SUPPLIER_RESPONSE]
+    AUTO --> AUD2[Written to Audit Log]
+
+    DEC -->|Accept| DL[Supplier Inputs Deadline Date and Time]
+    DL --> ACC[Pool Status: ACCEPTED]
+    ACC --> OPEN[Pool Status: OPEN_FOR_KOPERASI]
+    OPEN --> ONG[Appears in Supplier On-going Menu and Koperasi Open Pool List]
+```
+
+---
+
+## 4. Join Pool & Funding Flow
+
+```mermaid
+flowchart TD
+    OPEN[Pool OPEN_FOR_KOPERASI] --> J[Koperasi Joins with Fund Amount]
+    J --> VALID{current fund + join amount <= target fund?}
+
+    VALID -->|No| ERR[Reject Join: Contribution Exceeds Remaining Target]
+    VALID -->|Yes| ADD[Add Fund Commitment to Pool]
+
+    ADD --> CHECK{Target Fund Reached?}
+    CHECK -->|No| DEADLINE{Supplier Deadline Passed?}
+    DEADLINE -->|No| OPEN
+    DEADLINE -->|Yes| FD[FUNDING_DEADLINE_CANCELED]
+
+    CHECK -->|Yes| TR[TARGET_REACHED]
+    FD --> ACTION[Main Koperasi Chooses Cancel or Re-propose]
+```
+
+---
+
+## 5. Payment & Supplier Payout Flow
+
+```mermaid
+flowchart TD
+    TR[TARGET_REACHED] --> PW[PAYMENT_WAITING: 24h Payment Window Starts]
+    PW --> PAY[Each Koperasi Transfers Proposed Fund to Platform]
+    PAY --> SUB{All Payments Submitted Successfully Within 24h?}
+
+    SUB -->|No| PF[PAYMENT_FAILED_CANCELED]
+    PF --> ACTION2[Main Koperasi Chooses Cancel or Re-propose]
+
+    SUB -->|Yes| PLATFORM[Platform Collects Total Payment]
+    PLATFORM --> FEE[Deduct Platform Tax/Fee]
+    FEE --> PAYOUT[Transfer Remaining Amount to Supplier]
+    PAYOUT --> SUCCESS[SUCCESS]
+    SUCCESS --> AUD3[Written to Audit Log]
+```
+
+---
+
+## 6. Re-propose Flow
+
+```mermaid
+flowchart TD
+    FAIL[Failed Pool: Funding Deadline or Payment Failure] --> CHOICE{Main Koperasi Decision}
+    CHOICE -->|Cancel| CANCELED[Final Canceled Status]
+    CANCELED --> AUD[Written to Audit Log]
+    CHOICE -->|Re-propose| NEW[Create New Pool Record]
+    NEW --> LINK[Set reproposed_from_pool_id = old_pool_id]
+    LINK --> PENDING[PENDING_SUPPLIER_APPROVAL]
+    PENDING --> SUPPLIER[Supplier Must Approve Again]
+```
+
+---
+
+## 7. Manual Transaction Recording Flow
+
+```mermaid
+flowchart TD
+    K[Verified Koperasi] --> TXFORM[Pencatatan Transaksi Menu]
+    TXFORM --> INPUT[Input Jenis Pupuk, Jumlah kg, Supplier Name, Transaction Date, Total Price]
+    INPUT --> SAVE[Click Simpan Transaksi]
+    SAVE --> DB[(Database)]
+    DB --> DASH[Update Dashboard Metrics]
+    DB --> MODEL[Feed Historical Data for Forecasting/Insight]
+    DB --> AUDTX[Transaction Record Available in Audit Log]
+```
+
+---
+
+## 8. Supplier Menu Flow
+
+```mermaid
+flowchart TD
+    S[Verified Supplier] --> PM[Pool Management Menu]
+    PM --> PENDING[Pending Menu: Proposals Waiting for Decision]
+    PM --> ONGOING[On-going Menu: Accepted Pools Not Final Yet]
+    S --> AUD[Supplier Audit Log]
+    AUD --> FINAL[Final Outcomes Only: Declined, Auto Declined, Canceled, Success]
+```
+
+---
+
+## 9. Pool Status Meaning
+
+| Status | Meaning | Audit Log? |
+|---|---|---|
+| `PENDING_SUPPLIER_APPROVAL` | Pool proposal waits for supplier decision | No |
+| `DECLINED_BY_SUPPLIER` | Supplier rejected the proposal | Yes |
+| `AUTO_DECLINED_NO_SUPPLIER_RESPONSE` | Supplier did not act within 7 days | Yes |
+| `ACCEPTED` | Supplier approved and set deadline | No |
+| `OPEN_FOR_KOPERASI` | Other cooperatives can join | No |
+| `TARGET_REACHED` | Target fund has been reached | No |
+| `PAYMENT_WAITING` | 24-hour payment window is active | No |
+| `FUNDING_DEADLINE_CANCELED` | Target fund not reached before deadline | Yes |
+| `PAYMENT_FAILED_CANCELED` | At least one participant did not pay within 24h | Yes |
+| `SUCCESS` | All payments submitted and supplier payout processed | Yes |
