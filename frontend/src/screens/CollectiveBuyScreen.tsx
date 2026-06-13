@@ -192,14 +192,9 @@ const styles = StyleSheet.create({
     height: 56,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.secondary,
-    borderColor: colors.surfaceContainerLowest,
-    borderRadius: 28,
-    borderWidth: 2,
-    boxShadow: '0 10px 22px rgba(27, 67, 50, 0.22)',
   },
   fabIcon: {
-    width: 24,
-    height: 24,
+    width: 56,
+    height: 56,
   },
 });
