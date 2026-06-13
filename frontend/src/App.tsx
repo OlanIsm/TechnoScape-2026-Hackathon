@@ -66,11 +66,16 @@ function getInitialScreen(): Screen {
     return 'audit-log';
   }
 
-  if (hash === '#supplier' || hash === '#manajemen-proposal' || hash === '#manajemen proposal') {
+  if (
+    hash === '#supplier' ||
+    hash === '#supplier-proposal' ||
+    hash === '#manajemen-proposal' ||
+    hash === '#manajemen proposal'
+  ) {
     return 'supplier-proposal';
   }
 
-  if (hash === '#log-audit-supplier' || hash === '#log audit supplier') {
+  if (hash === '#supplier-audit' || hash === '#log-audit-supplier' || hash === '#log audit supplier') {
     return 'supplier-audit';
   }
 
