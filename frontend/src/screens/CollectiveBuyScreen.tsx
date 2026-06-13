@@ -30,8 +30,6 @@ type Pool = {
   product: string;
   progress: number;
   progressText: string;
-  status: string;
-  statusType: 'warning' | 'success';
   supplier: string;
 };
 
@@ -45,21 +43,17 @@ const pools: Pool[] = [
     product: 'Urea Non-Subsidi 50kg',
     progress: 60,
     progressText: '600 / 1000 Ton',
-    status: '2 Hari Lagi',
-    statusType: 'warning',
     supplier: 'PT Pupuk Kaltim',
   },
   {
     action: 'detail',
-    deadline: 'Hampir Penuh',
+    deadline: '12 Jam Lagi',
     id: 2,
     location: 'Surabaya, Jatim',
     price: 'Rp 650.000 /sak',
     product: 'NPK Mutiara 16-16-16',
     progress: 85,
     progressText: '425 / 500 Ton',
-    status: 'Hampir Penuh',
-    statusType: 'success',
     supplier: 'CV Tani Subur Jaya',
   },
   {
@@ -71,8 +65,6 @@ const pools: Pool[] = [
     product: 'SP-36 Super 50kg',
     progress: 42,
     progressText: '210 / 500 Ton',
-    status: 'Terbuka',
-    statusType: 'success',
     supplier: 'PT Agro Nusa',
   },
 ];
@@ -193,9 +185,6 @@ type PoolCardProps = {
 };
 
 function PoolCard({ onAction, pool }: PoolCardProps) {
-  const statusStyle = pool.statusType === 'warning' ? styles.statusWarning : styles.statusSuccess;
-  const statusTextStyle = pool.statusType === 'warning' ? styles.statusWarningText : styles.statusSuccessText;
-
   return (
     <View style={styles.poolCard}>
       <View style={styles.poolAccent} />
@@ -209,9 +198,9 @@ function PoolCard({ onAction, pool }: PoolCardProps) {
             <Text style={styles.locationText}>{pool.location}</Text>
           </View>
         </View>
-        <View style={[styles.statusBadge, statusStyle]}>
-          <View style={[styles.statusDot, pool.statusType === 'warning' && styles.statusDotWarning]} />
-          <Text style={[styles.statusText, statusTextStyle]}>{pool.status}</Text>
+        <View style={styles.deadlineBadge}>
+          <View style={styles.deadlineDot} />
+          <Text style={styles.deadlineText}>{pool.deadline}</Text>
         </View>
       </View>
 
@@ -489,43 +478,29 @@ const styles = StyleSheet.create({
     lineHeight: 16,
     marginTop: 2,
   },
-  statusBadge: {
+  deadlineBadge: {
     alignItems: 'center',
     flexDirection: 'row',
     gap: 5,
+    backgroundColor: 'rgba(255, 183, 3, 0.1)',
+    borderColor: 'rgba(255, 183, 3, 0.25)',
     borderRadius: 999,
     borderWidth: 1,
     paddingHorizontal: 9,
     paddingVertical: 6,
   },
-  statusWarning: {
-    backgroundColor: 'rgba(255, 183, 3, 0.1)',
-    borderColor: 'rgba(255, 183, 3, 0.25)',
-  },
-  statusSuccess: {
-    backgroundColor: 'rgba(43, 147, 72, 0.1)',
-    borderColor: 'rgba(43, 147, 72, 0.22)',
-  },
-  statusDot: {
+  deadlineDot: {
     width: 6,
     height: 6,
-    backgroundColor: colors.successGreen,
+    backgroundColor: colors.warningAmber,
     borderRadius: 3,
   },
-  statusDotWarning: {
-    backgroundColor: colors.warningAmber,
-  },
-  statusText: {
+  deadlineText: {
+    color: colors.warningAmber,
     fontFamily: fonts.body,
     fontSize: 10,
     fontWeight: '700',
     lineHeight: 12,
-  },
-  statusWarningText: {
-    color: colors.warningAmber,
-  },
-  statusSuccessText: {
-    color: colors.successGreen,
   },
   productBox: {
     backgroundColor: colors.surfaceContainerLowest,
