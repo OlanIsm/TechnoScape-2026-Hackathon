@@ -5,7 +5,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   useWindowDimensions,
   View,
   type ViewStyle,
@@ -105,28 +104,6 @@ export function CollectiveBuyScreen({
             <Text style={styles.subtitle}>
               Gabung dengan pool lain untuk mencapai target volume dan mendapatkan harga grosir terbaik.
             </Text>
-          </View>
-
-          <View style={styles.searchWrap}>
-            <View style={styles.searchIcon}>
-              <View style={styles.searchLens} />
-              <View style={styles.searchHandle} />
-            </View>
-            <TextInput
-              accessibilityLabel="Cari supplier atau jenis pupuk"
-              placeholder="Cari supplier atau jenis pupuk..."
-              placeholderTextColor={colors.outline}
-              style={styles.searchInput}
-            />
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => showDummyNotice('Filter pool akan aktif setelah API tersedia.')}
-              style={styles.filterButton}
-            >
-              <View style={styles.filterLineLong} />
-              <View style={styles.filterLineShort} />
-              <View style={styles.filterLineMid} />
-            </Pressable>
           </View>
 
           <View style={styles.tabs}>
@@ -291,79 +268,6 @@ const styles = StyleSheet.create({
     fontFamily: fonts.body,
     fontSize: 14,
     lineHeight: 20,
-  },
-  searchWrap: {
-    minHeight: 50,
-    alignItems: 'center',
-    flexDirection: 'row',
-    backgroundColor: colors.surfaceCard,
-    borderColor: colors.surfaceVariant,
-    borderRadius: 10,
-    borderWidth: 1,
-    paddingLeft: 14,
-    paddingRight: 6,
-    ...cardShadow,
-  },
-  searchIcon: {
-    width: 22,
-    height: 22,
-    marginRight: 8,
-    position: 'relative',
-  },
-  searchLens: {
-    position: 'absolute',
-    left: 2,
-    top: 2,
-    width: 13,
-    height: 13,
-    borderColor: colors.outline,
-    borderRadius: 7,
-    borderWidth: 2,
-  },
-  searchHandle: {
-    position: 'absolute',
-    right: 3,
-    bottom: 3,
-    width: 8,
-    height: 2,
-    backgroundColor: colors.outline,
-    borderRadius: 1,
-    transform: [{ rotate: '45deg' }],
-  },
-  searchInput: {
-    flex: 1,
-    borderWidth: 0,
-    color: colors.onSurface,
-    fontFamily: fonts.body,
-    fontSize: 14,
-    height: 48,
-  },
-  filterButton: {
-    width: 38,
-    height: 38,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 8,
-  },
-  filterLineLong: {
-    width: 18,
-    height: 2,
-    backgroundColor: colors.secondary,
-    borderRadius: 1,
-  },
-  filterLineShort: {
-    width: 10,
-    height: 2,
-    backgroundColor: colors.secondary,
-    borderRadius: 1,
-    marginTop: 4,
-  },
-  filterLineMid: {
-    width: 14,
-    height: 2,
-    backgroundColor: colors.secondary,
-    borderRadius: 1,
-    marginTop: 4,
   },
   tabs: {
     flexDirection: 'row',
