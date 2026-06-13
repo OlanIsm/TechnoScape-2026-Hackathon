@@ -77,17 +77,21 @@ export function KoperasiDashboardScreen({
   const [activePools, setActivePools] = useState<BackendPool[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showMutationModal, setShowMutationModal] = useState(false);
+  const [auditLogs, setAuditLogs] = useState<any[]>([]);
 
   useEffect(() => {
     async function loadData() {
       try {
         setIsLoading(true);
-        const [dash, pools] = await Promise.all([
+        const [dash, pools, logs] = await Promise.all([
           api.getDashboard() as Promise<DashboardData>,
           api.getActivePools() as Promise<BackendPool[]>,
+          api.getAuditLogs() as Promise<any[]>,
         ]);
         setDashboardData(dash);
         setActivePools(pools);
+        setAuditLogs(logs);
       } catch (err: unknown) {
         setError(getErrorMessage(err, 'Gagal memuat data dasbor.'));
       } finally {
@@ -142,13 +146,15 @@ export function KoperasiDashboardScreen({
                   supportingText="Dari harga pasar eceran"
                   value={`Rp ${savings.toLocaleString('id-ID')}`}
                 />
-                <MetricCard
-                  accentColor={colors.soilBrown}
-                  label="Volume Stok"
-                  supportingIcon={upIcon}
-                  supportingText={`Cukup untuk ${dashboardData?.stokCukupBulan || 0} bulan`}
-                  value={`${(stockKg / 1000).toFixed(1)} Ton`}
-                />
+                <Pressable onPress={() => setShowMutationModal(true)} style={{ flex: 1 }}>
+                  <MetricCard
+                    accentColor={colors.soilBrown}
+                    label="Volume Stok"
+                    supportingIcon={upIcon}
+                    supportingText={`Cukup untuk ${dashboardData?.stokCukupBulan || 0} bulan`}
+                    value={`${(stockKg / 1000).toFixed(1)} Ton`}
+                  />
+                </Pressable>
               </View>
 
               <VolumeMindCard
@@ -159,6 +165,85 @@ export function KoperasiDashboardScreen({
             </>
           )}
         </ScrollView>
+
+        {showMutationModal ? (
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Detail Mutasi Stok</Text>
+                <Pressable onPress={() => setShowMutationModal(false)} style={styles.closeButton}>
+                  <Text style={styles.closeButtonText}>✕</Text>
+                </Pressable>
+              </View>
+
+              <ScrollView style={styles.mutationScroll} showsVerticalScrollIndicator={false}>
+                {auditLogs.filter(log => ['MANUAL_TRANSACTION', 'JOIN_POOL', 'CONFIRM_ORDER'].includes(log.action)).length === 0 ? (
+                  <Text style={styles.emptyText}>Belum ada riwayat pengadaan pupuk.</Text>
+                ) : (
+                  auditLogs.map((log, index) => {
+                    let details: any = {};
+                    try {
+                      details = JSON.parse(log.details);
+                    } catch {
+                      details = {};
+                    }
+
+                    const isManual = log.action === 'MANUAL_TRANSACTION';
+                    const isJoin = log.action === 'JOIN_POOL';
+                    const isConfirm = log.action === 'CONFIRM_ORDER';
+
+                    if (!isManual && !isJoin && !isConfirm) return null;
+
+                    const date = new Date(log.createdAt).toLocaleDateString('id-ID', {
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric',
+                    });
+                    
+                    const quantityText = isManual 
+                      ? `+${(Number(details.quantity) / 1000).toFixed(1)} Ton` 
+                      : (isJoin ? `+${(Number(details.quantity) / 1000).toFixed(1)} Ton` : `+${(Number(details.totalVolume || 0) / 1000).toFixed(1)} Ton`);
+                    
+                    const fertilizerName = isManual 
+                      ? (details.jenisPupuk || 'Pupuk') 
+                      : (isJoin ? (details.jenisPupuk || 'NPK Phonska') : 'Pupuk NPK Phonska');
+
+                    const supplierName = isManual 
+                      ? (details.supplierName || 'Pemasok') 
+                      : (isJoin ? 'CV Petrokimia Makmur' : 'CV Petrokimia Makmur');
+
+                    return (
+                      <View key={log.id || index} style={styles.mutationItem}>
+                        <View style={styles.mutationMeta}>
+                          <Text style={styles.mutationDate}>{date}</Text>
+                          <View style={[
+                            styles.badge, 
+                            { backgroundColor: isManual ? 'rgba(0, 102, 204, 0.1)' : 'rgba(40, 167, 69, 0.1)' }
+                          ]}>
+                            <Text style={[
+                              styles.badgeText, 
+                              { color: isManual ? '#0066CC' : colors.successGreen }
+                            ]}>
+                              {isManual ? 'Manual' : 'Kolektif'}
+                            </Text>
+                          </View>
+                        </View>
+                        
+                        <View style={styles.mutationInfo}>
+                          <View style={{ flex: 1 }}>
+                            <Text style={styles.mutationProduct}>{fertilizerName}</Text>
+                            <Text style={styles.mutationSupplier}>Pemasok: {supplierName}</Text>
+                          </View>
+                          <Text style={styles.mutationQuantity}>{quantityText}</Text>
+                        </View>
+                      </View>
+                    );
+                  })
+                )}
+              </ScrollView>
+            </View>
+          </View>
+        ) : null}
 
         <KoperasiBottomNav
           activeTab="home"
@@ -704,5 +789,108 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     letterSpacing: 0.4,
     lineHeight: 16,
+  },
+  modalOverlay: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+    padding: 20,
+  },
+  modalContent: {
+    width: '100%',
+    maxWidth: 360,
+    maxHeight: '80%',
+    backgroundColor: colors.surfaceCard,
+    borderRadius: 16,
+    padding: 20,
+    boxShadow: '0 8px 30px rgba(0, 0, 0, 0.15)',
+    borderColor: 'rgba(193, 200, 194, 0.48)',
+    borderWidth: 1,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.surfaceContainerHigh,
+    paddingBottom: 12,
+  },
+  modalTitle: {
+    fontFamily: fonts.heading,
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.primary,
+  },
+  closeButton: {
+    padding: 4,
+  },
+  closeButtonText: {
+    fontSize: 18,
+    color: colors.outline,
+    fontWeight: '600',
+  },
+  mutationScroll: {
+    flex: 1,
+  },
+  mutationItem: {
+    backgroundColor: colors.surface,
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 10,
+    borderColor: colors.surfaceContainerHigh,
+    borderWidth: 1,
+  },
+  mutationMeta: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  mutationDate: {
+    fontFamily: fonts.body,
+    fontSize: 10,
+    color: colors.outline,
+    fontWeight: '600',
+  },
+  badge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  badgeText: {
+    fontFamily: fonts.body,
+    fontSize: 9,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+  },
+  mutationInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  mutationProduct: {
+    fontFamily: fonts.heading,
+    fontSize: 13,
+    fontWeight: '700',
+    color: colors.onSurface,
+  },
+  mutationSupplier: {
+    fontFamily: fonts.body,
+    fontSize: 11,
+    color: colors.outline,
+    marginTop: 2,
+  },
+  mutationQuantity: {
+    fontFamily: fonts.heading,
+    fontSize: 14,
+    fontWeight: '700',
+    color: colors.successGreen,
   },
 });

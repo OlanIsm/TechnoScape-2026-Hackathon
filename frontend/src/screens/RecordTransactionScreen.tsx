@@ -41,6 +41,8 @@ export function RecordTransactionScreen({
   const [date, setDate] = useState('');
   const [totalPrice, setTotalPrice] = useState('');
   const [notice, setNotice] = useState('');
+  const [noticeType, setNoticeType] = useState<'success' | 'error'>('success');
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const estimatedPricePerKg = useMemo(() => {
     const numericTotal = Number(totalPrice || 0);
@@ -55,13 +57,13 @@ export function RecordTransactionScreen({
 
   const saveTransaction = async () => {
     if (!quantity || !supplier || !date || !totalPrice) {
+      setNoticeType('error');
       setNotice('Semua field wajib diisi.');
       window.setTimeout(() => setNotice(''), 2600);
       return;
     }
 
     try {
-      setNotice('Menyimpan transaksi...');
       await api.recordTransaction({
         jenisPupuk: fertilizer,
         quantity: Number(quantity),
@@ -69,13 +71,14 @@ export function RecordTransactionScreen({
         tanggal: date,
         totalPrice: Number(totalPrice),
       });
-      setNotice('Transaksi manual berhasil disimpan!');
+      setShowSuccessModal(true);
       setQuantity('');
       setSupplier('');
       setDate('');
       setTotalPrice('');
-      window.setTimeout(() => setNotice(''), 2600);
+      window.setTimeout(() => setShowSuccessModal(false), 2600);
     } catch (err: unknown) {
+      setNoticeType('error');
       setNotice(getErrorMessage(err, 'Gagal menyimpan transaksi.'));
       window.setTimeout(() => setNotice(''), 3500);
     }
@@ -85,6 +88,18 @@ export function RecordTransactionScreen({
     <SafeAreaView style={[styles.safeArea, { minHeight: height }]}>
       <View style={[styles.shell, { height }]}>
         <MainHeader onLogoutPress={onLogoutPress} />
+
+        {showSuccessModal ? (
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.checkmarkCircle}>
+                <Text style={styles.checkmarkText}>✓</Text>
+              </View>
+              <Text style={styles.modalTitle}>Penyimpanan Berhasil!</Text>
+              <Text style={styles.modalDescription}>Data transaksi manual telah berhasil disimpan ke database.</Text>
+            </View>
+          </View>
+        ) : null}
 
         <ScrollView
           contentContainerStyle={styles.scrollContent}
@@ -99,8 +114,14 @@ export function RecordTransactionScreen({
           </View>
 
           {notice ? (
-            <View style={styles.notice}>
-              <Text style={styles.noticeText}>{notice}</Text>
+            <View style={[
+              styles.notice,
+              noticeType === 'error' && { backgroundColor: '#F8D7DA', borderColor: '#F5C6CB' }
+            ]}>
+              <Text style={[
+                styles.noticeText,
+                noticeType === 'error' && { color: '#721C24' }
+              ]}>{notice}</Text>
             </View>
           ) : null}
 
@@ -142,7 +163,13 @@ export function RecordTransactionScreen({
               value={supplier}
             />
 
-            <Field label="Tanggal Transaksi" onChangeText={setDate} placeholder="2026-10-15" value={date} />
+            <Field
+              label="Tanggal Transaksi"
+              onChangeText={setDate}
+              placeholder="2026-10-15"
+              value={date}
+              type="date"
+            />
 
             <Field
               inputMode="numeric"
@@ -193,23 +220,47 @@ type FieldProps = {
   placeholder: string;
   prefix?: string;
   value: string;
+  type?: string;
 };
 
-function Field({ inputMode = 'text', label, onChangeText, placeholder, prefix, value }: FieldProps) {
+function Field({ inputMode = 'text', label, onChangeText, placeholder, prefix, value, type }: FieldProps) {
   return (
     <View style={styles.fieldGroup}>
       <Text style={styles.label}>{label}</Text>
       <View style={styles.inputWrap}>
         {prefix ? <Text style={styles.prefix}>{prefix}</Text> : null}
-        <TextInput
-          accessibilityLabel={label}
-          inputMode={inputMode}
-          onChangeText={onChangeText}
-          placeholder={placeholder}
-          placeholderTextColor={colors.outline}
-          style={[styles.input, prefix ? styles.inputWithPrefix : undefined]}
-          value={value}
-        />
+        {type === 'date' ? (
+          <input
+            type="date"
+            value={value}
+            onChange={(e) => onChangeText(e.target.value)}
+            placeholder={placeholder}
+            style={{
+              flex: 1,
+              color: colors.onSurface,
+              fontFamily: fonts.body,
+              fontSize: '14px',
+              height: '46px',
+              paddingLeft: '14px',
+              paddingRight: '14px',
+              border: 'none',
+              outline: 'none',
+              backgroundColor: 'transparent',
+              width: '100%',
+              boxSizing: 'border-box',
+            }}
+          />
+        ) : (
+          <TextInput
+            accessibilityLabel={label}
+            inputMode={inputMode}
+            onChangeText={onChangeText}
+            placeholder={placeholder}
+            placeholderTextColor={colors.outline}
+            style={[styles.input, prefix ? styles.inputWithPrefix : undefined]}
+            value={value}
+          />
+        )}
       </View>
     </View>
   );
@@ -416,5 +467,53 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 0.4,
     lineHeight: 16,
+  },
+  modalOverlay: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+  },
+  modalContent: {
+    width: 280,
+    backgroundColor: colors.surface,
+    borderRadius: 16,
+    padding: 24,
+    alignItems: 'center',
+    boxShadow: '0 8px 30px rgba(0, 0, 0, 0.12)',
+  },
+  checkmarkCircle: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: 'rgba(40, 167, 69, 0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  checkmarkText: {
+    fontSize: 32,
+    color: colors.successGreen,
+    fontWeight: 'bold',
+  },
+  modalTitle: {
+    fontFamily: fonts.heading,
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.textDark,
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  modalDescription: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    color: colors.outline,
+    textAlign: 'center',
+    lineHeight: 18,
   },
 });

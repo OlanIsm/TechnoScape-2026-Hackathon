@@ -32,6 +32,7 @@ type CollectiveBuyScreenProps = {
 
 type PoolOrder = {
   orderItems?: Array<{ quantity?: number }>;
+  koperasiId?: string;
 };
 
 type BackendPool = {
@@ -68,6 +69,7 @@ const cardShadow = {
 export function CollectiveBuyScreen({
   initialTab = 'open',
   onHomePress,
+  onJoinPoolPress,
   onLogPress,
   onLogoutPress,
   onRecordPress,
@@ -77,16 +79,25 @@ export function CollectiveBuyScreen({
   const { height } = useWindowDimensions();
   const [activeTab, setActiveTab] = useState<'open' | 'mine'>(initialTab);
   const [pools, setPools] = useState<BackendPool[]>([]);
+  const [myKoperasiId, setMyKoperasiId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [notice, setNotice] = useState('');
+  const [noticeType, setNoticeType] = useState<'success' | 'error'>('success');
   const [search, setSearch] = useState('');
 
   const loadPools = async () => {
     try {
       setIsLoading(true);
-      const data = (await api.getActivePools()) as BackendPool[];
-      setPools(data);
+      const [poolData, profile] = await Promise.all([
+        api.getActivePools() as Promise<BackendPool[]>,
+        api.getProfile() as Promise<any>,
+      ]);
+      setPools(poolData);
+      if (profile && profile.koperasiId) {
+        setMyKoperasiId(profile.koperasiId);
+      }
     } catch (err: unknown) {
+      setNoticeType('error');
       setNotice(getErrorMessage(err, 'Gagal memuat pool aktif.'));
     } finally {
       setIsLoading(false);
@@ -115,7 +126,40 @@ export function CollectiveBuyScreen({
     return () => window.clearTimeout(timeoutId);
   }, [onSuccessMessageShown, successMessage]);
 
+  const mapBackendPoolToProcurementPool = (bp: BackendPool): ProcurementPool => {
+    const currentVolumeKg =
+      bp.currentVolumeKg ||
+      bp.orders?.reduce(
+        (acc, order) =>
+          acc + (order.orderItems?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0),
+        0
+      ) ||
+      0;
+    const targetVolumeKg = bp.targetVolumeKg || 10000;
+    const activePricePerKg = bp.product?.priceTiers?.[0]?.pricePerKg || 9000;
+
+    return {
+      id: bp.id as any,
+      product: bp.product?.name || 'Pupuk',
+      supplier: bp.product?.supplier?.name || 'Pemasok Terdaftar',
+      currentTon: currentVolumeKg / 1000,
+      targetTon: targetVolumeKg / 1000,
+      unitPricePerTon: activePricePerKg * 1000,
+      action: 'join',
+      location: bp.product?.supplier?.name || 'Indonesia',
+      price: `Rp ${(activePricePerKg * 1000).toLocaleString('id-ID')} / Ton`,
+      progress: Math.min(100, Math.round((currentVolumeKg / targetVolumeKg) * 100)),
+      progressText: `${(currentVolumeKg / 1000).toFixed(1)} / ${(targetVolumeKg / 1000).toFixed(0)} Ton`,
+      deadline: bp.deadline ? new Date(bp.deadline).toLocaleDateString('id-ID') : 'Segera',
+    };
+  };
+
   const handleJoinPool = async (pool: BackendPool) => {
+    if (onJoinPoolPress) {
+      onJoinPoolPress(mapBackendPoolToProcurementPool(pool));
+      return;
+    }
+
     try {
       setNotice(`Mendaftarkan partisipasi ke pool ${pool.name || ''}...`);
 
@@ -129,10 +173,12 @@ export function CollectiveBuyScreen({
 
       await api.joinPool(pool.id, order.id);
 
+      setNoticeType('success');
       setNotice('Sukses bergabung ke pool! Progres volume dan harga ter-update secara real-time.');
       await loadPools();
       window.setTimeout(() => setNotice(''), 3000);
     } catch (err: unknown) {
+      setNoticeType('error');
       setNotice(getErrorMessage(err, 'Gagal bergabung ke pool.'));
       window.setTimeout(() => setNotice(''), 3500);
     }
@@ -160,10 +206,12 @@ export function CollectiveBuyScreen({
         targetVolumeKg: 20000,
       });
 
+      setNoticeType('success');
       setNotice('Proposal pool baru berhasil didaftarkan di ledger!');
       await loadPools();
       window.setTimeout(() => setNotice(''), 3000);
     } catch (err: unknown) {
+      setNoticeType('error');
       setNotice(getErrorMessage(err, 'Gagal membuat proposal pool baru.'));
       window.setTimeout(() => setNotice(''), 3500);
     }
@@ -176,11 +224,21 @@ export function CollectiveBuyScreen({
 
   const filteredPools = pools.filter((pool) => {
     const query = search.toLowerCase();
-    return (
+    const matchesSearch = (
       pool.name?.toLowerCase().includes(query) ||
       pool.product?.name?.toLowerCase().includes(query) ||
       pool.product?.supplier?.name?.toLowerCase().includes(query)
     );
+
+    if (!matchesSearch) {
+      return false;
+    }
+
+    if (activeTab === 'mine') {
+      return pool.orders?.some((order) => order.koperasiId === myKoperasiId);
+    }
+
+    return true;
   });
 
   return (
@@ -242,8 +300,14 @@ export function CollectiveBuyScreen({
           </View>
 
           {notice ? (
-            <View style={styles.notice}>
-              <Text style={styles.noticeText}>{notice}</Text>
+            <View style={[
+              styles.notice,
+              noticeType === 'error' && { backgroundColor: '#F8D7DA', borderColor: '#F5C6CB' }
+            ]}>
+              <Text style={[
+                styles.noticeText,
+                noticeType === 'error' && { color: '#721C24' }
+              ]}>{notice}</Text>
             </View>
           ) : null}
 
@@ -259,7 +323,7 @@ export function CollectiveBuyScreen({
                 </View>
               ) : (
                 filteredPools.map((pool) => (
-                  <BackendPoolCard key={pool.id} onJoin={() => handleJoinPool(pool)} pool={pool} />
+                  <BackendPoolCard key={pool.id} onJoin={() => handleJoinPool(pool)} pool={pool} myKoperasiId={myKoperasiId} />
                 ))
               )}
             </View>
@@ -286,7 +350,19 @@ export function CollectiveBuyScreen({
   );
 }
 
-function BackendPoolCard({ onJoin, pool }: { onJoin: () => void; pool: BackendPool }) {
+function getDeadlineLabel(deadline: string | undefined): string {
+  if (!deadline) return 'Segera';
+  const now = new Date();
+  const target = new Date(deadline);
+  const diffMs = target.getTime() - now.getTime();
+  if (diffMs <= 0) return 'Berakhir';
+  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  if (diffDays === 1) return '1 hari lagi';
+  if (diffDays <= 30) return `${diffDays} hari lagi`;
+  return new Date(deadline).toLocaleDateString('id-ID');
+}
+
+function BackendPoolCard({ onJoin, pool, myKoperasiId }: { onJoin: () => void; pool: BackendPool; myKoperasiId: string | null }) {
   const totalTargetVolume = pool.targetVolumeKg || 10000;
   const currentVolume =
     pool.currentVolumeKg ||
@@ -294,8 +370,9 @@ function BackendPoolCard({ onJoin, pool }: { onJoin: () => void; pool: BackendPo
     0;
   const progressPercent = Math.min(100, Math.round((currentVolume / totalTargetVolume) * 100));
   const deadline = pool.deadlineAt || pool.deadline;
-  const deadlineStr = deadline ? new Date(deadline).toLocaleDateString('id-ID') : 'Segera';
+  const deadlineLabel = getDeadlineLabel(deadline);
   const activePrice = pool.product?.priceTiers?.[0]?.pricePerKg || 9000;
+  const isJoined = pool.orders?.some((order) => order.koperasiId === myKoperasiId);
 
   return (
     <View style={styles.poolCard}>
@@ -310,16 +387,15 @@ function BackendPoolCard({ onJoin, pool }: { onJoin: () => void; pool: BackendPo
             <Text style={styles.locationText}>{pool.product?.supplier?.name || 'Pemasok Terdaftar'}</Text>
           </View>
         </View>
-        <View style={[styles.statusBadge, styles.statusSuccess]}>
-          <View style={styles.statusDot} />
-          <Text style={[styles.statusText, styles.statusSuccessText]}>{pool.status || 'ACTIVE'}</Text>
+        <View style={styles.deadlineBadge}>
+          <View style={styles.deadlineDot} />
+          <Text style={styles.deadlineText}>{deadlineLabel}</Text>
         </View>
       </View>
 
       <View style={styles.productBox}>
         <InfoRow label="Produk" value={pool.product?.name || 'Pupuk'} />
         <InfoRow isPrice label="Harga Tier Aktif" value={`Rp ${activePrice.toLocaleString('id-ID')}/kg`} />
-        <InfoRow label="Batas Waktu" value={deadlineStr} />
       </View>
 
       <View style={styles.progressBlock}>
@@ -337,8 +413,12 @@ function BackendPoolCard({ onJoin, pool }: { onJoin: () => void; pool: BackendPo
         </View>
       </View>
 
-      <Pressable accessibilityRole="button" onPress={onJoin} style={styles.actionButton}>
-        <Text style={styles.actionText}>Gabung Pool Ini</Text>
+      <Pressable 
+        accessibilityRole="button" 
+        onPress={isJoined ? undefined : onJoin} 
+        style={[styles.actionButton, isJoined && styles.actionButtonDisabled]}
+      >
+        <Text style={styles.actionText}>{isJoined ? 'Sudah Bergabung' : 'Gabung Pool Ini'}</Text>
       </Pressable>
     </View>
   );
@@ -587,31 +667,29 @@ const styles = StyleSheet.create({
     lineHeight: 16,
     marginTop: 2,
   },
-  statusBadge: {
+  deadlineBadge: {
     alignItems: 'center',
     flexDirection: 'row',
     gap: 5,
+    backgroundColor: 'rgba(255, 183, 3, 0.1)',
+    borderColor: 'rgba(255, 183, 3, 0.25)',
     borderRadius: 999,
+    borderWidth: 1,
     paddingHorizontal: 9,
     paddingVertical: 6,
   },
-  statusSuccess: {
-    backgroundColor: 'rgba(43, 147, 72, 0.12)',
-  },
-  statusDot: {
+  deadlineDot: {
     width: 6,
     height: 6,
-    backgroundColor: colors.successGreen,
+    backgroundColor: colors.warningAmber,
     borderRadius: 3,
   },
-  statusText: {
+  deadlineText: {
+    color: colors.warningAmber,
     fontFamily: fonts.body,
     fontSize: 10,
-    fontWeight: '800',
+    fontWeight: '700',
     lineHeight: 12,
-  },
-  statusSuccessText: {
-    color: colors.successGreen,
   },
   productBox: {
     backgroundColor: colors.surfaceContainerLowest,
@@ -694,6 +772,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: colors.primary,
     borderRadius: 8,
+  },
+  actionButtonDisabled: {
+    backgroundColor: colors.outline,
+    opacity: 0.7,
   },
   actionText: {
     color: colors.onPrimary,

@@ -55,5 +55,5 @@ export declare class AuthController {
         email: string;
         role: import("@prisma/client").$Enums.Role;
         koperasiId: string | null;
-    } | null>;
+    }>;
 }
