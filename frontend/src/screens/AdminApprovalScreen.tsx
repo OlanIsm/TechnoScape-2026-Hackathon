@@ -26,7 +26,7 @@ type PendingAccount = {
   ktpName: string;
   name: string;
   phone: string;
-  role: 'Koperasi' | 'Supplier';
+  role: 'Koperasi' | 'Pemasok';
   submittedAt: string;
 };
 
@@ -52,7 +52,7 @@ const pendingAccounts: PendingAccount[] = [
     ktpName: 'KTP_Siti_Rahma.jpg',
     name: 'PT Agro Sejahtera',
     phone: '+62 811-2222-4411',
-    role: 'Supplier',
+    role: 'Pemasok',
     submittedAt: 'Diajukan 1 hari lalu',
   },
   {
@@ -75,7 +75,7 @@ const cardShadow = {
 
 export function AdminApprovalScreen({ onLogoutPress }: AdminApprovalScreenProps) {
   const { height } = useWindowDimensions();
-  const [activeFilter, setActiveFilter] = useState<'Semua' | 'Koperasi' | 'Supplier'>('Semua');
+  const [activeFilter, setActiveFilter] = useState<'Semua' | 'Koperasi' | 'Pemasok'>('Semua');
   const [query, setQuery] = useState('');
   const [selectedAccount, setSelectedAccount] = useState<PendingAccount | null>(null);
   const [notice, setNotice] = useState('');
@@ -124,7 +124,7 @@ export function AdminApprovalScreen({ onLogoutPress }: AdminApprovalScreenProps)
             <Text style={styles.adminLabel}>Admin</Text>
             <Text style={styles.title}>Persetujuan Akun</Text>
             <Text style={styles.subtitle}>
-              Tinjau akun Koperasi dan Supplier baru. Password tidak pernah ditampilkan ke admin.
+              Tinjau akun Koperasi dan Pemasok baru. Password tidak pernah ditampilkan ke admin.
             </Text>
           </View>
 
@@ -147,7 +147,7 @@ export function AdminApprovalScreen({ onLogoutPress }: AdminApprovalScreenProps)
           </View>
 
           <View style={styles.filterRow}>
-            {(['Semua', 'Koperasi', 'Supplier'] as const).map((filter) => {
+            {(['Semua', 'Koperasi', 'Pemasok'] as const).map((filter) => {
               const isActive = filter === activeFilter;
 
               return (
@@ -165,7 +165,7 @@ export function AdminApprovalScreen({ onLogoutPress }: AdminApprovalScreenProps)
 
           <View style={styles.summaryCard}>
             <View>
-              <Text style={styles.summaryLabel}>Pending Account</Text>
+              <Text style={styles.summaryLabel}>Akun Tertunda</Text>
               <Text style={styles.summaryValue}>{visibleAccounts.length}</Text>
             </View>
             <Text style={styles.summaryHint}>Menunggu review admin</Text>
@@ -204,7 +204,7 @@ function AccountCard({
         <View style={styles.accountCopy}>
           <View style={styles.accountTitleRow}>
             <Text style={styles.accountName}>{account.name}</Text>
-            <View style={[styles.rolePill, account.role === 'Supplier' && styles.rolePillSupplier]}>
+            <View style={[styles.rolePill, account.role === 'Pemasok' && styles.rolePillSupplier]}>
               <Text style={styles.rolePillText}>{account.role}</Text>
             </View>
           </View>
@@ -220,7 +220,7 @@ function AccountCard({
           onPress={() => onReviewPress(account)}
           style={styles.reviewButton}
         >
-          <Text style={styles.reviewButtonText}>Review</Text>
+          <Text style={styles.reviewButtonText}>Tinjau</Text>
         </Pressable>
       </View>
     </View>
@@ -244,7 +244,7 @@ function ReviewSheet({
       <View style={styles.sheet}>
         <View style={styles.sheetHeader}>
           <View style={styles.sheetTitleWrap}>
-            <Text style={styles.sheetTitle}>Review: {account.name}</Text>
+            <Text style={styles.sheetTitle}>Tinjau: {account.name}</Text>
             <Text style={styles.sheetSubtitle}>Pengajuan {account.role}</Text>
           </View>
           <Pressable accessibilityRole="button" onPress={onClose} style={styles.closeButton}>
@@ -257,7 +257,7 @@ function ReviewSheet({
             <Text style={styles.detailSectionTitle}>Data Organisasi & Penanggung Jawab</Text>
             <View style={styles.detailGrid}>
               <DetailItem label="Nama Organisasi" value={account.name} />
-              <DetailItem label="Role" value={account.role} />
+              <DetailItem label="Peran" value={account.role} />
               <DetailItem label="Penanggung Jawab" value={account.contact} />
               <DetailItem label="Email" value={account.email} />
               <DetailItem label="Nomor Telepon" value={account.phone} />

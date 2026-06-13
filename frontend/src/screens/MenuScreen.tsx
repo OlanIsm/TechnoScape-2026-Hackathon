@@ -32,7 +32,7 @@ type RunningPool = {
   id: string;
   name: string;
   progress: number;
-  status: 'OPEN FOR KOPERASI' | 'PAYMENT WAITING';
+  status: 'TERBUKA UNTUK KOPERASI' | 'MENUNGGU PEMBAYARAN';
   target: string;
   value: string;
 };
@@ -45,7 +45,7 @@ type SupplierAuditLog = {
   date: string;
   id: string;
   product: string;
-  status: 'SUCCESS' | 'DECLINED' | 'FUNDING CANCELED' | 'AUTO DECLINED';
+  status: 'SUKSES' | 'DITOLAK' | 'PENDANAAN DIBATALKAN' | 'DITOLAK OTOMATIS';
   statusTone: 'success' | 'error' | 'warning' | 'muted';
   total: string;
 };
@@ -79,7 +79,7 @@ const runningPools: RunningPool[] = [
     id: '#PL-2026-11-001',
     name: 'Pool Urea KUD Blitar',
     progress: 75,
-    status: 'OPEN FOR KOPERASI',
+    status: 'TERBUKA UNTUK KOPERASI',
     target: '37.500 / 50.000 Kg',
     value: 'Rp 243.750.000',
   },
@@ -87,7 +87,7 @@ const runningPools: RunningPool[] = [
     id: '#PL-2026-10-045',
     name: 'Pool NPK Jember Raya',
     progress: 100,
-    status: 'PAYMENT WAITING',
+    status: 'MENUNGGU PEMBAYARAN',
     target: '100.000 / 100.000 Kg',
     value: 'Rp 850.000.000',
   },
@@ -100,7 +100,7 @@ const supplierAuditLogs: SupplierAuditLog[] = [
     date: '24 Okt 2026, 14:30',
     id: 'PO-20261024-001',
     product: 'NPK Phonska (50kg)',
-    status: 'SUCCESS',
+    status: 'SUKSES',
     statusTone: 'success',
     total: 'Rp 875.000.000',
   },
@@ -110,7 +110,7 @@ const supplierAuditLogs: SupplierAuditLog[] = [
     date: '22 Okt 2026, 09:15',
     id: 'PO-20261022-042',
     product: 'Urea Daun Buah',
-    status: 'DECLINED',
+    status: 'DITOLAK',
     statusTone: 'error',
     total: 'Rp 320.000.000',
   },
@@ -120,7 +120,7 @@ const supplierAuditLogs: SupplierAuditLog[] = [
     date: '20 Okt 2026, 23:59',
     id: 'PO-20261020-112',
     product: 'ZA Petrokimia',
-    status: 'FUNDING CANCELED',
+    status: 'PENDANAAN DIBATALKAN',
     statusTone: 'warning',
     total: '-',
   },
@@ -130,7 +130,7 @@ const supplierAuditLogs: SupplierAuditLog[] = [
     date: '19 Okt 2026, 08:00',
     id: 'PO-20261018-055',
     product: 'KCL Mahkota',
-    status: 'AUTO DECLINED',
+    status: 'DITOLAK OTOMATIS',
     statusTone: 'muted',
     total: '-',
   },
@@ -227,12 +227,12 @@ function SupplierAuditLogContent({ onAction }: SupplierAuditLogContentProps) {
     <>
       <View style={styles.auditHeader}>
         <View>
-          <Text style={styles.title}>Log Audit Supplier</Text>
-          <Text style={styles.subtitle}>Riwayat pool final dan keputusan supplier.</Text>
+          <Text style={styles.title}>Log Audit Pemasok</Text>
+          <Text style={styles.subtitle}>Riwayat pool final dan keputusan pemasok.</Text>
         </View>
         <Pressable
           accessibilityRole="button"
-          onPress={() => onAction('Dummy: ekspor CSV supplier akan tersedia setelah API siap.')}
+          onPress={() => onAction('Dummy: ekspor CSV pemasok akan tersedia setelah API siap.')}
           style={styles.exportButton}
         >
           <DownloadIcon />
@@ -260,7 +260,7 @@ function SupplierAuditLogContent({ onAction }: SupplierAuditLogContentProps) {
 
       <Pressable
         accessibilityRole="button"
-        onPress={() => onAction('Dummy: memuat histori supplier berikutnya.')}
+        onPress={() => onAction('Dummy: memuat histori pemasok berikutnya.')}
         style={styles.loadMoreButton}
       >
         <Text style={styles.loadMoreText}>Muat Lebih Banyak</Text>
@@ -347,7 +347,7 @@ function ProposalManagementContent({ activeTab, onAction, onTabChange }: Proposa
   return (
     <>
       <View style={styles.heroCard}>
-        <Text style={styles.eyebrow}>Supplier Utama</Text>
+        <Text style={styles.eyebrow}>Pemasok Utama</Text>
         <Text style={styles.title}>Manajemen Proposal</Text>
         <Text style={styles.subtitle}>Kelola proposal dan progress pool pesanan dari berbagai koperasi.</Text>
       </View>
@@ -418,7 +418,7 @@ function PendingProposalCard({
           </View>
         </View>
         <View style={styles.pendingBadge}>
-          <Text style={styles.pendingText}>PENDING</Text>
+          <Text style={styles.pendingText}>MENUNGGU</Text>
         </View>
       </View>
 

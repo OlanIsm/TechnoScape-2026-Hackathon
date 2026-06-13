@@ -78,9 +78,9 @@ export function PoolDetailScreen({ onBackPress, pool }: PoolDetailScreenProps) {
           </View>
 
           <View style={styles.noteCard}>
-            <Text style={styles.noteTitle}>Catatan Supplier</Text>
+            <Text style={styles.noteTitle}>Catatan Pemasok</Text>
             <Text style={styles.noteText}>
-              Harga target berlaku untuk pemesanan kolektif sesuai jadwal pool. Konfirmasi akhir mengikuti ketersediaan stok supplier.
+              Harga target berlaku untuk pemesanan kolektif sesuai jadwal pool. Konfirmasi akhir mengikuti ketersediaan stok pemasok.
             </Text>
           </View>
         </ScrollView>

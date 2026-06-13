@@ -105,7 +105,7 @@ const dummyPoolLogs: PoolLog[] = [
   },
   {
     date: '15 Okt',
-    description: 'Dibatalkan oleh inisiator setelah supplier mengubah batas minimum volume.',
+    description: 'Dibatalkan oleh inisiator setelah pemasok mengubah batas minimum volume.',
     id: 'Pool #P-2026-087',
     proposingKoperasi: 'Koperasi Mutiara Desa',
     status: 'DIBATALKAN',
