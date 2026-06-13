@@ -103,10 +103,7 @@ export function CollectiveBuyScreen({
       <View style={[styles.shell, { height }]}>
         <View style={styles.topBar}>
           <View style={styles.brandRow}>
-            <View style={styles.brandIcon}>
-              <BrandMark size={28} />
-            </View>
-            <Text style={styles.brandText}>VolumeMate</Text>
+            <BrandMark size={34} />
           </View>
           <Pressable accessibilityRole="button" onPress={onLogoutPress} style={styles.logoutButton}>
             <Text style={styles.logoutText}>Keluar</Text>
@@ -299,21 +296,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     gap: 10,
-  },
-  brandIcon: {
-    width: 42,
-    height: 42,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.secondaryContainer,
-    borderRadius: 21,
-  },
-  brandText: {
-    color: colors.primary,
-    fontFamily: fonts.heading,
-    fontSize: 26,
-    fontWeight: '700',
-    lineHeight: 34,
   },
   logoutButton: {
     minHeight: 38,

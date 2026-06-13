@@ -62,10 +62,7 @@ export function RecordTransactionScreen({
       <View style={[styles.shell, { height }]}>
         <View style={styles.topBar}>
           <View style={styles.brandRow}>
-            <View style={styles.brandIcon}>
-              <BrandMark size={26} />
-            </View>
-            <Text style={styles.brandText}>VolumeMate</Text>
+            <BrandMark size={34} />
           </View>
           <Pressable accessibilityRole="button" onPress={onLogoutPress} style={styles.logoutButton}>
             <Text style={styles.logoutText}>Keluar</Text>
@@ -219,21 +216,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     gap: 10,
-  },
-  brandIcon: {
-    width: 38,
-    height: 38,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.secondaryContainer,
-    borderRadius: 19,
-  },
-  brandText: {
-    color: colors.primary,
-    fontFamily: fonts.heading,
-    fontSize: 25,
-    fontWeight: '700',
-    lineHeight: 32,
   },
   logoutButton: {
     minHeight: 38,

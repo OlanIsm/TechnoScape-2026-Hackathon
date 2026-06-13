@@ -35,13 +35,7 @@ export function KoperasiDashboardScreen({
       <View style={styles.shell}>
         <View style={styles.topBar}>
           <View style={styles.profileRow}>
-            <View style={styles.avatar}>
-              <BrandMark size={28} />
-            </View>
-            <View>
-              <Text style={styles.orgName}>KUD Tani Makmur</Text>
-              <Text style={styles.statusText}>Koperasi disetujui</Text>
-            </View>
+            <BrandMark size={34} />
           </View>
           <Pressable accessibilityRole="button" onPress={onLogoutPress} style={styles.logoutButton}>
             <Text style={styles.logoutText}>Keluar</Text>
@@ -230,28 +224,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     gap: 12,
-  },
-  avatar: {
-    width: 44,
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.primaryContainer,
-    borderRadius: 22,
-  },
-  orgName: {
-    color: colors.primary,
-    fontFamily: fonts.heading,
-    fontSize: 20,
-    fontWeight: '600',
-    lineHeight: 28,
-  },
-  statusText: {
-    color: colors.successGreen,
-    fontFamily: fonts.body,
-    fontSize: 11,
-    fontWeight: '500',
-    lineHeight: 14,
   },
   logoutButton: {
     minHeight: 40,

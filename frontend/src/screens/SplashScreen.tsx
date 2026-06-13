@@ -47,10 +47,9 @@ export function SplashScreen({ onStartPress }: SplashScreenProps) {
         <View style={styles.brandBlock}>
           <View style={styles.logoCard}>
             <View style={styles.logoTint} />
-            <BrandMark />
+            <BrandMark size={42} />
           </View>
 
-          <Text style={styles.title}>VolumeMate</Text>
           <Text style={styles.tagline}>Smart Procurement for Koperasi</Text>
         </View>
 
@@ -123,8 +122,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   logoCard: {
-    width: 96,
-    height: 96,
+    width: 228,
+    height: 86,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.surfaceCard,
@@ -139,14 +138,6 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     backgroundColor: colors.secondaryFixed,
     opacity: 0.18,
-  },
-  title: {
-    color: colors.onPrimary,
-    fontFamily: fonts.heading,
-    fontSize: 34,
-    fontWeight: '700',
-    lineHeight: 42,
-    marginBottom: 8,
   },
   tagline: {
     color: colors.onPrimaryMuted,
