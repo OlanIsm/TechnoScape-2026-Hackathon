@@ -187,7 +187,7 @@ function filterProposalsForSupplier(proposals: PendingProposal[], supplierEmail:
   const normalizedSupplierEmail = normalizeEmail(supplierEmail);
   return proposals.filter((proposal) => {
     const proposalSupplierEmail = normalizeEmail(proposal.supplierEmail);
-    return !proposalSupplierEmail || proposalSupplierEmail === normalizedSupplierEmail;
+    return proposalSupplierEmail === normalizedSupplierEmail;
   });
 }
 
@@ -542,7 +542,7 @@ export function SupplierMenuScreen({ onLogoutPress }: SupplierMenuScreenProps) {
                   </View>
                   <View style={styles.modalInfoRow}>
                     <Text style={styles.modalInfoLabel}>Email Pemasok Tujuan</Text>
-                    <Text style={styles.modalInfoVal}>{reviewingProposal.supplierEmail || supplierEmail}</Text>
+                    <Text style={styles.modalInfoVal}>{reviewingProposal.supplierEmail || '-'}</Text>
                   </View>
 
                   <Text style={[styles.modalSectionTitle, { marginTop: 16 }]}>Detail Kebutuhan</Text>
