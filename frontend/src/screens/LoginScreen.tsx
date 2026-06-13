@@ -11,6 +11,7 @@ import {
 } from 'react-native-web';
 import { BrandMark } from '../components/BrandMark';
 import { colors, fonts } from '../theme';
+import { api } from '../services/api';
 
 type LoginScreenProps = {
   onAdminLogin?: () => void;
@@ -35,25 +36,62 @@ export function LoginScreen({
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [notice, setNotice] = useState('');
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     const loginCode = email.trim();
 
+    // Shortcut '1': Login as Koperasi with real backend credentials
     if (loginCode === '1') {
-      onKoperasiLogin?.();
+      try {
+        setNotice('Sedang masuk sebagai Koperasi...');
+        await api.login('admin@koperasi.com', 'password123');
+        setNotice('');
+        onKoperasiLogin?.();
+      } catch (err: any) {
+        setNotice(err.message || 'Login gagal. Pastikan backend aktif.');
+      }
       return;
     }
 
+    // Shortcut '2': Login as second Koperasi user
     if (loginCode === '2') {
-      onSupplierLogin?.();
+      try {
+        setNotice('Sedang masuk sebagai Koperasi 2...');
+        await api.login('joko@koperasi.com', 'password123');
+        setNotice('');
+        onKoperasiLogin?.();
+      } catch (err: any) {
+        setNotice(err.message || 'Login gagal. Pastikan backend aktif.');
+      }
       return;
     }
 
+    // Shortcut '3': Admin role (dummy for now since no admin user in seed)
     if (loginCode === '3') {
+      localStorage.setItem('volumemate_token', 'dummy_admin_token');
+      localStorage.setItem('volumemate_user', JSON.stringify({ name: 'Admin Platform', email: 'admin@platform.com', role: 'ADMIN' }));
       onAdminLogin?.();
       return;
     }
 
-    setNotice('Masukkan email dummy 1 untuk Koperasi, 2 untuk Supplier, atau 3 untuk Admin.');
+    if (!email || !password) {
+      setNotice('Email dan Password wajib diisi.');
+      return;
+    }
+
+    try {
+      setNotice('Sedang masuk...');
+      const response = await api.login(email, password);
+      setNotice('');
+      
+      const role = response.user?.role;
+      if (role === 'ADMIN_KOPERASI' || role === 'ANGGOTA') {
+        onKoperasiLogin?.();
+      } else {
+        onKoperasiLogin?.();
+      }
+    } catch (err: any) {
+      setNotice(err.message || 'Login gagal. Periksa kembali email dan password.');
+    }
   };
 
   return (

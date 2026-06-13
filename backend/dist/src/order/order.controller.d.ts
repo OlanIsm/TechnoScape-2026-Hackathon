@@ -13,6 +13,25 @@ export declare class OrderController {
         totalPrice: number;
         collectivePoolId: string | null;
     }>;
+    createManual(req: any, jenisPupuk: string, quantity: number, supplierName: string, tanggal: string, totalPrice: number): Promise<{
+        orderItems: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            productId: string;
+            quantity: number;
+            priceAtPurchase: number;
+            orderId: string;
+        }[];
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        koperasiId: string;
+        status: import("@prisma/client").$Enums.OrderStatus;
+        totalPrice: number;
+        collectivePoolId: string | null;
+    }>;
     confirmOrder(id: string, userId?: string): Promise<{
         id: string;
         createdAt: Date;
@@ -32,6 +51,33 @@ export declare class OrderController {
         productId: string;
     }>;
     findAllActivePools(): Promise<any[]>;
+    findAllProducts(): Promise<({
+        supplier: {
+            id: string;
+            name: string;
+            address: string;
+            createdAt: Date;
+            updatedAt: Date;
+            email: string | null;
+            phone: string;
+        };
+        priceTiers: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            productId: string;
+            minVolume: number;
+            maxVolume: number | null;
+            pricePerKg: number;
+        }[];
+    } & {
+        id: string;
+        name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
+        supplierId: string;
+    })[]>;
     joinPool(poolId: string, orderId: string, userId?: string): Promise<{
         id: string;
         createdAt: Date;
@@ -41,6 +87,7 @@ export declare class OrderController {
         totalPrice: number;
         collectivePoolId: string | null;
     }>;
+    finalizePool(poolId: string): Promise<any>;
     getAuditLogs(): Promise<{
         id: string;
         createdAt: Date;

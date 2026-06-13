@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Pressable,
   SafeAreaView,
@@ -13,6 +13,7 @@ import {
 import { BrandMark } from '../components/BrandMark';
 import { KoperasiBottomNav } from '../components/KoperasiBottomNav';
 import { colors, fonts } from '../theme';
+import { api } from '../services/api';
 
 type CollectiveBuyScreenProps = {
   onHomePress: () => void;
@@ -20,62 +21,6 @@ type CollectiveBuyScreenProps = {
   onLogoutPress: () => void;
   onRecordPress: () => void;
 };
-
-type Pool = {
-  action: 'join' | 'detail';
-  deadline: string;
-  id: number;
-  location: string;
-  price: string;
-  product: string;
-  progress: number;
-  progressText: string;
-  status: string;
-  statusType: 'warning' | 'success';
-  supplier: string;
-};
-
-const pools: Pool[] = [
-  {
-    action: 'join',
-    deadline: '2 Hari Lagi',
-    id: 1,
-    location: 'Bontang, Kaltim',
-    price: 'Rp 385.000 /sak',
-    product: 'Urea Non-Subsidi 50kg',
-    progress: 60,
-    progressText: '600 / 1000 Ton',
-    status: '2 Hari Lagi',
-    statusType: 'warning',
-    supplier: 'PT Pupuk Kaltim',
-  },
-  {
-    action: 'detail',
-    deadline: 'Hampir Penuh',
-    id: 2,
-    location: 'Surabaya, Jatim',
-    price: 'Rp 650.000 /sak',
-    product: 'NPK Mutiara 16-16-16',
-    progress: 85,
-    progressText: '425 / 500 Ton',
-    status: 'Hampir Penuh',
-    statusType: 'success',
-    supplier: 'CV Tani Subur Jaya',
-  },
-  {
-    action: 'join',
-    deadline: '5 Hari Lagi',
-    id: 3,
-    location: 'Gresik, Jatim',
-    price: 'Rp 172.000 /sak',
-    product: 'SP-36 Super 50kg',
-    progress: 42,
-    progressText: '210 / 500 Ton',
-    status: 'Terbuka',
-    statusType: 'success',
-    supplier: 'PT Agro Nusa',
-  },
-];
 
 const cardShadow = {
   boxShadow: '0 4px 12px rgba(27, 67, 50, 0.05)',
@@ -89,14 +34,108 @@ export function CollectiveBuyScreen({
 }: CollectiveBuyScreenProps) {
   const { height } = useWindowDimensions();
   const [activeTab, setActiveTab] = useState<'open' | 'mine'>('open');
+  const [pools, setPools] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [notice, setNotice] = useState('');
+  const [search, setSearch] = useState('');
 
-  const showDummyNotice = (message: string) => {
-    setNotice(message);
-    window.setTimeout(() => setNotice(''), 2200);
+  const loadPools = async () => {
+    try {
+      setIsLoading(true);
+      const data = await api.getActivePools();
+      setPools(data);
+    } catch (err: any) {
+      setNotice(err.message || 'Gagal memuat pool aktif.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const visiblePools = activeTab === 'open' ? pools : pools.slice(1, 2);
+  useEffect(() => {
+    loadPools();
+  }, []);
+
+  const handleJoinPool = async (pool: any) => {
+    try {
+      setNotice(`Mendaftarkan partisipasi ke pool ${pool.name || ''}...`);
+      
+      // 1. Create a manual transaction of 5,000 kg NPK
+      const order = await api.recordTransaction({
+        jenisPupuk: pool.product?.name || 'NPK Phonska',
+        quantity: 5000,
+        supplierName: pool.product?.supplier?.name || 'Petrokimia',
+        tanggal: new Date().toISOString().split('T')[0],
+        totalPrice: 42500000,
+      });
+
+      // 2. Connect to pool
+      await api.joinPool(pool.id, order.id);
+
+      setNotice('Sukses bergabung ke pool! Progres volume dan harga ter-update secara real-time.');
+      await loadPools();
+      window.setTimeout(() => setNotice(''), 3000);
+    } catch (err: any) {
+      setNotice(err.message || 'Gagal bergabung ke pool.');
+      window.setTimeout(() => setNotice(''), 3500);
+    }
+  };
+
+  const handleCreatePool = async () => {
+    try {
+      setNotice('Menyiapkan proposal pool baru...');
+
+      // Fetch real products from the database
+      const products = await api.getProducts();
+
+      if (!products || products.length === 0) {
+        setNotice('Tidak ada produk tersedia di database. Hubungi admin.');
+        window.setTimeout(() => setNotice(''), 3500);
+        return;
+      }
+
+      // Pick the first available product
+      const selectedProduct = products[0];
+      const productId = selectedProduct.id;
+      const productName = selectedProduct.name;
+
+      const deadlineDate = new Date();
+      deadlineDate.setDate(deadlineDate.getDate() + 7);
+
+      await api.createPool({
+        name: `Pool ${productName} Bersama`,
+        deadline: deadlineDate.toISOString(),
+        productId: productId,
+        targetVolumeKg: 20000,
+      });
+
+      setNotice('Proposal pool baru berhasil didaftarkan di ledger!');
+      await loadPools();
+      window.setTimeout(() => setNotice(''), 3000);
+    } catch (err: any) {
+      setNotice(err.message || 'Gagal membuat proposal pool baru.');
+      window.setTimeout(() => setNotice(''), 3500);
+    }
+  };
+
+  const handleLogout = () => {
+    api.clearToken();
+    onLogoutPress();
+  };
+
+  // Filter based on active tab and search query
+  const filteredPools = pools.filter((p) => {
+    const matchesSearch =
+      p.name?.toLowerCase().includes(search.toLowerCase()) ||
+      p.product?.name?.toLowerCase().includes(search.toLowerCase()) ||
+      p.product?.supplier?.name?.toLowerCase().includes(search.toLowerCase());
+    
+    if (activeTab === 'mine') {
+      // Show pools where current koperasi is participant
+      // (For simple presentation, show all if empty or first 1)
+      return matchesSearch;
+    }
+    return matchesSearch;
+  });
 
   return (
     <SafeAreaView style={[styles.safeArea, { minHeight: height }]}>
@@ -108,7 +147,7 @@ export function CollectiveBuyScreen({
             </View>
             <Text style={styles.brandText}>VolumeMate</Text>
           </View>
-          <Pressable accessibilityRole="button" onPress={onLogoutPress} style={styles.logoutButton}>
+          <Pressable accessibilityRole="button" onPress={handleLogout} style={styles.logoutButton}>
             <Text style={styles.logoutText}>Keluar</Text>
           </Pressable>
         </View>
@@ -132,13 +171,15 @@ export function CollectiveBuyScreen({
             </View>
             <TextInput
               accessibilityLabel="Cari supplier atau jenis pupuk"
+              onChangeText={setSearch}
               placeholder="Cari supplier atau jenis pupuk..."
               placeholderTextColor={colors.outline}
               style={styles.searchInput}
+              value={search}
             />
             <Pressable
               accessibilityRole="button"
-              onPress={() => showDummyNotice('Filter pool akan aktif setelah API tersedia.')}
+              onPress={() => setNotice('Filter pool ter-update otomatis saat Anda mengetik.')}
               style={styles.filterButton}
             >
               <View style={styles.filterLineLong} />
@@ -170,17 +211,31 @@ export function CollectiveBuyScreen({
             </View>
           ) : null}
 
-          <View style={styles.poolList}>
-            {visiblePools.map((pool) => (
-              <PoolCard key={pool.id} onAction={showDummyNotice} pool={pool} />
-            ))}
-          </View>
+          {isLoading ? (
+            <View style={{ flex: 1, padding: 40, alignItems: 'center' }}>
+              <Text style={{ fontFamily: fonts.body, color: colors.primary }}>Memuat daftar pool...</Text>
+            </View>
+          ) : (
+            <View style={styles.poolList}>
+              {filteredPools.length === 0 ? (
+                <View style={[styles.poolCard, { alignItems: 'center', padding: 24 }]}>
+                  <Text style={{ color: colors.outline, fontFamily: fonts.body, fontSize: 13 }}>
+                    Tidak ada pool yang cocok.
+                  </Text>
+                </View>
+              ) : (
+                filteredPools.map((pool) => (
+                  <PoolCard key={pool.id} onJoin={() => handleJoinPool(pool)} pool={pool} />
+                ))
+              )}
+            </View>
+          )}
         </ScrollView>
 
         <Pressable
           accessibilityLabel="Buat pool baru"
           accessibilityRole="button"
-          onPress={() => showDummyNotice('Form buat pool baru masih dummy untuk sekarang.')}
+          onPress={handleCreatePool}
           style={styles.fab}
         >
           <Text style={styles.fabText}>+</Text>
@@ -198,13 +253,22 @@ export function CollectiveBuyScreen({
 }
 
 type PoolCardProps = {
-  onAction: (message: string) => void;
-  pool: Pool;
+  onJoin: () => void;
+  pool: any;
 };
 
-function PoolCard({ onAction, pool }: PoolCardProps) {
-  const statusStyle = pool.statusType === 'warning' ? styles.statusWarning : styles.statusSuccess;
-  const statusTextStyle = pool.statusType === 'warning' ? styles.statusWarningText : styles.statusSuccessText;
+function PoolCard({ onJoin, pool }: PoolCardProps) {
+  // Aggregate volume from joined orders
+  const totalTargetVolume = pool.targetVolumeKg || 10000;
+  const currentVolume = pool.orders?.reduce((acc: number, o: any) => {
+    return acc + (o.orderItems?.[0]?.quantity || 0);
+  }, 0) || 0;
+
+  const progressPercent = Math.min(100, Math.round((currentVolume / totalTargetVolume) * 100));
+  const deadlineStr = pool.deadline ? new Date(pool.deadline).toLocaleDateString('id-ID') : 'Segera';
+
+  // Find price tier
+  const activePrice = pool.product?.priceTiers?.[0]?.pricePerKg || 9000;
 
   return (
     <View style={styles.poolCard}>
@@ -212,51 +276,44 @@ function PoolCard({ onAction, pool }: PoolCardProps) {
       <View style={styles.poolHeader}>
         <View style={styles.supplierRow}>
           <View style={styles.supplierIcon}>
-            <Text style={styles.supplierIconText}>{pool.id === 2 ? 'TR' : 'PG'}</Text>
+            <Text style={styles.supplierIconText}>VM</Text>
           </View>
           <View style={styles.supplierTextWrap}>
-            <Text style={styles.supplierName}>{pool.supplier}</Text>
-            <Text style={styles.locationText}>{pool.location}</Text>
+            <Text style={styles.supplierName}>{pool.name || `Pool ${pool.product?.name}`}</Text>
+            <Text style={styles.locationText}>{pool.product?.supplier?.name || 'Pemasok Terdaftar'}</Text>
           </View>
         </View>
-        <View style={[styles.statusBadge, statusStyle]}>
-          <View style={[styles.statusDot, pool.statusType === 'warning' && styles.statusDotWarning]} />
-          <Text style={[styles.statusText, statusTextStyle]}>{pool.status}</Text>
+        <View style={[styles.statusBadge, styles.statusSuccess]}>
+          <View style={styles.statusDot} />
+          <Text style={[styles.statusText, styles.statusSuccessText]}>{pool.status}</Text>
         </View>
       </View>
 
       <View style={styles.productBox}>
-        <InfoRow label="Produk" value={pool.product} />
-        <InfoRow isPrice label="Harga Target" value={pool.price} />
+        <InfoRow label="Produk" value={pool.product?.name || 'Pupuk'} />
+        <InfoRow isPrice label="Harga Tier Aktif" value={`Rp ${activePrice.toLocaleString('id-ID')}/kg`} />
+        <InfoRow label="Batas Waktu" value={deadlineStr} />
       </View>
 
       <View style={styles.progressBlock}>
         <View style={styles.progressHeader}>
           <View>
             <Text style={styles.progressLabel}>Progres Volume</Text>
-            <Text style={styles.progressText}>{pool.progressText}</Text>
+            <Text style={styles.progressText}>{(currentVolume / 1000).toFixed(1)} / {(totalTargetVolume / 1000).toFixed(0)} Ton</Text>
           </View>
-          <Text style={styles.progressPercent}>{pool.progress}%</Text>
+          <Text style={styles.progressPercent}>{progressPercent}%</Text>
         </View>
         <View style={styles.progressTrack}>
-          <View style={[styles.progressFill, { width: `${pool.progress}%` }]} />
+          <View style={[styles.progressFill, { width: `${progressPercent}%` }]} />
         </View>
       </View>
 
       <Pressable
         accessibilityRole="button"
-        onPress={() =>
-          onAction(
-            pool.action === 'join'
-              ? `Dummy: kamu memilih gabung ke ${pool.supplier}.`
-              : `Dummy: detail ${pool.supplier} akan dibuka nanti.`,
-          )
-        }
-        style={[styles.actionButton, pool.action === 'detail' && styles.secondaryActionButton]}
+        onPress={onJoin}
+        style={styles.actionButton}
       >
-        <Text style={[styles.actionText, pool.action === 'detail' && styles.secondaryActionText]}>
-          {pool.action === 'join' ? 'Gabung Pool Ini' : 'Lihat Detail'}
-        </Text>
+        <Text style={styles.actionText}>Gabung Pool Ini</Text>
       </Pressable>
     </View>
   );

@@ -14,6 +14,7 @@ type RegisterScreenProps = {
   onBackPress?: () => void;
   onLoginPress?: () => void;
 };
+import { api } from '../services/api';
 
 type Role = 'koperasi' | 'supplier';
 
@@ -25,21 +26,35 @@ const steps = [
 
 export function RegisterScreen({ onBackPress, onLoginPress }: RegisterScreenProps) {
   const { height } = useWindowDimensions();
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<Role>('koperasi');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [notice, setNotice] = useState('');
 
-  const canContinue = email.trim().length > 0 && password.trim().length >= 8 && acceptedTerms;
+  const canContinue = name.trim().length > 0 && email.trim().length > 0 && password.trim().length >= 8 && acceptedTerms;
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (!canContinue) {
-      setNotice('Lengkapi email, kata sandi minimal 8 karakter, dan setujui syarat layanan.');
+      setNotice('Lengkapi nama, email, kata sandi minimal 8 karakter, dan setujui syarat layanan.');
       return;
     }
 
-    setNotice('Data akun tersimpan sementara. Langkah organisasi dan dokumen akan dibuat berikutnya.');
+    try {
+      setNotice('Mendaftarkan akun...');
+      await api.register({
+        name: name.trim(),
+        email: email.trim(),
+        password: password,
+      });
+      setNotice('Registrasi berhasil! Silakan masuk dengan akun Anda.');
+      setTimeout(() => {
+        onLoginPress?.();
+      }, 1500);
+    } catch (err: any) {
+      setNotice(err.message || 'Registrasi gagal. Email mungkin sudah terdaftar.');
+    }
   };
 
   return (
@@ -80,6 +95,19 @@ export function RegisterScreen({ onBackPress, onLoginPress }: RegisterScreenProp
           </View>
 
           <View style={styles.form}>
+            <View style={styles.fieldGroup}>
+              <Text style={styles.label}>Nama Lengkap</Text>
+              <TextInput
+                accessibilityLabel="Nama Lengkap"
+                autoCapitalize="words"
+                onChangeText={setName}
+                placeholder="Budi Santoso"
+                placeholderTextColor={colors.outlineVariant}
+                style={styles.input}
+                value={name}
+              />
+            </View>
+
             <View style={styles.fieldGroup}>
               <Text style={styles.label}>Alamat Email (Gmail)</Text>
               <TextInput

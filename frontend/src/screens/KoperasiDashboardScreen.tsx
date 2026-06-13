@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import {
   Pressable,
   SafeAreaView,
@@ -10,6 +11,7 @@ import {
 import { BrandMark } from '../components/BrandMark';
 import { KoperasiBottomNav } from '../components/KoperasiBottomNav';
 import { colors, fonts } from '../theme';
+import { api } from '../services/api';
 
 type KoperasiDashboardScreenProps = {
   onCollectivePress: () => void;
@@ -29,6 +31,36 @@ export function KoperasiDashboardScreen({
   onRecordPress,
 }: KoperasiDashboardScreenProps) {
   const { height } = useWindowDimensions();
+  const [dashboardData, setDashboardData] = useState<any>(null);
+  const [activePools, setActivePools] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        setIsLoading(true);
+        const [dash, pools] = await Promise.all([
+          api.getDashboard(),
+          api.getActivePools()
+        ]);
+        setDashboardData(dash);
+        setActivePools(pools);
+      } catch (err: any) {
+        setError(err.message || 'Gagal memuat data dasbor.');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadData();
+  }, []);
+
+  const handleLogout = () => {
+    api.clearToken();
+    onLogoutPress();
+  };
+
+  const currentPool = activePools.length > 0 ? activePools[0] : null;
 
   return (
     <SafeAreaView style={[styles.safeArea, { minHeight: height }]}>
@@ -39,41 +71,51 @@ export function KoperasiDashboardScreen({
               <BrandMark size={28} />
             </View>
             <View>
-              <Text style={styles.orgName}>KUD Tani Makmur</Text>
+              <Text style={styles.orgName}>{dashboardData?.koperasiName || 'Koperasi Sumber Makmur'}</Text>
               <Text style={styles.statusText}>Koperasi disetujui</Text>
             </View>
           </View>
-          <Pressable accessibilityRole="button" onPress={onLogoutPress} style={styles.logoutButton}>
+          <Pressable accessibilityRole="button" onPress={handleLogout} style={styles.logoutButton}>
             <Text style={styles.logoutText}>Keluar</Text>
           </Pressable>
         </View>
 
-        <View style={styles.content}>
-          <View style={styles.hero}>
-            <Text style={styles.title}>Beranda</Text>
-            <Text style={styles.subtitle}>
-              Ringkasan pengadaan berdasarkan transaksi koperasi yang sudah dicatat.
-            </Text>
+        {isLoading ? (
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 40 }}>
+            <Text style={{ fontFamily: fonts.body, color: colors.primary, fontSize: 16 }}>Memuat data dasbor...</Text>
           </View>
-
-          <View style={styles.metricGrid}>
-            <MetricCard
-              accentColor={colors.primary}
-              label="Total Belanja"
-              supportingText="+12% dari bulan lalu"
-              value="Rp 145.5Jt"
-            />
-            <MetricCard
-              accentColor={colors.soilBrown}
-              label="Volume Pupuk"
-              supportingText="Target pencatatan 85%"
-              value="24.5 Ton"
-            />
+        ) : error ? (
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 40 }}>
+            <Text style={{ fontFamily: fonts.body, color: colors.errorRed, fontSize: 14, textAlign: 'center' }}>{error}</Text>
           </View>
+        ) : (
+          <View style={styles.content}>
+            <View style={styles.hero}>
+              <Text style={styles.title}>Beranda</Text>
+              <Text style={styles.subtitle}>
+                Selamat datang, {dashboardData?.userName || 'Manager'}. Berikut adalah ringkasan pengadaan Anda.
+              </Text>
+            </View>
 
-          <VolumeMindCard />
-          <PoolActiveCard />
-        </View>
+            <View style={styles.metricGrid}>
+              <MetricCard
+                accentColor={colors.primary}
+                label="Hemat Bulan Ini"
+                supportingText="Dari harga pasar eceran"
+                value={`Rp ${(dashboardData?.hematBulanIni || 0).toLocaleString('id-ID')}`}
+              />
+              <MetricCard
+                accentColor={colors.soilBrown}
+                label="Volume Stok"
+                supportingText={`Cukup untuk ${dashboardData?.stokCukupBulan || 0} bulan`}
+                value={`${((dashboardData?.stokPupukKg || 0) / 1000).toFixed(1)} Ton`}
+              />
+            </View>
+
+            <VolumeMindCard data={dashboardData?.rekomendasiVolumeMind} accuracy={dashboardData?.akurasiPrediksi || 94.2} />
+            <PoolActiveCard pool={currentPool} onDetailPress={onCollectivePress} />
+          </View>
+        )}
 
         <KoperasiBottomNav
           activeTab="home"
@@ -103,7 +145,13 @@ function MetricCard({ accentColor, label, supportingText, value }: MetricCardPro
   );
 }
 
-function VolumeMindCard() {
+function VolumeMindCard({ data, accuracy }: { data: any; accuracy: number }) {
+  if (!data) return null;
+
+  const volumeTon = (data.angka_kg / 1000).toFixed(1);
+  const costJt = (data.totalCost / 1000000).toFixed(1);
+  const savingsText = data.savingsRp > 0 ? `Rp ${(data.savingsRp / 1000000).toFixed(1)}Jt` : 'Rp 0';
+
   return (
     <View style={styles.volumeMindCard}>
       <View style={styles.volumeMindHeader}>
@@ -111,24 +159,29 @@ function VolumeMindCard() {
           <View style={styles.volumeIcon}>
             <Text style={styles.volumeIconText}>VM</Text>
           </View>
-          <View>
+          <View style={{ flex: 1 }}>
             <Text style={styles.volumeTitle}>VolumeMind</Text>
-            <Text style={styles.volumeSubtitle}>Prediksi Kebutuhan Bulan Depan</Text>
+            <Text style={styles.volumeSubtitle}>Rekomendasi Pengadaan: {data.bulan_1}</Text>
           </View>
         </View>
         <View style={styles.accuracyBadge}>
           <Text style={styles.accuracyText}>AKURASI</Text>
-          <Text style={styles.accuracyValue}>94%</Text>
+          <Text style={styles.accuracyValue}>{accuracy.toFixed(1)}%</Text>
         </View>
       </View>
 
       <View style={styles.recommendationBox}>
         <View style={styles.recommendationGrid}>
-          <InfoCell label="Rekomendasi Pemasok" value="PT Agro Nusa" />
-          <InfoCell label="Kuantitas Optimal" value="12.5 Ton (Urea)" />
-          <InfoCell label="Estimasi Biaya" value="Rp 68.750.000" />
-          <InfoCell isSaving label="Potensi Penghematan" value="Rp 4.2Jt" />
+          <InfoCell label="Rekomendasi Pemasok" value={data.supplierName} />
+          <InfoCell label="Kuantitas Optimal" value={`${volumeTon} Ton (NPK)`} />
+          <InfoCell label="Estimasi Biaya" value={`Rp ${data.totalCost.toLocaleString('id-ID')}`} />
+          <InfoCell isSaving label={data.isVolumeHack ? "Hemat (Volume Hack)" : "Potensi Penghematan"} value={savingsText} />
         </View>
+        {data.explanation ? (
+          <Text style={{ marginTop: 10, fontSize: 11, color: colors.outline, fontStyle: 'italic', lineHeight: 15 }}>
+            {data.explanation}
+          </Text>
+        ) : null}
       </View>
 
       <Pressable accessibilityRole="button" onPress={() => undefined} style={styles.confirmButton}>
@@ -167,24 +220,51 @@ function CartIcon() {
   );
 }
 
-function PoolActiveCard() {
+function PoolActiveCard({ pool, onDetailPress }: { pool: any; onDetailPress: () => void }) {
+  if (!pool) {
+    return (
+      <View style={styles.poolSection}>
+        <View style={styles.poolHeader}>
+          <Text style={styles.poolTitle}>Pool Aktif</Text>
+        </View>
+        <View style={[styles.poolCard, { alignItems: 'center', padding: 24 }]}>
+          <Text style={{ color: colors.outline, fontFamily: fonts.body, fontSize: 13, textAlign: 'center' }}>
+            Belum ada pool aktif saat ini.
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
+  const totalVolume = pool.targetVolumeKg || 1000;
+  const currentVolume = pool.currentVolumeKg || 0;
+  const progressPercent = Math.min(100, Math.round((currentVolume / totalVolume) * 100));
+
   return (
     <View style={styles.poolSection}>
       <View style={styles.poolHeader}>
         <Text style={styles.poolTitle}>Pool Aktif</Text>
-        <Text style={styles.seeAll}>Lihat Semua &gt;</Text>
+        <Pressable onPress={onDetailPress}>
+          <Text style={styles.seeAll}>Lihat Semua &gt;</Text>
+        </Pressable>
       </View>
 
       <View style={styles.poolCard}>
         <View style={styles.poolTopRow}>
           <View>
             <View style={styles.poolMetaRow}>
-              <View style={styles.pendingBadge}>
-                <Text style={styles.pendingText}>PENDING</Text>
+              <View style={[styles.pendingBadge, pool.status === 'ACTIVE' && { backgroundColor: 'rgba(43, 147, 72, 0.18)' }]}>
+                <Text style={[styles.pendingText, pool.status === 'ACTIVE' && { color: colors.successGreen }]}>
+                  {pool.status}
+                </Text>
               </View>
-              <Text style={styles.poolDeadline}>Berakhir: 2 Hari</Text>
+              {pool.deadlineAt ? (
+                <Text style={styles.poolDeadline}>
+                  Berakhir: {new Date(pool.deadlineAt).toLocaleDateString('id-ID')}
+                </Text>
+              ) : null}
             </View>
-            <Text style={styles.poolName}>Pool NPK Mutiara Q3</Text>
+            <Text style={styles.poolName}>{pool.name || `Pool ${pool.product?.name}`}</Text>
           </View>
           <View style={styles.groupIcon}>
             <Text style={styles.groupIconText}>OO</Text>
@@ -194,14 +274,16 @@ function PoolActiveCard() {
 
         <View style={styles.progressMeta}>
           <Text style={styles.progressLabel}>Progres Terkumpul</Text>
-          <Text style={styles.progressValue}>65% (13/20 Ton)</Text>
+          <Text style={styles.progressValue}>
+            {progressPercent}% ({(currentVolume / 1000).toFixed(1)}/{(totalVolume / 1000).toFixed(1)} Ton)
+          </Text>
         </View>
         <View style={styles.progressTrack}>
-          <View style={styles.progressFill} />
+          <View style={[styles.progressFill, { width: `${progressPercent}%` }]} />
         </View>
 
-        <Pressable accessibilityRole="button" onPress={() => undefined} style={styles.detailButton}>
-          <Text style={styles.detailButtonText}>LIHAT DETAIL POOL</Text>
+        <Pressable accessibilityRole="button" onPress={onDetailPress} style={styles.detailButton}>
+          <Text style={styles.detailButtonText}>IKUTI POOL PATUNGAN</Text>
         </Pressable>
       </View>
     </View>

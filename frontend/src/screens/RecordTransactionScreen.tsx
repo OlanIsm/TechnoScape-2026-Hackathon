@@ -13,6 +13,7 @@ import {
 import { BrandMark } from '../components/BrandMark';
 import { KoperasiBottomNav } from '../components/KoperasiBottomNav';
 import { colors, fonts } from '../theme';
+import { api } from '../services/api';
 
 type RecordTransactionScreenProps = {
   onCollectivePress: () => void;
@@ -52,9 +53,32 @@ export function RecordTransactionScreen({
     return `Estimasi Rp ${Math.round(numericTotal / numericQuantity).toLocaleString('id-ID')} /kg`;
   }, [quantity, totalPrice]);
 
-  const saveTransaction = () => {
-    setNotice('Dummy: transaksi tersimpan di antrean lokal dan siap dikirim saat API tersedia.');
-    window.setTimeout(() => setNotice(''), 2600);
+  const saveTransaction = async () => {
+    if (!quantity || !supplier || !date || !totalPrice) {
+      setNotice('Semua field wajib diisi.');
+      window.setTimeout(() => setNotice(''), 2600);
+      return;
+    }
+
+    try {
+      setNotice('Menyimpan transaksi...');
+      await api.recordTransaction({
+        jenisPupuk: fertilizer,
+        quantity: Number(quantity),
+        supplierName: supplier,
+        tanggal: date,
+        totalPrice: Number(totalPrice),
+      });
+      setNotice('Transaksi manual berhasil disimpan!');
+      setQuantity('');
+      setSupplier('');
+      setDate('');
+      setTotalPrice('');
+      window.setTimeout(() => setNotice(''), 2600);
+    } catch (err: any) {
+      setNotice(err.message || 'Gagal menyimpan transaksi.');
+      window.setTimeout(() => setNotice(''), 3500);
+    }
   };
 
   return (

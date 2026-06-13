@@ -13,6 +13,27 @@ export class OrderController {
     return this.orderService.createOrder(data);
   }
 
+  @UseGuards(AuthGuard)
+  @Post('manual')
+  async createManual(
+    @Request() req,
+    @Body('jenisPupuk') jenisPupuk: string,
+    @Body('quantity') quantity: number,
+    @Body('supplierName') supplierName: string,
+    @Body('tanggal') tanggal: string,
+    @Body('totalPrice') totalPrice: number,
+  ) {
+    const userId = req.user.sub;
+    return this.orderService.createManualTransaction(
+      userId,
+      jenisPupuk,
+      Number(quantity),
+      supplierName,
+      tanggal,
+      Number(totalPrice),
+    );
+  }
+
   @Post(':id/confirm')
   async confirmOrder(
     @Param('id') id: string,
@@ -31,6 +52,11 @@ export class OrderController {
     return this.orderService.findAllActivePools();
   }
 
+  @Get('products')
+  async findAllProducts() {
+    return this.orderService.findAllProducts();
+  }
+
   @Post('pools/:poolId/join')
   async joinPool(
     @Param('poolId') poolId: string,
@@ -38,6 +64,11 @@ export class OrderController {
     @Body('userId') userId?: string,
   ) {
     return this.orderService.joinPool(poolId, orderId, userId);
+  }
+
+  @Post('pools/:poolId/finalize')
+  async finalizePool(@Param('poolId') poolId: string) {
+    return this.orderService.finalizePool(poolId);
   }
 
   @Get('audit-logs')
