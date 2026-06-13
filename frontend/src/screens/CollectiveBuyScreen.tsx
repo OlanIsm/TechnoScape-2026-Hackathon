@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, useWindowDimensions, View, type ViewStyle } from 'react-native-web';
+import { Image, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, useWindowDimensions, View, type ViewStyle } from 'react-native-web';
+import plusIcon from '../assets/plus_icon.svg';
 import { KoperasiBottomNav } from '../components/KoperasiBottomNav';
 import { MainHeader } from '../components/MainHeader';
 import { PoolCard } from '../components/PoolCard';
@@ -87,7 +88,7 @@ export function CollectiveBuyScreen({
           onPress={() => showDummyNotice('Form buat pool baru masih dummy untuk sekarang.')}
           style={styles.fab}
         >
-          <Text style={styles.fabText}>+</Text>
+          <Image accessibilityElementsHidden resizeMode="contain" source={{ uri: plusIcon }} style={styles.fabIcon} />
         </Pressable>
 
         <KoperasiBottomNav
@@ -197,12 +198,8 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     boxShadow: '0 10px 22px rgba(27, 67, 50, 0.22)',
   },
-  fabText: {
-    color: colors.onPrimary,
-    fontFamily: fonts.heading,
-    fontSize: 34,
-    fontWeight: '600',
-    lineHeight: 38,
-    marginTop: -3,
+  fabIcon: {
+    width: 24,
+    height: 24,
   },
 });
