@@ -31,6 +31,7 @@ type PoolOrder = {
 };
 
 type BackendPool = {
+  id: string;
   currentVolumeKg?: number;
   deadline?: string;
   deadlineAt?: string;
@@ -69,6 +70,55 @@ const cardShadow = {
   boxShadow: '0 4px 12px rgba(27, 67, 50, 0.05)',
 } as unknown as ViewStyle;
 
+function parseVolumeKg(targetStr: string): number {
+  const cleanStr = targetStr.replace(/[^0-9]/g, '');
+  return parseInt(cleanStr, 10) || 0;
+}
+
+function mapLocalPoolToBackendPool(lp: any): BackendPool {
+  const targetVol = parseVolumeKg(lp.target.includes('/') ? lp.target.split('/')[1] : lp.target);
+  const prodName = lp.name.toLowerCase().includes('urea') ? 'Pupuk Urea Granul' : 'Pupuk NPK Phonska';
+  const currentVol = parseVolumeKg(lp.target.split('/')[0]);
+
+  // Dynamic price calculation based on currentVolume (patungan)
+  let activePrice = 10000;
+  if (prodName.toLowerCase().includes('npk') || prodName.toLowerCase().includes('phonska')) {
+    if (currentVol >= 20000) activePrice = 7000;
+    else if (currentVol >= 15000) activePrice = 8500;
+    else if (currentVol >= 5000) activePrice = 9200;
+    else activePrice = 10000;
+  } else {
+    if (currentVol >= 500) activePrice = 7000;
+    else if (currentVol >= 100) activePrice = 7800;
+    else activePrice = 8500;
+  }
+
+  return {
+    id: lp.id,
+    name: lp.name,
+    status: 'ACTIVE',
+    currentVolumeKg: currentVol,
+    targetVolumeKg: targetVol,
+    product: {
+      name: prodName,
+    },
+    orders: lp.orders || [],
+    deadline: lp.deadline || '7 Hari',
+  };
+}
+
+function formatDeadline(deadline: string | undefined): string {
+  if (!deadline) return 'Segera';
+  if (deadline.toLowerCase().includes('hari')) {
+    return deadline;
+  }
+  const parsed = Date.parse(deadline);
+  if (isNaN(parsed)) {
+    return deadline;
+  }
+  return new Date(parsed).toLocaleDateString('id-ID');
+}
+
 export function KoperasiDashboardScreen({
   onCollectivePress,
   onLogPress,
@@ -92,8 +142,20 @@ export function KoperasiDashboardScreen({
           api.getActivePools() as Promise<BackendPool[]>,
           api.getAuditLogs() as Promise<any[]>,
         ]);
+
+        const localPoolsJson = localStorage.getItem('volumemate_approved_pools');
+        const localPools = localPoolsJson ? JSON.parse(localPoolsJson) : [];
+        const mappedLocalPools = localPools.map(mapLocalPoolToBackendPool);
+
+        const combinedPools = [...pools];
+        mappedLocalPools.forEach((lp: BackendPool) => {
+          if (!combinedPools.some(cp => cp.id === lp.id)) {
+            combinedPools.unshift(lp);
+          }
+        });
+
         setDashboardData(dash);
-        setActivePools(pools);
+        setActivePools(combinedPools);
         setAuditLogs(logs);
       } catch (err: unknown) {
         setError(getErrorMessage(err, 'Gagal memuat data dasbor.'));
@@ -414,7 +476,7 @@ function PoolActiveCard({ pool, onDetailPress }: { onDetailPress: () => void; po
                 </Text>
               </View>
               {deadline ? (
-                <Text style={styles.poolDeadline}>Berakhir: {new Date(deadline).toLocaleDateString('id-ID')}</Text>
+                <Text style={styles.poolDeadline}>Berakhir: {formatDeadline(deadline)}</Text>
               ) : null}
             </View>
             <Text style={styles.poolName}>{pool.name || `Pool ${pool.product?.name || 'Pupuk'}`}</Text>

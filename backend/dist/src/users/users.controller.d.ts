@@ -12,6 +12,7 @@ export declare class UsersController {
         password: string;
         role: import("@prisma/client").$Enums.Role;
         koperasiId: string | null;
+        supplierId: string | null;
     }>;
     findAll(): Promise<{
         id: string;
@@ -22,6 +23,7 @@ export declare class UsersController {
         password: string;
         role: import("@prisma/client").$Enums.Role;
         koperasiId: string | null;
+        supplierId: string | null;
     }[]>;
     findOne(id: string): Promise<{
         id: string;
@@ -32,5 +34,6 @@ export declare class UsersController {
         password: string;
         role: import("@prisma/client").$Enums.Role;
         koperasiId: string | null;
+        supplierId: string | null;
     }>;
 }

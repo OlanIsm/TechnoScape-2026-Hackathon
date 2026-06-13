@@ -2,7 +2,7 @@ export type ProcurementPool = {
   action: 'join' | 'detail';
   currentTon: number;
   deadline: string;
-  id: number;
+  id: string | number;
   location: string;
   price: string;
   product: string;

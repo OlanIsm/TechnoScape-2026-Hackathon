@@ -105,6 +105,16 @@ async function main() {
         },
     });
     console.log('Supplier berhasil dibuat.');
+    await prisma.user.create({
+        data: {
+            name: 'Sales Petrokimia',
+            email: 'supplier@petrokimia.com',
+            password: hashedPassword,
+            role: 'SUPPLIER',
+            supplierId: supplier1.id,
+        },
+    });
+    console.log('User Supplier demo berhasil dibuat. Login menggunakan email: supplier@petrokimia.com / password: password123');
     const pupukNPK = await prisma.product.create({
         data: {
             name: 'Pupuk NPK Phonska',

@@ -48,8 +48,8 @@ export declare class OrderService {
         name: string;
         createdAt: Date;
         updatedAt: Date;
-        description: string | null;
         supplierId: string;
+        description: string | null;
     })[]>;
     createPool(data: Prisma.CollectivePoolUncheckedCreateInput): Promise<CollectivePool>;
     findAllActivePools(): Promise<any[]>;

@@ -18,9 +18,112 @@ import type { ProcurementPool } from '../data/pools';
 import { api } from '../services/api';
 import { colors, fonts } from '../theme';
 
+function getCurrentUser() {
+  const userJson = localStorage.getItem('volumemate_user');
+  if (!userJson) return null;
+  try {
+    return JSON.parse(userJson);
+  } catch {
+    return null;
+  }
+}
+
+function parseVolumeKg(targetStr: string): number {
+  const cleanStr = targetStr.replace(/[^0-9]/g, '');
+  return parseInt(cleanStr, 10) || 0;
+}
+
+function calculateEstimatedValue(product: string, volumeKg: number): number {
+  const prodLower = product.toLowerCase();
+  if (prodLower.includes('npk') || prodLower.includes('phonska')) {
+    if (volumeKg >= 20000) return volumeKg * 7000;
+    if (volumeKg >= 15000) return volumeKg * 8500;
+    if (volumeKg >= 5000) return volumeKg * 9200;
+    return volumeKg * 10000;
+  }
+  if (volumeKg >= 500) return volumeKg * 7000;
+  if (volumeKg >= 100) return volumeKg * 7800;
+  return volumeKg * 8500;
+}
+
+function mapLocalPoolToBackendPool(lp: any): BackendPool {
+  const targetVol = parseVolumeKg(lp.target.includes('/') ? lp.target.split('/')[1] : lp.target);
+  const prodName = lp.name.toLowerCase().includes('urea') ? 'Pupuk Urea Granul' : 'Pupuk NPK Phonska';
+  const currentVol = parseVolumeKg(lp.target.split('/')[0]);
+
+  // Dynamic price calculation based on currentVolume (patungan)
+  let activePrice = 10000;
+  if (prodName.toLowerCase().includes('npk') || prodName.toLowerCase().includes('phonska')) {
+    if (currentVol >= 20000) activePrice = 7000;
+    else if (currentVol >= 15000) activePrice = 8500;
+    else if (currentVol >= 5000) activePrice = 9200;
+    else activePrice = 10000;
+  } else {
+    if (currentVol >= 500) activePrice = 7000;
+    else if (currentVol >= 100) activePrice = 7800;
+    else activePrice = 8500;
+  }
+
+  return {
+    id: lp.id,
+    name: lp.name,
+    status: 'ACTIVE',
+    currentVolumeKg: currentVol,
+    targetVolumeKg: targetVol,
+    product: {
+      name: prodName,
+      priceTiers: [{ pricePerKg: activePrice }],
+      supplier: {
+        name: 'Pemasok Terdaftar',
+      },
+    },
+    orders: lp.orders || [],
+    deadline: lp.deadline || '7 Hari',
+  };
+}
+
+const fallbackProposals = [
+  {
+    cooperative: 'Koperasi Tani Makmur',
+    location: 'Kab. Malang, Jawa Timur',
+    product: 'Urea N46 (Non-Subsidi)',
+    target: '50.000 Kg',
+    value: 'Rp 350.000.000',
+    dateSubmitted: '10 Juni 2026, 09:30',
+    notes: 'Kebutuhan mendesak untuk awal musim tanam gadu.',
+    pdfName: 'proposal_urea_tani_makmur.pdf',
+    status: 'PENDING',
+    volumeKg: 50000,
+  },
+  {
+    cooperative: 'KUD Sumber Rejeki',
+    location: 'Kab. Kediri, Jawa Timur',
+    product: 'NPK Phonska Plus',
+    target: '100.000 Kg',
+    value: 'Rp 700.000.000',
+    dateSubmitted: '11 Juni 2026, 14:15',
+    notes: 'Pengadaan pupuk NPK bersubsidi untuk anggota.',
+    pdfName: 'proposal_npk_sumber_rejeki.pdf',
+    status: 'PENDING',
+    volumeKg: 100000,
+  },
+  {
+    cooperative: 'Kop. Subur Mandiri',
+    location: 'Kab. Blitar, Jawa Timur',
+    product: 'SP-36 Super',
+    target: '30.000 Kg',
+    value: 'Rp 210.000.000',
+    dateSubmitted: '12 Juni 2026, 11:00',
+    notes: 'Rencana pengadaan pupuk fosfat SP-36.',
+    pdfName: 'proposal_sp36_subur_mandiri.pdf',
+    status: 'PENDING',
+    volumeKg: 30000,
+  },
+];
+
 type CollectiveBuyScreenProps = {
   initialTab?: 'open' | 'mine';
-  joinedPoolIds?: number[];
+  joinedPoolIds?: Array<string | number>;
   onHomePress: () => void;
   onJoinPoolPress?: (pool: ProcurementPool) => void;
   onLogPress: () => void;
@@ -85,16 +188,48 @@ export function CollectiveBuyScreen({
   const [noticeType, setNoticeType] = useState<'success' | 'error'>('success');
   const [search, setSearch] = useState('');
 
+  // States for proposal submission
+  const [showSubmitModal, setShowSubmitModal] = useState(false);
+  const [productOptions, setProductOptions] = useState<string[]>(['Pupuk NPK Phonska', 'Pupuk Urea Granul']);
+  const [fertilizerType, setFertilizerType] = useState('Pupuk NPK Phonska');
+  const [targetVolumeInput, setTargetVolumeInput] = useState('');
+  const [notesInput, setNotesInput] = useState('');
+  const [pdfFile, setPdfFile] = useState<{ name: string; dataUrl?: string } | null>(null);
+  const [koperasiName, setKoperasiName] = useState('Koperasi Sumber Makmur');
+
   const loadPools = async () => {
     try {
       setIsLoading(true);
-      const [poolData, profile] = await Promise.all([
+      const [poolData, profile, products] = await Promise.all([
         api.getActivePools() as Promise<BackendPool[]>,
         api.getProfile() as Promise<any>,
+        api.getProducts() as Promise<any[]>,
       ]);
-      setPools(poolData);
+
+      const localPoolsJson = localStorage.getItem('volumemate_approved_pools');
+      const localPools = localPoolsJson ? JSON.parse(localPoolsJson) : [];
+      const mappedLocalPools = localPools.map(mapLocalPoolToBackendPool);
+
+      const combinedPools = [...poolData];
+      mappedLocalPools.forEach((lp: BackendPool) => {
+        if (!combinedPools.some(cp => cp.id === lp.id)) {
+          combinedPools.unshift(lp);
+        }
+      });
+
+      setPools(combinedPools);
       if (profile && profile.koperasiId) {
         setMyKoperasiId(profile.koperasiId);
+      }
+      if (profile && profile.koperasi) {
+        setKoperasiName(profile.koperasi.name);
+      }
+      if (products && products.length > 0) {
+        const names = products.map((p) => p.name);
+        setProductOptions(names);
+        if (!names.includes(fertilizerType)) {
+          setFertilizerType(names[0]);
+        }
       }
     } catch (err: unknown) {
       setNoticeType('error');
@@ -155,6 +290,42 @@ export function CollectiveBuyScreen({
   };
 
   const handleJoinPool = async (pool: BackendPool) => {
+    if (pool.id.startsWith('#')) {
+      try {
+        setNotice(`Mendaftarkan partisipasi ke pool ${pool.name || ''}...`);
+
+        const localPoolsJson = localStorage.getItem('volumemate_approved_pools');
+        if (localPoolsJson) {
+          const localPools = JSON.parse(localPoolsJson);
+          const targetPool = localPools.find((lp: any) => lp.id === pool.id);
+          if (targetPool) {
+            const targetVol = parseVolumeKg(targetPool.target.includes('/') ? targetPool.target.split('/')[1] : targetPool.target);
+            const currentVol = parseVolumeKg(targetPool.target.includes('/') ? targetPool.target.split('/')[0] : '0');
+            const contribution = 5000; 
+            const newVol = Math.min(targetVol, currentVol + contribution);
+
+            targetPool.progress = Math.min(100, Math.round((newVol / targetVol) * 100));
+            targetPool.target = `${newVol.toLocaleString('id-ID')} / ${targetVol.toLocaleString('id-ID')} Kg`;
+
+            if (!targetPool.orders) targetPool.orders = [];
+            targetPool.orders.push({ koperasiId: myKoperasiId });
+
+            localStorage.setItem('volumemate_approved_pools', JSON.stringify(localPools));
+          }
+        }
+
+        setNoticeType('success');
+        setNotice('Sukses bergabung ke pool! Progres volume dan harga ter-update secara real-time.');
+        await loadPools();
+        window.setTimeout(() => setNotice(''), 3000);
+      } catch (err: unknown) {
+        setNoticeType('error');
+        setNotice('Gagal bergabung ke pool lokal.');
+        window.setTimeout(() => setNotice(''), 3500);
+      }
+      return;
+    }
+
     if (onJoinPoolPress) {
       onJoinPoolPress(mapBackendPoolToProcurementPool(pool));
       return;
@@ -185,6 +356,7 @@ export function CollectiveBuyScreen({
   };
 
   const handleCreatePool = async () => {
+    // Legacy pool creation
     try {
       setNotice('Menyiapkan proposal pool baru...');
       const products = (await api.getProducts()) as Product[];
@@ -215,6 +387,46 @@ export function CollectiveBuyScreen({
       setNotice(getErrorMessage(err, 'Gagal membuat proposal pool baru.'));
       window.setTimeout(() => setNotice(''), 3500);
     }
+  };
+
+  const handleSubmitProposal = () => {
+    const volumeVal = parseFloat(targetVolumeInput.replace(/[^0-9.]/g, '')) || 0;
+    if (volumeVal <= 0) {
+      alert('Volume target harus lebih besar dari 0.');
+      return;
+    }
+
+    const estValue = calculateEstimatedValue(fertilizerType, volumeVal);
+    const user = getCurrentUser();
+
+    const currentProposalsJson = localStorage.getItem('volumemate_proposals');
+    let currentProposals = currentProposalsJson ? JSON.parse(currentProposalsJson) : [...fallbackProposals];
+
+    const newProposal = {
+      cooperative: koperasiName || 'Koperasi Sumber Makmur',
+      location: user?.location || 'Kab. Jember, Jawa Timur',
+      product: fertilizerType,
+      target: `${volumeVal.toLocaleString('id-ID')} Kg`,
+      value: `Rp ${estValue.toLocaleString('id-ID')}`,
+      dateSubmitted: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) + ', ' + new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+      notes: notesInput || 'Tidak ada catatan tambahan.',
+      pdfName: pdfFile ? pdfFile.name : 'proposal_pengadaan.pdf',
+      pdfData: pdfFile ? pdfFile.dataUrl : undefined,
+      status: 'PENDING',
+      volumeKg: volumeVal,
+    };
+
+    currentProposals = [newProposal, ...currentProposals];
+    localStorage.setItem('volumemate_proposals', JSON.stringify(currentProposals));
+
+    setTargetVolumeInput('');
+    setNotesInput('');
+    setPdfFile(null);
+    setShowSubmitModal(false);
+
+    setNoticeType('success');
+    setNotice('Proposal pengadaan baru berhasil dikirim ke Supplier!');
+    window.setTimeout(() => setNotice(''), 3000);
   };
 
   const handleLogout = () => {
@@ -333,11 +545,124 @@ export function CollectiveBuyScreen({
         <Pressable
           accessibilityLabel="Buat pool baru"
           accessibilityRole="button"
-          onPress={handleCreatePool}
+          onPress={() => setShowSubmitModal(true)}
           style={styles.fab}
         >
           <Image accessibilityElementsHidden resizeMode="contain" source={{ uri: plusIcon }} style={styles.fabIcon} />
         </Pressable>
+
+        {showSubmitModal ? (
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Pengajuan Proposal</Text>
+                <Pressable onPress={() => setShowSubmitModal(false)} style={styles.closeButton}>
+                  <Text style={styles.closeButtonText}>✕</Text>
+                </Pressable>
+              </View>
+
+              <ScrollView style={styles.modalScroll} showsVerticalScrollIndicator={false}>
+                <View style={styles.modalForm}>
+                  <View style={styles.formGroup}>
+                    <Text style={styles.formLabel}>Jenis Pupuk</Text>
+                    <View style={styles.dropdownSelector}>
+                      {productOptions.map((type) => (
+                        <Pressable
+                          key={type}
+                          onPress={() => setFertilizerType(type)}
+                          style={[
+                            styles.dropdownOpt,
+                            fertilizerType === type && styles.dropdownOptActive,
+                          ]}
+                        >
+                          <Text style={[
+                            styles.dropdownOptText,
+                            fertilizerType === type && styles.dropdownOptTextActive,
+                          ]}>
+                            {type}
+                          </Text>
+                        </Pressable>
+                      ))}
+                    </View>
+                  </View>
+
+                  <View style={styles.formGroup}>
+                    <Text style={styles.formLabel}>Target Volume (Kg)</Text>
+                    <TextInput
+                      accessibilityLabel="Target Volume dalam Kg"
+                      keyboardType="numeric"
+                      onChangeText={setTargetVolumeInput}
+                      placeholder="Contoh: 15000"
+                      placeholderTextColor={colors.outline}
+                      style={styles.formInput}
+                      value={targetVolumeInput}
+                    />
+                  </View>
+
+                  <View style={styles.formGroup}>
+                    <Text style={styles.formLabel}>Catatan Tambahan</Text>
+                    <TextInput
+                      accessibilityLabel="Catatan tambahan untuk supplier"
+                      multiline
+                      numberOfLines={3}
+                      onChangeText={setNotesInput}
+                      placeholder="Tulis spesifikasi tambahan atau pesan ke supplier..."
+                      placeholderTextColor={colors.outline}
+                      style={[styles.formInput, styles.formTextArea]}
+                      value={notesInput}
+                    />
+                  </View>
+
+                  <View style={styles.formGroup}>
+                    <Text style={styles.formLabel}>Lampiran PDF Proposal</Text>
+                    <Pressable
+                      accessibilityRole="button"
+                      onPress={() => {
+                        const input = document.createElement('input');
+                        input.type = 'file';
+                        input.accept = 'application/pdf';
+                        input.onchange = (e: any) => {
+                          const file = e.target.files[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onload = () => {
+                              setPdfFile({
+                                name: file.name,
+                                dataUrl: reader.result as string,
+                              });
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        };
+                        input.click();
+                      }}
+                      style={styles.uploadBox}
+                    >
+                      <Text style={styles.uploadBoxText}>
+                        {pdfFile ? `📄 ${pdfFile.name}` : '📁 Klik untuk Unggah PDF Proposal'}
+                      </Text>
+                    </Pressable>
+                  </View>
+                </View>
+              </ScrollView>
+
+              <View style={styles.modalFooter}>
+                <Pressable
+                  onPress={() => setShowSubmitModal(false)}
+                  style={styles.modalCancelBtn}
+                >
+                  <Text style={styles.modalCancelText}>Batal</Text>
+                </Pressable>
+                <Pressable
+                  onPress={handleSubmitProposal}
+                  style={styles.modalSubmitBtn}
+                >
+                  <Text style={styles.modalSubmitText}>Kirim Proposal</Text>
+                </Pressable>
+              </View>
+            </View>
+          </View>
+        ) : null}
 
         <KoperasiBottomNav
           activeTab="collective"
@@ -352,14 +677,21 @@ export function CollectiveBuyScreen({
 
 function getDeadlineLabel(deadline: string | undefined): string {
   if (!deadline) return 'Segera';
+  if (deadline.toLowerCase().includes('hari')) {
+    return deadline;
+  }
+  const parsed = Date.parse(deadline);
+  if (isNaN(parsed)) {
+    return deadline;
+  }
   const now = new Date();
-  const target = new Date(deadline);
+  const target = new Date(parsed);
   const diffMs = target.getTime() - now.getTime();
   if (diffMs <= 0) return 'Berakhir';
   const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
   if (diffDays === 1) return '1 hari lagi';
   if (diffDays <= 30) return `${diffDays} hari lagi`;
-  return new Date(deadline).toLocaleDateString('id-ID');
+  return target.toLocaleDateString('id-ID');
 }
 
 function BackendPoolCard({ onJoin, pool, myKoperasiId }: { onJoin: () => void; pool: BackendPool; myKoperasiId: string | null }) {
@@ -797,5 +1129,159 @@ const styles = StyleSheet.create({
   fabIcon: {
     width: 56,
     height: 56,
+  },
+  modalOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(8, 28, 21, 0.45)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    zIndex: 999,
+  },
+  modalContent: {
+    backgroundColor: colors.surfaceCard,
+    width: '100%',
+    maxWidth: 390,
+    borderRadius: 16,
+    padding: 20,
+    maxHeight: '80%',
+    gap: 16,
+    boxShadow: '0 8px 30px rgba(0, 0, 0, 0.15)',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: colors.surfaceContainerHigh,
+    paddingBottom: 12,
+  },
+  modalTitle: {
+    fontFamily: fonts.heading,
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.primary,
+  },
+  closeButton: {
+    padding: 4,
+  },
+  closeButtonText: {
+    fontSize: 18,
+    color: colors.outline,
+    fontWeight: '600',
+  },
+  modalScroll: {
+    flex: 1,
+  },
+  modalForm: {
+    gap: 14,
+  },
+  formGroup: {
+    gap: 6,
+  },
+  formLabel: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.onSurface,
+  },
+  formInput: {
+    height: 44,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.outlineVariant,
+    paddingHorizontal: 12,
+    fontFamily: fonts.body,
+    fontSize: 13,
+    color: colors.textMain,
+    backgroundColor: colors.background,
+  },
+  formTextArea: {
+    height: 80,
+    paddingTop: 10,
+    textAlignVertical: 'top',
+  },
+  dropdownSelector: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  dropdownOpt: {
+    flex: 1,
+    height: 38,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.outlineVariant,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.background,
+  },
+  dropdownOptActive: {
+    borderColor: colors.primary,
+    backgroundColor: colors.primary,
+  },
+  dropdownOptText: {
+    fontFamily: fonts.body,
+    fontSize: 11,
+    color: colors.onSurfaceVariant,
+    fontWeight: '600',
+  },
+  dropdownOptTextActive: {
+    color: colors.onPrimary,
+  },
+  uploadBox: {
+    height: 52,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(1, 45, 29, 0.03)',
+  },
+  uploadBoxText: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  modalFooter: {
+    flexDirection: 'row',
+    gap: 10,
+    borderTopWidth: 1,
+    borderTopColor: colors.surfaceContainerHigh,
+    paddingTop: 12,
+  },
+  modalCancelBtn: {
+    flex: 1,
+    height: 44,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.outline,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalCancelText: {
+    fontFamily: fonts.body,
+    fontSize: 13,
+    color: colors.outline,
+    fontWeight: '600',
+  },
+  modalSubmitBtn: {
+    flex: 2,
+    height: 44,
+    borderRadius: 8,
+    backgroundColor: colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalSubmitText: {
+    fontFamily: fonts.body,
+    fontSize: 13,
+    color: colors.onPrimary,
+    fontWeight: '600',
   },
 });

@@ -3,7 +3,7 @@ import { Injectable, BadRequestException, ServiceUnavailableException } from '@n
 
 @Injectable()
 export class VolumemindService {
-    private readonly baseUrl = 'http://localhost:8000'; // sesuaiin port dia
+    private readonly baseUrl = process.env.VOLUMEMIND_URL || 'http://localhost:8000';
 
     async getRecommendation(payload: {
         tanggal: string;

@@ -88,8 +88,8 @@ export declare class OrderController {
         name: string;
         createdAt: Date;
         updatedAt: Date;
-        description: string | null;
         supplierId: string;
+        description: string | null;
     })[]>;
     joinPool(poolId: string, orderId: string, userId?: string): Promise<{
         id: string;

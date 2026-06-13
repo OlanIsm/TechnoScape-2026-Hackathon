@@ -25,7 +25,7 @@ let AuthGuard = class AuthGuard {
         }
         try {
             const payload = await this.jwtService.verifyAsync(token, {
-                secret: 'VOLUMEMATE_SUPER_SECRET_KEY_2026',
+                secret: process.env.JWT_SECRET || 'VOLUMEMATE_SUPER_SECRET_KEY_2026',
             });
             request['user'] = payload;
         }

@@ -57,8 +57,8 @@ export function PoolCard({ onAction, onJoinPress, pool }: PoolCardProps) {
 
           onAction(
             pool.action === 'join'
-              ? `Dummy: kamu memilih gabung ke ${pool.supplier}.`
-              : `Dummy: detail ${pool.supplier} akan dibuka nanti.`,
+              ? `Terjadi kesalahan saat bergabung ke ${pool.supplier}.`
+              : `Detail untuk ${pool.supplier} sedang diproses.`,
           );
         }}
         style={[styles.actionButton, pool.action === 'detail' && styles.secondaryActionButton]}

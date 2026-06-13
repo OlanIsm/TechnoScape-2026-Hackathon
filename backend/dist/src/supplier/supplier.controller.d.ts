@@ -35,8 +35,8 @@ export declare class SupplierController {
         name: string;
         createdAt: Date;
         updatedAt: Date;
-        description: string | null;
         supplierId: string;
+        description: string | null;
     }>;
     createPriceTier(data: Prisma.PriceTierUncheckedCreateInput): Promise<{
         id: string;

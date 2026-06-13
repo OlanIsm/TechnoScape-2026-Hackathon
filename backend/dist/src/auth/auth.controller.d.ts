@@ -11,7 +11,15 @@ export declare class AuthController {
                 createdAt: Date;
                 updatedAt: Date;
             } | null;
-            supplier: never;
+            supplier: {
+                id: string;
+                name: string;
+                address: string;
+                createdAt: Date;
+                updatedAt: Date;
+                email: string | null;
+                phone: string;
+            } | null;
             id: string;
             name: string;
             createdAt: Date;
@@ -19,6 +27,7 @@ export declare class AuthController {
             email: string;
             role: import("@prisma/client").$Enums.Role;
             koperasiId: string | null;
+            supplierId: string | null;
         };
         access_token: string;
     }>;
@@ -31,7 +40,15 @@ export declare class AuthController {
                 createdAt: Date;
                 updatedAt: Date;
             } | null;
-            supplier: never;
+            supplier: {
+                id: string;
+                name: string;
+                address: string;
+                createdAt: Date;
+                updatedAt: Date;
+                email: string | null;
+                phone: string;
+            } | null;
             id: string;
             name: string;
             createdAt: Date;
@@ -39,6 +56,7 @@ export declare class AuthController {
             email: string;
             role: import("@prisma/client").$Enums.Role;
             koperasiId: string | null;
+            supplierId: string | null;
         };
         access_token: string;
     }>;
@@ -50,7 +68,15 @@ export declare class AuthController {
             createdAt: Date;
             updatedAt: Date;
         } | null;
-        supplier: never;
+        supplier: {
+            id: string;
+            name: string;
+            address: string;
+            createdAt: Date;
+            updatedAt: Date;
+            email: string | null;
+            phone: string;
+        } | null;
         id: string;
         name: string;
         createdAt: Date;
@@ -58,5 +84,6 @@ export declare class AuthController {
         email: string;
         role: import("@prisma/client").$Enums.Role;
         koperasiId: string | null;
+        supplierId: string | null;
     }>;
 }

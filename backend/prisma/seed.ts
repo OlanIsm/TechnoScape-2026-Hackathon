@@ -90,6 +90,18 @@ async function main() {
 
   console.log('Supplier berhasil dibuat.');
 
+  // Create Supplier User linked to supplier1
+  await prisma.user.create({
+    data: {
+      name: 'Sales Petrokimia',
+      email: 'supplier@petrokimia.com',
+      password: hashedPassword,
+      role: 'SUPPLIER',
+      supplierId: supplier1.id,
+    },
+  });
+  console.log('User Supplier demo berhasil dibuat. Login menggunakan email: supplier@petrokimia.com / password: password123');
+
   // 4. Buat Produk
   const pupukNPK = await prisma.product.create({
     data: {

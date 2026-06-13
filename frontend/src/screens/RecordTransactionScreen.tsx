@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Pressable,
   SafeAreaView,
@@ -22,8 +22,6 @@ type RecordTransactionScreenProps = {
   onLogoutPress: () => void;
 };
 
-const fertilizerOptions = ['Urea', 'NPK', 'SP-36', 'ZA', 'Organik'];
-
 const cardShadow = {
   boxShadow: '0 4px 12px rgba(27, 67, 50, 0.05)',
 } as unknown as ViewStyle;
@@ -36,6 +34,7 @@ export function RecordTransactionScreen({
 }: RecordTransactionScreenProps) {
   const { height } = useWindowDimensions();
   const [activeTab, setActiveTab] = useState<'pemasukan' | 'pengeluaran'>('pemasukan');
+  const [fertilizerOptions, setFertilizerOptions] = useState<string[]>(['Urea', 'NPK', 'SP-36', 'ZA', 'Organik']);
   const [fertilizer, setFertilizer] = useState('Urea');
   const [quantity, setQuantity] = useState('');
   const [supplier, setSupplier] = useState('');
@@ -50,6 +49,33 @@ export function RecordTransactionScreen({
   const [notice, setNotice] = useState('');
   const [noticeType, setNoticeType] = useState<'success' | 'error'>('success');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  useEffect(() => {
+    async function loadProducts() {
+      try {
+        const products = await api.getProducts() as any[];
+        if (products && products.length > 0) {
+          const names = products.map((p) => {
+            const lower = p.name.toLowerCase();
+            if (lower.includes('urea')) return 'Urea';
+            if (lower.includes('npk')) return 'NPK';
+            if (lower.includes('sp-36')) return 'SP-36';
+            if (lower.includes('za')) return 'ZA';
+            if (lower.includes('organik')) return 'Organik';
+            return p.name;
+          });
+          const uniqueNames = Array.from(new Set(names));
+          setFertilizerOptions(uniqueNames);
+          if (uniqueNames.length > 0 && !uniqueNames.includes(fertilizer)) {
+            setFertilizer(uniqueNames[0]);
+          }
+        }
+      } catch (err) {
+        console.warn('Gagal memuat daftar produk dari backend:', err);
+      }
+    }
+    loadProducts();
+  }, []);
 
   // Auto-calculated total price for distribution
   const computedTotalPriceForDistribution = useMemo(() => {

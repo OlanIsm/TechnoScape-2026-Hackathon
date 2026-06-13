@@ -133,7 +133,7 @@ function getValidatedScreen(hash: string): Screen {
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>(() => getValidatedScreen(window.location.hash));
-  const [joinedPoolIds, setJoinedPoolIds] = useState<number[]>([2]);
+  const [joinedPoolIds, setJoinedPoolIds] = useState<Array<string | number>>([2]);
   const [selectedJoinPool, setSelectedJoinPool] = useState<ProcurementPool>(pools[0]);
   const [collectiveNotice, setCollectiveNotice] = useState('');
   const [collectiveInitialTab, setCollectiveInitialTab] = useState<'open' | 'mine'>('open');
@@ -184,7 +184,7 @@ export default function App() {
     setScreen('join-pool');
   };
 
-  const confirmJoinPool = async (poolId: number, contributionTon: number) => {
+  const confirmJoinPool = async (poolId: string | number, contributionTon: number) => {
     try {
       const pool = selectedJoinPool;
       if (!pool) return;

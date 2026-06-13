@@ -22,7 +22,7 @@ exports.AuthModule = AuthModule = __decorate([
             prisma_module_1.PrismaModule,
             jwt_1.JwtModule.register({
                 global: true,
-                secret: 'VOLUMEMATE_SUPER_SECRET_KEY_2026',
+                secret: process.env.JWT_SECRET || 'VOLUMEMATE_SUPER_SECRET_KEY_2026',
                 signOptions: { expiresIn: '7d' },
             }),
         ],

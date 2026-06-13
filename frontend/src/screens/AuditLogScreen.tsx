@@ -38,66 +38,7 @@ type PoolLog = {
   status: 'SUKSES' | 'GAGAL' | 'DIBATALKAN';
 };
 
-const dummyManualLogs: Array<{ dateLabel: string; items: ManualLog[] }> = [
-  {
-    dateLabel: 'HARI INI, 24 OKT 2026',
-    items: [
-      {
-        amount: '50 Ton',
-        icon: 'UR',
-        product: 'Pupuk Urea Prill',
-        supplier: 'PT Agro Maju',
-        time: '10:45 WIB',
-        total: 'Rp 425 Jt',
-        hash: 'VM-UR-A7K2',
-      },
-      {
-        amount: '120 Ton',
-        icon: 'NP',
-        product: 'Pupuk NPK 15-15-15',
-        supplier: 'CV Tani Subur',
-        time: '08:30 WIB',
-        total: 'Rp 1.2 M',
-        hash: 'VM-NP-B4R1',
-      },
-    ],
-  },
-  {
-    dateLabel: 'KEMARIN, 23 OKT 2026',
-    items: [
-      {
-        amount: '5 Ribu L',
-        icon: 'OC',
-        product: 'Pupuk Organik Cair',
-        supplier: 'Kop. Makmur',
-        time: '14:15 WIB',
-        total: 'Rp 85 Jt',
-        hash: 'VM-OC-C3D9',
-      },
-    ],
-  },
-];
 
-const dummyPoolLogs: PoolLog[] = [
-  {
-    date: '21 Okt',
-    description: 'Target volume 500 Ton Urea terpenuhi dengan 3 koperasi partisipan.',
-    id: 'Pool #P-2026-089',
-    status: 'SUKSES',
-  },
-  {
-    date: '18 Okt',
-    description: 'Batas waktu terlampaui. Target 200 Ton NPK hanya terkumpul 80 Ton.',
-    id: 'Pool #P-2026-088',
-    status: 'GAGAL',
-  },
-  {
-    date: '15 Okt',
-    description: 'Dibatalkan oleh inisiator setelah supplier mengubah batas minimum volume.',
-    id: 'Pool #P-2026-087',
-    status: 'DIBATALKAN',
-  },
-];
 
 const cardShadow = {
   boxShadow: '0 4px 12px rgba(27, 67, 50, 0.05)',
@@ -268,8 +209,8 @@ export function AuditLogScreen({
     };
   });
 
-  const manualLogsToRender = groupedManualLogs.length > 0 ? groupedManualLogs : dummyManualLogs;
-  const poolLogsToRender = mappedPoolLogs.length > 0 ? mappedPoolLogs : dummyPoolLogs;
+  const manualLogsToRender = groupedManualLogs;
+  const poolLogsToRender = mappedPoolLogs;
 
   return (
     <SafeAreaView style={[styles.safeArea, { minHeight: height }]}>
@@ -332,9 +273,21 @@ export function AuditLogScreen({
               <Text style={styles.loadingText}>Memuat log audit...</Text>
             </View>
           ) : activeTab === 'manual' ? (
-            <ManualLogList items={manualLogsToRender} />
+            manualLogsToRender.length === 0 ? (
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>Belum ada log transaksi manual tercatat.</Text>
+              </View>
+            ) : (
+              <ManualLogList items={manualLogsToRender} />
+            )
           ) : (
-            <PoolLogList items={poolLogsToRender} onDetailPress={showNotice} />
+            poolLogsToRender.length === 0 ? (
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>Belum ada riwayat pool patungan tercatat.</Text>
+              </View>
+            ) : (
+              <PoolLogList items={poolLogsToRender} onDetailPress={showNotice} />
+            )
           )}
         </ScrollView>
 
@@ -898,5 +851,16 @@ const styles = StyleSheet.create({
     fontFamily: fonts.body,
     fontSize: 14,
     fontWeight: '600',
+  },
+  emptyContainer: {
+    padding: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyText: {
+    color: colors.outline,
+    fontFamily: fonts.body,
+    fontSize: 14,
+    textAlign: 'center',
   },
 });

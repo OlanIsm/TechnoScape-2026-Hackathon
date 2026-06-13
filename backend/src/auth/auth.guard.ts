@@ -19,7 +19,7 @@ export class AuthGuard implements CanActivate {
     }
     try {
       const payload = await this.jwtService.verifyAsync(token, {
-        secret: 'VOLUMEMATE_SUPER_SECRET_KEY_2026', // Gunakan secret key statis untuk Hackathon MVP
+        secret: process.env.JWT_SECRET || 'VOLUMEMATE_SUPER_SECRET_KEY_2026',
       });
       // Attach user payload to the request
       request['user'] = payload;
