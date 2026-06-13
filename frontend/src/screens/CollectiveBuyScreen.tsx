@@ -166,24 +166,18 @@ type RecordedOrder = {
 };
 
 const DEFAULT_FERTILIZER_OPTIONS = [
-  'Pupuk NPK Phonska',
-  'Pupuk NPK Phonska Plus',
-  'Pupuk Urea Granul',
-  'Pupuk Urea N46',
-  'Pupuk SP-36',
-  'Pupuk ZA',
-  'Pupuk KCl',
-  'Pupuk TSP',
-  'Pupuk KNO3',
-  'Pupuk Dolomit',
-  'Pupuk Organik Granul',
-  'Pupuk Organik Cair',
+  'Urea',
+  'NPK',
+  'SP-36',
+  'ZA',
+  'Organik',
 ];
 
 const MAX_PDF_SIZE_BYTES = 2 * 1024 * 1024;
 
 function mergeFertilizerOptions(productNames: string[]) {
-  return Array.from(new Set([...productNames, ...DEFAULT_FERTILIZER_OPTIONS]));
+  void productNames;
+  return DEFAULT_FERTILIZER_OPTIONS;
 }
 
 const cardShadow = {
@@ -220,6 +214,7 @@ export function CollectiveBuyScreen({
   const [proposalFeedback, setProposalFeedback] = useState('');
   const [proposalFeedbackType, setProposalFeedbackType] = useState<'success' | 'error'>('error');
   const [isSubmittingProposal, setIsSubmittingProposal] = useState(false);
+  const [showProposalSuccessModal, setShowProposalSuccessModal] = useState(false);
   const [koperasiName, setKoperasiName] = useState('Koperasi Sumber Makmur');
 
   const loadPools = async () => {
@@ -531,6 +526,8 @@ export function CollectiveBuyScreen({
 
       setNoticeType('success');
       setNotice('Proposal pengadaan baru berhasil dikirim ke Supplier!');
+      setShowProposalSuccessModal(true);
+      window.setTimeout(() => setShowProposalSuccessModal(false), 2200);
       window.setTimeout(() => setNotice(''), 3000);
     } catch (err: unknown) {
       const message = err instanceof DOMException && err.name === 'QuotaExceededError'
@@ -573,6 +570,20 @@ export function CollectiveBuyScreen({
     <SafeAreaView style={[styles.safeArea, { minHeight: height }]}>
       <View style={[styles.shell, { height }]}>
         <MainHeader onLogoutPress={handleLogout} />
+
+        {showProposalSuccessModal ? (
+          <View style={styles.successModalOverlay}>
+            <View style={styles.successModalContent}>
+              <View style={styles.successCheckCircle}>
+                <Text style={styles.successCheckText}>✓</Text>
+              </View>
+              <Text style={styles.successModalTitle}>Proposal Terkirim</Text>
+              <Text style={styles.successModalDescription}>
+                Proposal sudah masuk ke daftar pending approval supplier.
+              </Text>
+            </View>
+          </View>
+        ) : null}
 
         <ScrollView
           contentContainerStyle={styles.scrollContent}
@@ -690,24 +701,35 @@ export function CollectiveBuyScreen({
                 <View style={styles.modalForm}>
                   <View style={styles.formGroup}>
                     <Text style={styles.formLabel}>Jenis Pupuk</Text>
-                    <View style={styles.dropdownSelector}>
-                      {productOptions.map((type) => (
-                        <Pressable
-                          key={type}
-                          onPress={() => setFertilizerType(type)}
-                          style={[
-                            styles.dropdownOpt,
-                            fertilizerType === type && styles.dropdownOptActive,
-                          ]}
-                        >
-                          <Text style={[
-                            styles.dropdownOptText,
-                            fertilizerType === type && styles.dropdownOptTextActive,
-                          ]}>
+                    <View style={styles.selectWrap}>
+                      <select
+                        aria-label="Pilih jenis pupuk"
+                        onChange={(event) => setFertilizerType(event.target.value)}
+                        style={{
+                          appearance: 'none',
+                          backgroundColor: 'transparent',
+                          border: 'none',
+                          boxSizing: 'border-box',
+                          color: colors.textMain,
+                          cursor: 'pointer',
+                          fontFamily: fonts.body,
+                          fontSize: '14px',
+                          fontWeight: 700,
+                          height: '44px',
+                          outline: 'none',
+                          paddingLeft: '12px',
+                          paddingRight: '38px',
+                          width: '100%',
+                        }}
+                        value={fertilizerType}
+                      >
+                        {productOptions.map((type) => (
+                          <option key={type} value={type}>
                             {type}
-                          </Text>
-                        </Pressable>
-                      ))}
+                          </option>
+                        ))}
+                      </select>
+                      <Text style={styles.selectChevron}>⌄</Text>
                     </View>
                   </View>
 
@@ -1287,6 +1309,60 @@ const styles = StyleSheet.create({
     padding: 20,
     zIndex: 999,
   },
+  successModalOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(8, 28, 21, 0.36)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    zIndex: 1200,
+  },
+  successModalContent: {
+    width: '100%',
+    maxWidth: 300,
+    alignItems: 'center',
+    backgroundColor: colors.surfaceCard,
+    borderColor: 'rgba(43, 147, 72, 0.26)',
+    borderRadius: 14,
+    borderWidth: 1,
+    padding: 22,
+    boxShadow: '0 8px 30px rgba(0, 0, 0, 0.15)',
+  },
+  successCheckCircle: {
+    width: 58,
+    height: 58,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.successGreen,
+    borderRadius: 29,
+    marginBottom: 12,
+  },
+  successCheckText: {
+    color: colors.onPrimary,
+    fontFamily: fonts.heading,
+    fontSize: 34,
+    fontWeight: '800',
+    lineHeight: 40,
+  },
+  successModalTitle: {
+    color: colors.primary,
+    fontFamily: fonts.heading,
+    fontSize: 18,
+    fontWeight: '800',
+    lineHeight: 24,
+  },
+  successModalDescription: {
+    color: colors.onSurfaceVariant,
+    fontFamily: fonts.body,
+    fontSize: 12,
+    lineHeight: 18,
+    marginTop: 6,
+    textAlign: 'center',
+  },
   modalContent: {
     backgroundColor: colors.surfaceCard,
     width: '100%',
@@ -1349,6 +1425,26 @@ const styles = StyleSheet.create({
     height: 80,
     paddingTop: 10,
     textAlignVertical: 'top',
+  },
+  selectWrap: {
+    minHeight: 44,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.outlineVariant,
+    backgroundColor: colors.background,
+    justifyContent: 'center',
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  selectChevron: {
+    position: 'absolute',
+    right: 13,
+    top: 9,
+    color: colors.primary,
+    fontFamily: fonts.heading,
+    fontSize: 20,
+    fontWeight: '800',
+    lineHeight: 22,
   },
   dropdownSelector: {
     flexDirection: 'row',

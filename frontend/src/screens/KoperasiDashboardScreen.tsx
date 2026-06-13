@@ -66,6 +66,15 @@ type DashboardData = {
   koperasiName?: string;
 };
 
+type PendingProposal = {
+  cooperative: string;
+  dateSubmitted?: string;
+  product: string;
+  status?: string;
+  target: string;
+  value: string;
+};
+
 const cardShadow = {
   boxShadow: '0 4px 12px rgba(27, 67, 50, 0.05)',
 } as unknown as ViewStyle;
@@ -119,6 +128,24 @@ function formatDeadline(deadline: string | undefined): string {
   return new Date(parsed).toLocaleDateString('id-ID');
 }
 
+function loadPendingProposals(koperasiName?: string): PendingProposal[] {
+  const proposalsJson = localStorage.getItem('volumemate_proposals');
+  if (!proposalsJson) {
+    return [];
+  }
+
+  try {
+    const proposals = JSON.parse(proposalsJson) as PendingProposal[];
+    return proposals.filter((proposal) => {
+      const isPending = (proposal.status || 'PENDING') === 'PENDING';
+      const isMine = koperasiName ? proposal.cooperative === koperasiName : true;
+      return isPending && isMine;
+    });
+  } catch {
+    return [];
+  }
+}
+
 export function KoperasiDashboardScreen({
   onCollectivePress,
   onLogPress,
@@ -132,6 +159,7 @@ export function KoperasiDashboardScreen({
   const [error, setError] = useState('');
   const [showMutationModal, setShowMutationModal] = useState(false);
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [pendingProposals, setPendingProposals] = useState<PendingProposal[]>([]);
 
   useEffect(() => {
     async function loadData() {
@@ -157,6 +185,7 @@ export function KoperasiDashboardScreen({
         setDashboardData(dash);
         setActivePools(combinedPools);
         setAuditLogs(logs);
+        setPendingProposals(loadPendingProposals(dash.koperasiName));
       } catch (err: unknown) {
         setError(getErrorMessage(err, 'Gagal memuat data dasbor.'));
       } finally {
@@ -244,6 +273,7 @@ export function KoperasiDashboardScreen({
                 data={dashboardData?.rekomendasiVolumeMind}
               />
               <PoolActiveCard onDetailPress={onCollectivePress} pool={currentPool} />
+              <PendingApprovalCard onOpenCollective={onCollectivePress} proposals={pendingProposals} />
             </>
           )}
         </ScrollView>
@@ -505,6 +535,52 @@ function PoolActiveCard({ pool, onDetailPress }: { onDetailPress: () => void; po
   );
 }
 
+function PendingApprovalCard({
+  onOpenCollective,
+  proposals,
+}: {
+  onOpenCollective: () => void;
+  proposals: PendingProposal[];
+}) {
+  return (
+    <View style={styles.pendingSection}>
+      <View style={styles.poolHeader}>
+        <Text style={styles.poolTitle}>Menunggu Approval Supplier</Text>
+        <Pressable accessibilityRole="button" onPress={onOpenCollective}>
+          <Text style={styles.seeAll}>Ajukan Lagi &gt;</Text>
+        </Pressable>
+      </View>
+
+      {proposals.length === 0 ? (
+        <View style={[styles.poolCard, styles.emptyCard]}>
+          <Text style={styles.emptyText}>Belum ada proposal yang menunggu persetujuan supplier.</Text>
+        </View>
+      ) : (
+        <View style={styles.pendingProposalList}>
+          {proposals.map((proposal, index) => (
+            <View key={`${proposal.cooperative}-${proposal.product}-${index}`} style={styles.pendingProposalCard}>
+              <View style={styles.pendingProposalTop}>
+                <View style={{ flex: 1, minWidth: 0 }}>
+                  <Text style={styles.pendingProposalProduct}>{proposal.product}</Text>
+                  <Text style={styles.pendingProposalMeta}>
+                    {proposal.target} - {proposal.value}
+                  </Text>
+                </View>
+                <View style={styles.approvalBadge}>
+                  <Text style={styles.approvalBadgeText}>PENDING</Text>
+                </View>
+              </View>
+              <Text style={styles.pendingProposalDate}>
+                Diajukan {proposal.dateSubmitted || 'hari ini'} - menunggu review supplier
+              </Text>
+            </View>
+          ))}
+        </View>
+      )}
+    </View>
+  );
+}
+
 function getErrorMessage(err: unknown, fallback: string) {
   return err instanceof Error ? err.message : fallback;
 }
@@ -725,6 +801,9 @@ const styles = StyleSheet.create({
   poolSection: {
     gap: 10,
   },
+  pendingSection: {
+    gap: 10,
+  },
   poolHeader: {
     alignItems: 'center',
     flexDirection: 'row',
@@ -883,6 +962,59 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     letterSpacing: 0.4,
     lineHeight: 16,
+  },
+  pendingProposalList: {
+    gap: 10,
+  },
+  pendingProposalCard: {
+    backgroundColor: colors.surfaceCard,
+    borderColor: 'rgba(255, 183, 3, 0.42)',
+    borderRadius: 12,
+    borderWidth: 1,
+    gap: 8,
+    padding: 14,
+    ...cardShadow,
+  },
+  pendingProposalTop: {
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    gap: 10,
+    justifyContent: 'space-between',
+  },
+  pendingProposalProduct: {
+    color: colors.primary,
+    fontFamily: fonts.heading,
+    fontSize: 16,
+    fontWeight: '800',
+    lineHeight: 22,
+  },
+  pendingProposalMeta: {
+    color: colors.onSurfaceVariant,
+    fontFamily: fonts.body,
+    fontSize: 12,
+    fontWeight: '600',
+    lineHeight: 16,
+    marginTop: 2,
+  },
+  approvalBadge: {
+    backgroundColor: 'rgba(255, 183, 3, 0.18)',
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  approvalBadgeText: {
+    color: '#8A5A00',
+    fontFamily: fonts.body,
+    fontSize: 10,
+    fontWeight: '800',
+    lineHeight: 12,
+  },
+  pendingProposalDate: {
+    color: colors.outline,
+    fontFamily: fonts.body,
+    fontSize: 11,
+    fontWeight: '600',
+    lineHeight: 15,
   },
   modalOverlay: {
     position: 'absolute',
