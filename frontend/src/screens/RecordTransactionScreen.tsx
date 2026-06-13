@@ -28,10 +28,6 @@ const cardShadow = {
   boxShadow: '0 4px 12px rgba(27, 67, 50, 0.05)',
 } as unknown as ViewStyle;
 
-function getErrorMessage(error: unknown, fallback: string) {
-  return error instanceof Error ? error.message : fallback;
-}
-
 export function RecordTransactionScreen({
   onCollectivePress,
   onHomePress,
@@ -39,14 +35,35 @@ export function RecordTransactionScreen({
   onLogoutPress,
 }: RecordTransactionScreenProps) {
   const { height } = useWindowDimensions();
+  const [activeTab, setActiveTab] = useState<'pemasukan' | 'pengeluaran'>('pemasukan');
   const [fertilizer, setFertilizer] = useState('Urea');
   const [quantity, setQuantity] = useState('');
   const [supplier, setSupplier] = useState('');
   const [date, setDate] = useState('');
   const [totalPrice, setTotalPrice] = useState('');
+
+  // States for distribution (pengeluaran)
+  const [buyerName, setBuyerName] = useState('');
+  const [pricePerKg, setPricePerKg] = useState('');
+  const [notes, setNotes] = useState('');
+
   const [notice, setNotice] = useState('');
+  const [noticeType, setNoticeType] = useState<'success' | 'error'>('success');
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  // Auto-calculated total price for distribution
+  const computedTotalPriceForDistribution = useMemo(() => {
+    const qty = Number(quantity || 0);
+    const price = Number(pricePerKg || 0);
+    return qty * price;
+  }, [quantity, pricePerKg]);
 
   const estimatedPricePerKg = useMemo(() => {
+    if (activeTab === 'pengeluaran') {
+      const numericPrice = Number(pricePerKg || 0);
+      return `Harga jual: Rp ${numericPrice.toLocaleString('id-ID')} /kg`;
+    }
+
     const numericTotal = Number(totalPrice || 0);
     const numericQuantity = Number(quantity || 0);
 
@@ -55,34 +72,78 @@ export function RecordTransactionScreen({
     }
 
     return `Estimasi Rp ${Math.round(numericTotal / numericQuantity).toLocaleString('id-ID')} /kg`;
-  }, [quantity, totalPrice]);
+  }, [quantity, totalPrice, pricePerKg, activeTab]);
 
   const saveTransaction = async () => {
-    if (!quantity || !supplier || !date || !totalPrice) {
-      setNotice('Semua field wajib diisi.');
-      window.setTimeout(() => setNotice(''), 2600);
-      return;
-    }
+    if (activeTab === 'pemasukan') {
+      if (!quantity || !supplier || !date || !totalPrice) {
+        setNoticeType('error');
+        setNotice('Semua field wajib diisi.');
+        window.setTimeout(() => setNotice(''), 2600);
+        return;
+      }
 
-    try {
-      setNotice('Menyimpan transaksi...');
-      await api.recordTransaction({
-        jenisPupuk: fertilizer,
-        quantity: Number(quantity),
-        supplierName: supplier,
-        tanggal: date,
-        totalPrice: Number(totalPrice),
-      });
-      setNotice('Transaksi manual berhasil disimpan!');
-      setQuantity('');
-      setSupplier('');
-      setDate('');
-      setTotalPrice('');
-      window.setTimeout(() => setNotice(''), 2600);
-    } catch (err: unknown) {
-      setNotice(getErrorMessage(err, 'Gagal menyimpan transaksi.'));
-      window.setTimeout(() => setNotice(''), 3500);
+      try {
+        await api.recordTransaction({
+          jenisPupuk: fertilizer,
+          quantity: Number(quantity),
+          supplierName: supplier,
+          tanggal: date,
+          totalPrice: Number(totalPrice),
+        });
+        setShowSuccessModal(true);
+        setQuantity('');
+        setSupplier('');
+        setDate('');
+        setTotalPrice('');
+        window.setTimeout(() => setShowSuccessModal(false), 2600);
+      } catch (err: unknown) {
+        setNoticeType('error');
+        setNotice(getErrorMessage(err, 'Gagal menyimpan transaksi.'));
+        window.setTimeout(() => setNotice(''), 3500);
+      }
+    } else {
+      // activeTab === 'pengeluaran'
+      if (!quantity || !buyerName || !date || !pricePerKg) {
+        setNoticeType('error');
+        setNotice('Semua field wajib diisi.');
+        window.setTimeout(() => setNotice(''), 2600);
+        return;
+      }
+
+      try {
+        await api.recordDistribution({
+          jenisPupuk: fertilizer,
+          quantity: Number(quantity),
+          buyerName,
+          tanggal: date,
+          pricePerKg: Number(pricePerKg),
+          notes: notes || undefined,
+        });
+        setShowSuccessModal(true);
+        setQuantity('');
+        setBuyerName('');
+        setDate('');
+        setPricePerKg('');
+        setNotes('');
+        window.setTimeout(() => setShowSuccessModal(false), 2600);
+      } catch (err: unknown) {
+        setNoticeType('error');
+        setNotice(getErrorMessage(err, 'Gagal menyimpan penyaluran.'));
+        window.setTimeout(() => setNotice(''), 3500);
+      }
     }
+  };
+
+  const handleTabChange = (tab: 'pemasukan' | 'pengeluaran') => {
+    setActiveTab(tab);
+    setQuantity('');
+    setSupplier('');
+    setDate('');
+    setTotalPrice('');
+    setBuyerName('');
+    setPricePerKg('');
+    setNotes('');
   };
 
   return (
@@ -90,21 +151,59 @@ export function RecordTransactionScreen({
       <View style={[styles.shell, { height }]}>
         <MainHeader onLogoutPress={onLogoutPress} />
 
+        {showSuccessModal ? (
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.checkmarkCircle}>
+                <Text style={styles.checkmarkText}>✓</Text>
+              </View>
+              <Text style={styles.modalTitle}>Penyimpanan Berhasil!</Text>
+              <Text style={styles.modalDescription}>
+                {activeTab === 'pemasukan'
+                  ? 'Data transaksi manual telah berhasil disimpan ke database.'
+                  : 'Data penyaluran ke petani telah berhasil disimpan ke database.'}
+              </Text>
+            </View>
+          </View>
+        ) : null}
+
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
           style={styles.content}
         >
           <View style={styles.hero}>
-            <Text style={styles.title}>Catat Transaksi Manual</Text>
+            <Text style={styles.title}>Pencatatan Transaksi</Text>
             <Text style={styles.subtitle}>
-              Masukkan detail pengadaan pupuk untuk dicatat dalam log koperasi.
+              Catat pengadaan pupuk (masuk) atau penyaluran ke petani (keluar).
             </Text>
           </View>
 
+          <View style={styles.tabs}>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => handleTabChange('pemasukan')}
+              style={[styles.tabButton, activeTab === 'pemasukan' && styles.tabButtonActive]}
+            >
+              <Text style={[styles.tabText, activeTab === 'pemasukan' && styles.tabTextActive]}>Pemasukan (Beli)</Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => handleTabChange('pengeluaran')}
+              style={[styles.tabButton, activeTab === 'pengeluaran' && styles.tabButtonActive]}
+            >
+              <Text style={[styles.tabText, activeTab === 'pengeluaran' && styles.tabTextActive]}>Pengeluaran (Jual)</Text>
+            </Pressable>
+          </View>
+
           {notice ? (
-            <View style={styles.notice}>
-              <Text style={styles.noticeText}>{notice}</Text>
+            <View
+              style={[
+                styles.notice,
+                noticeType === 'error' && { backgroundColor: '#F8D7DA', borderColor: '#F5C6CB' },
+              ]}
+            >
+              <Text style={[styles.noticeText, noticeType === 'error' && { color: '#721C24' }]}>{notice}</Text>
             </View>
           ) : null}
 
@@ -139,28 +238,82 @@ export function RecordTransactionScreen({
               value={quantity}
             />
 
-            <Field
-              label="Nama Supplier"
-              onChangeText={setSupplier}
-              placeholder="Masukkan nama supplier"
-              value={supplier}
-            />
-
-            <Field label="Tanggal Transaksi" onChangeText={setDate} placeholder="2026-10-15" value={date} />
-
-            <Field
-              inputMode="numeric"
-              label="Total Harga (Rp)"
-              onChangeText={setTotalPrice}
-              placeholder="0"
-              prefix="Rp"
-              value={totalPrice}
-            />
+            {activeTab === 'pemasukan' ? (
+              <>
+                <Field
+                  label="Nama Supplier"
+                  onChangeText={setSupplier}
+                  placeholder="Masukkan nama supplier"
+                  value={supplier}
+                />
+                <Field
+                  label="Tanggal Transaksi"
+                  onChangeText={setDate}
+                  placeholder="2026-10-15"
+                  value={date}
+                  type="date"
+                />
+                <Field
+                  inputMode="numeric"
+                  label="Total Harga (Rp)"
+                  onChangeText={setTotalPrice}
+                  placeholder="0"
+                  prefix="Rp"
+                  value={totalPrice}
+                />
+              </>
+            ) : (
+              <>
+                <Field
+                  label="Nama Petani/Pembeli"
+                  onChangeText={setBuyerName}
+                  placeholder="Masukkan nama petani/pembeli"
+                  value={buyerName}
+                />
+                <Field
+                  label="Tanggal Penyaluran"
+                  onChangeText={setDate}
+                  placeholder="2026-10-15"
+                  value={date}
+                  type="date"
+                />
+                <Field
+                  inputMode="numeric"
+                  label="Harga Jual/kg (Rp)"
+                  onChangeText={setPricePerKg}
+                  placeholder="0"
+                  prefix="Rp"
+                  value={pricePerKg}
+                />
+                <Field
+                  label="Total Terima (Rp)"
+                  onChangeText={() => {}}
+                  placeholder="0"
+                  prefix="Rp"
+                  value={computedTotalPriceForDistribution > 0 ? computedTotalPriceForDistribution.toLocaleString('id-ID') : '0'}
+                  readOnly
+                />
+                <Field
+                  label="Catatan (Opsional)"
+                  onChangeText={setNotes}
+                  placeholder="Contoh: Petani dari Blok B"
+                  value={notes}
+                />
+              </>
+            )}
 
             <View style={styles.summaryBox}>
               <View>
                 <Text style={styles.summaryLabel}>Ringkasan</Text>
-                <Text style={styles.summaryValue}>{fertilizer} dari {supplier || 'supplier belum diisi'}</Text>
+                {activeTab === 'pemasukan' ? (
+                  <Text style={styles.summaryValue}>
+                    {fertilizer} dari {supplier || 'supplier belum diisi'}
+                  </Text>
+                ) : (
+                  <Text style={styles.summaryValue}>
+                    Penyaluran {fertilizer} ke {buyerName || 'pembeli belum diisi'}
+                  </Text>
+                )}
               </View>
               <Text style={styles.summaryHint}>{estimatedPricePerKg}</Text>
             </View>
@@ -170,7 +323,9 @@ export function RecordTransactionScreen({
                 <View style={styles.saveIconTop} />
                 <View style={styles.saveIconLine} />
               </View>
-              <Text style={styles.saveText}>Simpan Transaksi</Text>
+              <Text style={styles.saveText}>
+                {activeTab === 'pemasukan' ? 'Simpan Transaksi Masuk' : 'Simpan Transaksi Keluar'}
+              </Text>
             </Pressable>
           </View>
         </ScrollView>
@@ -197,23 +352,50 @@ type FieldProps = {
   placeholder: string;
   prefix?: string;
   value: string;
+  type?: string;
+  readOnly?: boolean;
 };
 
-function Field({ inputMode = 'text', label, onChangeText, placeholder, prefix, value }: FieldProps) {
+function Field({ inputMode = 'text', label, onChangeText, placeholder, prefix, value, type, readOnly }: FieldProps) {
   return (
     <View style={styles.fieldGroup}>
       <Text style={styles.label}>{label}</Text>
-      <View style={styles.inputWrap}>
+      <View style={[styles.inputWrap, readOnly && { backgroundColor: colors.surfaceContainerLow }]}>
         {prefix ? <Text style={styles.prefix}>{prefix}</Text> : null}
-        <TextInput
-          accessibilityLabel={label}
-          inputMode={inputMode}
-          onChangeText={onChangeText}
-          placeholder={placeholder}
-          placeholderTextColor={colors.outline}
-          style={[styles.input, prefix ? styles.inputWithPrefix : undefined]}
-          value={value}
-        />
+        {type === 'date' ? (
+          <input
+            type="date"
+            value={value}
+            disabled={readOnly}
+            onChange={(e) => onChangeText(e.target.value)}
+            placeholder={placeholder}
+            style={{
+              flex: 1,
+              color: colors.onSurface,
+              fontFamily: fonts.body,
+              fontSize: '14px',
+              height: '46px',
+              paddingLeft: '14px',
+              paddingRight: '14px',
+              border: 'none',
+              outline: 'none',
+              backgroundColor: 'transparent',
+              width: '100%',
+              boxSizing: 'border-box',
+            }}
+          />
+        ) : (
+          <TextInput
+            accessibilityLabel={label}
+            inputMode={inputMode}
+            onChangeText={onChangeText}
+            placeholder={placeholder}
+            placeholderTextColor={colors.outline}
+            style={[styles.input, prefix ? styles.inputWithPrefix : undefined]}
+            value={value}
+            readOnly={readOnly}
+          />
+        )}
       </View>
     </View>
   );
@@ -254,6 +436,35 @@ const styles = StyleSheet.create({
     fontFamily: fonts.body,
     fontSize: 14,
     lineHeight: 20,
+  },
+  tabs: {
+    flexDirection: 'row',
+    backgroundColor: colors.surfaceContainerLow,
+    borderRadius: 10,
+    padding: 4,
+    marginBottom: 4,
+  },
+  tabButton: {
+    flex: 1,
+    minHeight: 38,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+  },
+  tabButtonActive: {
+    backgroundColor: colors.surfaceCard,
+    ...cardShadow,
+  },
+  tabText: {
+    color: colors.onSurfaceVariant,
+    fontFamily: fonts.body,
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.3,
+    lineHeight: 16,
+  },
+  tabTextActive: {
+    color: colors.primary,
   },
   notice: {
     backgroundColor: colors.secondaryContainer,
@@ -335,6 +546,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     height: 48,
     paddingHorizontal: 14,
+    borderWidth: 0,
+    outlineWidth: 0,
+    backgroundColor: 'transparent',
   },
   inputWithPrefix: {
     paddingLeft: 8,
@@ -420,5 +634,54 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 0.4,
     lineHeight: 16,
+  },
+  modalOverlay: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+  },
+  modalContent: {
+    width: 280,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 32,
+    alignItems: 'center',
+    boxShadow: '0 12px 40px rgba(0, 0, 0, 0.25)',
+  },
+  checkmarkCircle: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: '#28A745',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+    boxShadow: '0 4px 16px rgba(40, 167, 69, 0.35)',
+  },
+  checkmarkText: {
+    fontSize: 36,
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+  },
+  modalTitle: {
+    fontFamily: fonts.heading,
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1A1C1E',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  modalDescription: {
+    fontFamily: fonts.body,
+    fontSize: 13,
+    color: '#6B7280',
+    textAlign: 'center',
+    lineHeight: 19,
   },
 });

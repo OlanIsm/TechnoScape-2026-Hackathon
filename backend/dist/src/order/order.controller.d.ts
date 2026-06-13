@@ -32,6 +32,19 @@ export declare class OrderController {
         totalPrice: number;
         collectivePoolId: string | null;
     }>;
+    createDistribution(req: any, jenisPupuk: string, quantity: number, buyerName: string, tanggal: string, pricePerKg: number, notes?: string): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        koperasiId: string;
+        productId: string;
+        totalPrice: number;
+        quantity: number;
+        pricePerKg: number;
+        buyerName: string;
+        tanggal: Date;
+        notes: string | null;
+    }>;
     confirmOrder(id: string, userId?: string): Promise<{
         id: string;
         createdAt: Date;

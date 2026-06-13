@@ -14,8 +14,8 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 print("=== VolumeMind: Menjalankan Pelatihan Model AI (Optimasi Gradient Boosting) ===")
 
 # 1. Memuat dataset
-print(" Membaca dataset 'volumemate_dataset_final.csv'...")
-df = pd.read_csv('volumemate_dataset_final.csv')
+print(" Membaca dataset 'volumemate_dataset_updated.csv'...")
+df = pd.read_csv('volumemate_dataset_updated.csv')
 
 # Ekstraksi tahun dan bulan dari tanggal untuk pelatihan dan split
 df['tanggal'] = pd.to_datetime(df['tanggal'])
@@ -33,7 +33,7 @@ df['curah_hujan_mm'] = df.apply(
 # 3. Menentukan fitur (X) dan target (y)
 # Catatan: Fitur 'tahun' dihapus agar model stabil memprediksi masa depan (mencegah bug ekstrapolasi pohon)
 X = df[['bulan', 'id_koperasi', 'jenis_pupuk', 'curah_hujan_mm', 'musim_tanam', 'luas_lahan_hektar']]
-y = df['volume_kebutuhan_kg']
+y = df['volume_penyaluran_kg']
 
 # 4. Pemisahan data kronologis (Time-Based Split)
 print(" Membagi data menjadi Train (2021-2024) dan Test (2025)...")

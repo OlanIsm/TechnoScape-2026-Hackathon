@@ -111,8 +111,9 @@ let AuthService = class AuthService {
             where: { id },
             include: { koperasi: true },
         });
-        if (!user)
-            return null;
+        if (!user) {
+            throw new common_1.UnauthorizedException('User tidak ditemukan. Silakan login kembali.');
+        }
         const { password, ...userWithoutPassword } = user;
         return userWithoutPassword;
     }

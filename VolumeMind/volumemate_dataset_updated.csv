@@ -1,0 +1,661 @@
+tanggal,id_koperasi,jenis_pupuk,curah_hujan_mm,musim_tanam,luas_lahan_hektar,volume_penyaluran_kg,volume_pengadaan_kg,total_biaya_pengadaan_rp,total_pendapatan_rp
+2021-01-01,Koperasi Sumber Makmur,Pupuk Urea Granul,258,Rendengan,500,52965.4,52250,365750000,476688600.0
+2021-01-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,258,Rendengan,500,32998.1,35300,247100000,296982900.0
+2021-01-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,258,Rendengan,500,12364.6,12000,93600000,111281400.0
+2021-01-01,Koperasi Sumber Makmur,Pupuk ZA,258,Rendengan,500,12398.1,12600,98280000,111582900.0
+2021-01-01,Koperasi Sumber Makmur,Pupuk Organik Cair,258,Rendengan,500,11607.2,12550,97890000,174108000.0
+2021-01-01,Koperasi Tani Jaya,Pupuk Urea Granul,277,Rendengan,300,32819.5,36650,256550000,295375500.0
+2021-01-01,Koperasi Tani Jaya,Pupuk NPK Phonska,277,Rendengan,300,17671.3,17450,122150000,159041700.0
+2021-01-01,Koperasi Tani Jaya,Pupuk SP-36 Super,277,Rendengan,300,7025.1,7100,55380000,63225900.0
+2021-01-01,Koperasi Tani Jaya,Pupuk ZA,277,Rendengan,300,7537.1,7800,60840000,67833900.0
+2021-01-01,Koperasi Tani Jaya,Pupuk Organik Cair,277,Rendengan,300,7186.8,7700,60060000,107802000.0
+2021-02-01,Koperasi Sumber Makmur,Pupuk Urea Granul,261,Rendengan,500,45466.7,52050,364350000,409200300.0
+2021-02-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,261,Rendengan,500,29579.8,28650,200550000,266218200.0
+2021-02-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,261,Rendengan,500,12796.0,13150,102570000,115164000.0
+2021-02-01,Koperasi Sumber Makmur,Pupuk ZA,261,Rendengan,500,13708.1,14300,111540000,123372900.0
+2021-02-01,Koperasi Sumber Makmur,Pupuk Organik Cair,261,Rendengan,500,13399.9,14550,113490000,200998500.0
+2021-02-01,Koperasi Tani Jaya,Pupuk Urea Granul,233,Rendengan,300,27390.3,31200,218400000,246512700.0
+2021-02-01,Koperasi Tani Jaya,Pupuk NPK Phonska,233,Rendengan,300,20496.1,22800,159600000,184464900.0
+2021-02-01,Koperasi Tani Jaya,Pupuk SP-36 Super,233,Rendengan,300,7206.9,7000,54600000,64862100.0
+2021-02-01,Koperasi Tani Jaya,Pupuk ZA,233,Rendengan,300,7776.3,8050,62790000,69986700.0
+2021-02-01,Koperasi Tani Jaya,Pupuk Organik Cair,233,Rendengan,300,6933.1,7250,56550000,103996500.0
+2021-03-01,Koperasi Sumber Makmur,Pupuk Urea Granul,266,Rendengan,500,46733.6,48050,336350000,420602400.0
+2021-03-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,266,Rendengan,500,29264.0,32200,225400000,263376000.0
+2021-03-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,266,Rendengan,500,12312.9,12200,95160000,110816100.0
+2021-03-01,Koperasi Sumber Makmur,Pupuk ZA,266,Rendengan,500,12669.3,12100,94380000,114023700.0
+2021-03-01,Koperasi Sumber Makmur,Pupuk Organik Cair,266,Rendengan,500,13355.7,13900,108420000,200335500.0
+2021-03-01,Koperasi Tani Jaya,Pupuk Urea Granul,234,Rendengan,300,32369.0,34600,242200000,291321000.0
+2021-03-01,Koperasi Tani Jaya,Pupuk NPK Phonska,234,Rendengan,300,20332.0,19700,137900000,182988000.0
+2021-03-01,Koperasi Tani Jaya,Pupuk SP-36 Super,234,Rendengan,300,7044.0,6750,52650000,63396000.0
+2021-03-01,Koperasi Tani Jaya,Pupuk ZA,234,Rendengan,300,7238.0,7450,58110000,65142000.0
+2021-03-01,Koperasi Tani Jaya,Pupuk Organik Cair,234,Rendengan,300,7157.0,8000,62400000,107355000.0
+2021-04-01,Koperasi Sumber Makmur,Pupuk Urea Granul,115,Gadu,500,37163.7,39800,278600000,334473300.0
+2021-04-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,115,Gadu,500,20298.0,20500,143500000,182682000.0
+2021-04-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,115,Gadu,500,7931.0,7550,58890000,71379000.0
+2021-04-01,Koperasi Sumber Makmur,Pupuk ZA,115,Gadu,500,8369.8,8600,67080000,75328200.0
+2021-04-01,Koperasi Sumber Makmur,Pupuk Organik Cair,115,Gadu,500,8148.9,7750,60450000,122233500.0
+2021-04-01,Koperasi Tani Jaya,Pupuk Urea Granul,145,Gadu,300,21244.0,23300,163100000,191196000.0
+2021-04-01,Koperasi Tani Jaya,Pupuk NPK Phonska,145,Gadu,300,13441.7,12950,101010000,120975300.0
+2021-04-01,Koperasi Tani Jaya,Pupuk SP-36 Super,145,Gadu,300,4955.6,4800,40800000,44600400.0
+2021-04-01,Koperasi Tani Jaya,Pupuk ZA,145,Gadu,300,5470.4,5900,46020000,49233600.0
+2021-04-01,Koperasi Tani Jaya,Pupuk Organik Cair,145,Gadu,300,4927.5,4750,40375000,73912500.0
+2021-05-01,Koperasi Sumber Makmur,Pupuk Urea Granul,112,Gadu,500,35148.1,38050,266350000,316332900.0
+2021-05-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,112,Gadu,500,21638.0,21750,152250000,194742000.0
+2021-05-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,112,Gadu,500,8604.1,8850,69030000,77436900.0
+2021-05-01,Koperasi Sumber Makmur,Pupuk ZA,112,Gadu,500,9301.9,10400,81120000,83717100.0
+2021-05-01,Koperasi Sumber Makmur,Pupuk Organik Cair,112,Gadu,500,8876.9,8850,69030000,133153500.0
+2021-05-01,Koperasi Tani Jaya,Pupuk Urea Granul,108,Gadu,300,20374.7,21500,150500000,183372300.0
+2021-05-01,Koperasi Tani Jaya,Pupuk NPK Phonska,108,Gadu,300,12565.2,12000,93600000,113086800.0
+2021-05-01,Koperasi Tani Jaya,Pupuk SP-36 Super,108,Gadu,300,4700.0,4500,38250000,42300000.0
+2021-05-01,Koperasi Tani Jaya,Pupuk ZA,108,Gadu,300,5239.1,5300,41340000,47151900.0
+2021-05-01,Koperasi Tani Jaya,Pupuk Organik Cair,108,Gadu,300,5108.7,5800,45240000,76630500.0
+2021-06-01,Koperasi Sumber Makmur,Pupuk Urea Granul,112,Gadu,500,34710.0,36700,256900000,312390000.0
+2021-06-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,112,Gadu,500,19988.0,22750,159250000,179892000.0
+2021-06-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,112,Gadu,500,8668.1,9450,73710000,78012900.0
+2021-06-01,Koperasi Sumber Makmur,Pupuk ZA,112,Gadu,500,9146.8,9850,76830000,82321200.0
+2021-06-01,Koperasi Sumber Makmur,Pupuk Organik Cair,112,Gadu,500,8152.6,7900,61620000,122289000.0
+2021-06-01,Koperasi Tani Jaya,Pupuk Urea Granul,122,Gadu,300,21639.0,21350,149450000,194751000.0
+2021-06-01,Koperasi Tani Jaya,Pupuk NPK Phonska,122,Gadu,300,13751.0,14550,113490000,123759000.0
+2021-06-01,Koperasi Tani Jaya,Pupuk SP-36 Super,122,Gadu,300,5413.6,6100,47580000,48722400.0
+2021-06-01,Koperasi Tani Jaya,Pupuk ZA,122,Gadu,300,4914.4,4800,40800000,44229600.0
+2021-06-01,Koperasi Tani Jaya,Pupuk Organik Cair,122,Gadu,300,4822.5,5000,39000000,72337500.0
+2021-07-01,Koperasi Sumber Makmur,Pupuk Urea Granul,141,Gadu,500,32997.5,33350,233450000,296977500.0
+2021-07-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,141,Gadu,500,19824.8,20950,146650000,178423200.0
+2021-07-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,141,Gadu,500,8474.2,9200,71760000,76267800.0
+2021-07-01,Koperasi Sumber Makmur,Pupuk ZA,141,Gadu,500,8108.0,8100,63180000,72972000.0
+2021-07-01,Koperasi Sumber Makmur,Pupuk Organik Cair,141,Gadu,500,7936.1,7900,61620000,119041500.0
+2021-07-01,Koperasi Tani Jaya,Pupuk Urea Granul,118,Gadu,300,21228.3,21700,151900000,191054700.0
+2021-07-01,Koperasi Tani Jaya,Pupuk NPK Phonska,118,Gadu,300,13953.0,15950,111650000,125577000.0
+2021-07-01,Koperasi Tani Jaya,Pupuk SP-36 Super,118,Gadu,300,4846.8,5100,39780000,43621200.0
+2021-07-01,Koperasi Tani Jaya,Pupuk ZA,118,Gadu,300,4896.9,4950,42075000,44072100.0
+2021-07-01,Koperasi Tani Jaya,Pupuk Organik Cair,118,Gadu,300,4627.6,4950,42075000,69414000.0
+2021-08-01,Koperasi Sumber Makmur,Pupuk Urea Granul,21,Paceklik,500,9822.1,9400,73320000,88398900.0
+2021-08-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,21,Paceklik,500,6056.3,6500,50700000,54506700.0
+2021-08-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,21,Paceklik,500,2590.4,2750,23375000,23313600.0
+2021-08-01,Koperasi Sumber Makmur,Pupuk ZA,21,Paceklik,500,2473.9,2600,22100000,22265100.0
+2021-08-01,Koperasi Sumber Makmur,Pupuk Organik Cair,21,Paceklik,500,2546.3,2450,20825000,38194500.0
+2021-08-01,Koperasi Tani Jaya,Pupuk Urea Granul,80,Paceklik,300,5685.2,6250,48750000,51166800.0
+2021-08-01,Koperasi Tani Jaya,Pupuk NPK Phonska,80,Paceklik,300,3650.8,3950,33575000,32857200.0
+2021-08-01,Koperasi Tani Jaya,Pupuk SP-36 Super,80,Paceklik,300,1540.1,1650,14025000,13860900.0
+2021-08-01,Koperasi Tani Jaya,Pupuk ZA,80,Paceklik,300,1377.1,1550,13175000,12393900.0
+2021-08-01,Koperasi Tani Jaya,Pupuk Organik Cair,80,Paceklik,300,1446.2,1450,12325000,21693000.0
+2021-09-01,Koperasi Sumber Makmur,Pupuk Urea Granul,48,Paceklik,500,10716.7,10900,85020000,96450300.0
+2021-09-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,48,Paceklik,500,5900.3,6450,50310000,53102700.0
+2021-09-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,48,Paceklik,500,2654.8,2700,22950000,23893200.0
+2021-09-01,Koperasi Sumber Makmur,Pupuk ZA,48,Paceklik,500,2298.1,2600,22100000,20682900.0
+2021-09-01,Koperasi Sumber Makmur,Pupuk Organik Cair,48,Paceklik,500,2448.8,2600,22100000,36732000.0
+2021-09-01,Koperasi Tani Jaya,Pupuk Urea Granul,64,Paceklik,300,5565.0,5650,44070000,50085000.0
+2021-09-01,Koperasi Tani Jaya,Pupuk NPK Phonska,64,Paceklik,300,3460.1,3950,33575000,31140900.0
+2021-09-01,Koperasi Tani Jaya,Pupuk SP-36 Super,64,Paceklik,300,1613.2,1600,13600000,14518800.0
+2021-09-01,Koperasi Tani Jaya,Pupuk ZA,64,Paceklik,300,1548.0,1700,14450000,13932000.0
+2021-09-01,Koperasi Tani Jaya,Pupuk Organik Cair,64,Paceklik,300,1516.6,1600,13600000,22749000.0
+2021-10-01,Koperasi Sumber Makmur,Pupuk Urea Granul,21,Paceklik,500,10992.5,12550,97890000,98932500.0
+2021-10-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,21,Paceklik,500,6322.9,7100,55380000,56906100.0
+2021-10-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,21,Paceklik,500,2344.4,2350,19975000,21099600.0
+2021-10-01,Koperasi Sumber Makmur,Pupuk ZA,21,Paceklik,500,2600.2,2900,24650000,23401800.0
+2021-10-01,Koperasi Sumber Makmur,Pupuk Organik Cair,21,Paceklik,500,2678.2,2750,23375000,40173000.0
+2021-10-01,Koperasi Tani Jaya,Pupuk Urea Granul,57,Paceklik,300,6170.4,5950,46410000,55533600.0
+2021-10-01,Koperasi Tani Jaya,Pupuk NPK Phonska,57,Paceklik,300,3496.2,3950,33575000,31465800.0
+2021-10-01,Koperasi Tani Jaya,Pupuk SP-36 Super,57,Paceklik,300,1531.9,1450,12325000,13787100.0
+2021-10-01,Koperasi Tani Jaya,Pupuk ZA,57,Paceklik,300,1380.4,1500,12750000,12423600.0
+2021-10-01,Koperasi Tani Jaya,Pupuk Organik Cair,57,Paceklik,300,1351.5,1350,11475000,20272500.0
+2021-11-01,Koperasi Sumber Makmur,Pupuk Urea Granul,237,Rendengan,500,49856.1,51850,362950000,448704900.0
+2021-11-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,237,Rendengan,500,34340.4,33850,236950000,309063600.0
+2021-11-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,237,Rendengan,500,11295.2,11850,92430000,101656800.0
+2021-11-01,Koperasi Sumber Makmur,Pupuk ZA,237,Rendengan,500,11697.1,11950,93210000,105273900.0
+2021-11-01,Koperasi Sumber Makmur,Pupuk Organik Cair,237,Rendengan,500,13110.4,14350,111930000,196656000.0
+2021-11-01,Koperasi Tani Jaya,Pupuk Urea Granul,257,Rendengan,300,30255.2,31800,222600000,272296800.0
+2021-11-01,Koperasi Tani Jaya,Pupuk NPK Phonska,257,Rendengan,300,19261.2,19250,134750000,173350800.0
+2021-11-01,Koperasi Tani Jaya,Pupuk SP-36 Super,257,Rendengan,300,7634.8,8750,68250000,68713200.0
+2021-11-01,Koperasi Tani Jaya,Pupuk ZA,257,Rendengan,300,7480.1,8450,65910000,67320900.0
+2021-11-01,Koperasi Tani Jaya,Pupuk Organik Cair,257,Rendengan,300,7401.6,7550,58890000,111024000.0
+2021-12-01,Koperasi Sumber Makmur,Pupuk Urea Granul,252,Rendengan,500,50769.0,53250,372750000,456921000.0
+2021-12-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,252,Rendengan,500,29345.3,32100,224700000,264107700.0
+2021-12-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,252,Rendengan,500,11951.9,11400,88920000,107567100.0
+2021-12-01,Koperasi Sumber Makmur,Pupuk ZA,252,Rendengan,500,12863.7,12700,99060000,115773300.0
+2021-12-01,Koperasi Sumber Makmur,Pupuk Organik Cair,252,Rendengan,500,13601.1,15500,108500000,204016500.0
+2021-12-01,Koperasi Tani Jaya,Pupuk Urea Granul,277,Rendengan,300,32301.0,35500,248500000,290709000.0
+2021-12-01,Koperasi Tani Jaya,Pupuk NPK Phonska,277,Rendengan,300,20449.0,20800,145600000,184041000.0
+2021-12-01,Koperasi Tani Jaya,Pupuk SP-36 Super,277,Rendengan,300,7579.1,8050,62790000,68211900.0
+2021-12-01,Koperasi Tani Jaya,Pupuk ZA,277,Rendengan,300,8220.5,7950,62010000,73984500.0
+2021-12-01,Koperasi Tani Jaya,Pupuk Organik Cair,277,Rendengan,300,7208.5,7100,55380000,108127500.0
+2022-01-01,Koperasi Sumber Makmur,Pupuk Urea Granul,252,Rendengan,500,48169.2,47400,331800000,433522800.0
+2022-01-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,252,Rendengan,500,31605.0,35950,251650000,284445000.0
+2022-01-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,252,Rendengan,500,12990.1,13800,107640000,116910900.0
+2022-01-01,Koperasi Sumber Makmur,Pupuk ZA,252,Rendengan,500,11492.9,12350,96330000,103436100.0
+2022-01-01,Koperasi Sumber Makmur,Pupuk Organik Cair,252,Rendengan,500,13725.1,13400,104520000,205876500.0
+2022-01-01,Koperasi Tani Jaya,Pupuk Urea Granul,251,Rendengan,300,28771.7,29200,204400000,258945300.0
+2022-01-01,Koperasi Tani Jaya,Pupuk NPK Phonska,251,Rendengan,300,20057.5,19600,137200000,180517500.0
+2022-01-01,Koperasi Tani Jaya,Pupuk SP-36 Super,251,Rendengan,300,7813.4,8300,64740000,70320600.0
+2022-01-01,Koperasi Tani Jaya,Pupuk ZA,251,Rendengan,300,7194.8,7450,58110000,64753200.0
+2022-01-01,Koperasi Tani Jaya,Pupuk Organik Cair,251,Rendengan,300,7134.3,7650,59670000,107014500.0
+2022-02-01,Koperasi Sumber Makmur,Pupuk Urea Granul,279,Rendengan,500,50113.4,52650,368550000,451020600.0
+2022-02-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,279,Rendengan,500,33114.3,35750,250250000,298028700.0
+2022-02-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,279,Rendengan,500,13004.9,14400,112320000,117044100.0
+2022-02-01,Koperasi Sumber Makmur,Pupuk ZA,279,Rendengan,500,13475.0,13700,106860000,121275000.0
+2022-02-01,Koperasi Sumber Makmur,Pupuk Organik Cair,279,Rendengan,500,12189.0,11800,92040000,182835000.0
+2022-02-01,Koperasi Tani Jaya,Pupuk Urea Granul,247,Rendengan,300,31032.2,31500,220500000,279289800.0
+2022-02-01,Koperasi Tani Jaya,Pupuk NPK Phonska,247,Rendengan,300,17456.4,20000,140000000,157107600.0
+2022-02-01,Koperasi Tani Jaya,Pupuk SP-36 Super,247,Rendengan,300,8008.4,9000,70200000,72075600.0
+2022-02-01,Koperasi Tani Jaya,Pupuk ZA,247,Rendengan,300,7125.4,6800,53040000,64128600.0
+2022-02-01,Koperasi Tani Jaya,Pupuk Organik Cair,247,Rendengan,300,7204.9,7600,59280000,108073500.0
+2022-03-01,Koperasi Sumber Makmur,Pupuk Urea Granul,256,Rendengan,500,50222.4,55450,388150000,452001600.0
+2022-03-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,256,Rendengan,500,29473.9,31650,221550000,265265100.0
+2022-03-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,256,Rendengan,500,11463.4,11000,85800000,103170600.0
+2022-03-01,Koperasi Sumber Makmur,Pupuk ZA,256,Rendengan,500,12578.4,13300,103740000,113205600.0
+2022-03-01,Koperasi Sumber Makmur,Pupuk Organik Cair,256,Rendengan,500,12843.6,14050,109590000,192654000.0
+2022-03-01,Koperasi Tani Jaya,Pupuk Urea Granul,237,Rendengan,300,32817.2,35850,250950000,295354800.0
+2022-03-01,Koperasi Tani Jaya,Pupuk NPK Phonska,237,Rendengan,300,17029.0,17550,122850000,153261000.0
+2022-03-01,Koperasi Tani Jaya,Pupuk SP-36 Super,237,Rendengan,300,7400.3,8150,63570000,66602700.0
+2022-03-01,Koperasi Tani Jaya,Pupuk ZA,237,Rendengan,300,7126.3,7050,54990000,64136700.0
+2022-03-01,Koperasi Tani Jaya,Pupuk Organik Cair,237,Rendengan,300,6871.3,7100,55380000,103069500.0
+2022-04-01,Koperasi Sumber Makmur,Pupuk Urea Granul,101,Gadu,500,33380.9,32850,229950000,300428100.0
+2022-04-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,101,Gadu,500,19789.9,19800,138600000,178109100.0
+2022-04-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,101,Gadu,500,8583.7,9400,73320000,77253300.0
+2022-04-01,Koperasi Sumber Makmur,Pupuk ZA,101,Gadu,500,8772.3,8800,68640000,78950700.0
+2022-04-01,Koperasi Sumber Makmur,Pupuk Organik Cair,101,Gadu,500,9273.3,10200,79560000,139099500.0
+2022-04-01,Koperasi Tani Jaya,Pupuk Urea Granul,99,Gadu,300,20855.8,21550,150850000,187702200.0
+2022-04-01,Koperasi Tani Jaya,Pupuk NPK Phonska,99,Gadu,300,12106.7,12350,96330000,108960300.0
+2022-04-01,Koperasi Tani Jaya,Pupuk SP-36 Super,99,Gadu,300,5363.0,5100,39780000,48267000.0
+2022-04-01,Koperasi Tani Jaya,Pupuk ZA,99,Gadu,300,4708.4,4500,38250000,42375600.0
+2022-04-01,Koperasi Tani Jaya,Pupuk Organik Cair,99,Gadu,300,4631.5,5200,40560000,69472500.0
+2022-05-01,Koperasi Sumber Makmur,Pupuk Urea Granul,141,Gadu,500,31792.2,30300,212100000,286129800.0
+2022-05-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,141,Gadu,500,22369.3,24850,173950000,201323700.0
+2022-05-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,141,Gadu,500,8238.7,8600,67080000,74148300.0
+2022-05-01,Koperasi Sumber Makmur,Pupuk ZA,141,Gadu,500,8754.6,8400,65520000,78791400.0
+2022-05-01,Koperasi Sumber Makmur,Pupuk Organik Cair,141,Gadu,500,9263.5,10450,81510000,138952500.0
+2022-05-01,Koperasi Tani Jaya,Pupuk Urea Granul,146,Gadu,300,19888.4,21400,149800000,178995600.0
+2022-05-01,Koperasi Tani Jaya,Pupuk NPK Phonska,146,Gadu,300,12758.0,14300,111540000,114822000.0
+2022-05-01,Koperasi Tani Jaya,Pupuk SP-36 Super,146,Gadu,300,5261.9,5150,40170000,47357100.0
+2022-05-01,Koperasi Tani Jaya,Pupuk ZA,146,Gadu,300,4662.0,5050,39390000,41958000.0
+2022-05-01,Koperasi Tani Jaya,Pupuk Organik Cair,146,Gadu,300,4617.0,4950,42075000,69255000.0
+2022-06-01,Koperasi Sumber Makmur,Pupuk Urea Granul,116,Gadu,500,36046.5,39150,274050000,324418500.0
+2022-06-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,116,Gadu,500,21561.8,21050,147350000,194056200.0
+2022-06-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,116,Gadu,500,9029.0,10050,78390000,81261000.0
+2022-06-01,Koperasi Sumber Makmur,Pupuk ZA,116,Gadu,500,8714.1,9700,75660000,78426900.0
+2022-06-01,Koperasi Sumber Makmur,Pupuk Organik Cair,116,Gadu,500,8757.5,8700,67860000,131362500.0
+2022-06-01,Koperasi Tani Jaya,Pupuk Urea Granul,123,Gadu,300,18643.0,18100,126700000,167787000.0
+2022-06-01,Koperasi Tani Jaya,Pupuk NPK Phonska,123,Gadu,300,11521.5,11150,86970000,103693500.0
+2022-06-01,Koperasi Tani Jaya,Pupuk SP-36 Super,123,Gadu,300,5286.7,5100,39780000,47580300.0
+2022-06-01,Koperasi Tani Jaya,Pupuk ZA,123,Gadu,300,4915.4,5500,42900000,44238600.0
+2022-06-01,Koperasi Tani Jaya,Pupuk Organik Cair,123,Gadu,300,4613.7,5150,40170000,69205500.0
+2022-07-01,Koperasi Sumber Makmur,Pupuk Urea Granul,130,Gadu,500,33973.1,37000,259000000,305757900.0
+2022-07-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,130,Gadu,500,20605.4,23450,164150000,185448600.0
+2022-07-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,130,Gadu,500,7716.6,8000,62400000,69449400.0
+2022-07-01,Koperasi Sumber Makmur,Pupuk ZA,130,Gadu,500,9294.9,9850,76830000,83654100.0
+2022-07-01,Koperasi Sumber Makmur,Pupuk Organik Cair,130,Gadu,500,8369.9,8900,69420000,125548500.0
+2022-07-01,Koperasi Tani Jaya,Pupuk Urea Granul,129,Gadu,300,22401.3,23150,162050000,201611700.0
+2022-07-01,Koperasi Tani Jaya,Pupuk NPK Phonska,129,Gadu,300,12423.6,13750,107250000,111812400.0
+2022-07-01,Koperasi Tani Jaya,Pupuk SP-36 Super,129,Gadu,300,4937.6,5600,43680000,44438400.0
+2022-07-01,Koperasi Tani Jaya,Pupuk ZA,129,Gadu,300,5465.6,5650,44070000,49190400.0
+2022-07-01,Koperasi Tani Jaya,Pupuk Organik Cair,129,Gadu,300,5355.9,5900,46020000,80338500.0
+2022-08-01,Koperasi Sumber Makmur,Pupuk Urea Granul,60,Paceklik,500,9755.5,10300,80340000,87799500.0
+2022-08-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,60,Paceklik,500,6245.7,6400,49920000,56211300.0
+2022-08-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,60,Paceklik,500,2398.8,2350,19975000,21589200.0
+2022-08-01,Koperasi Sumber Makmur,Pupuk ZA,60,Paceklik,500,2276.7,2600,22100000,20490300.0
+2022-08-01,Koperasi Sumber Makmur,Pupuk Organik Cair,60,Paceklik,500,2673.6,2750,23375000,40104000.0
+2022-08-01,Koperasi Tani Jaya,Pupuk Urea Granul,52,Paceklik,300,6540.1,7450,58110000,58860900.0
+2022-08-01,Koperasi Tani Jaya,Pupuk NPK Phonska,52,Paceklik,300,3805.1,4100,34850000,34245900.0
+2022-08-01,Koperasi Tani Jaya,Pupuk SP-36 Super,52,Paceklik,300,1484.5,1500,12750000,13360500.0
+2022-08-01,Koperasi Tani Jaya,Pupuk ZA,52,Paceklik,300,1448.6,1550,13175000,13037400.0
+2022-08-01,Koperasi Tani Jaya,Pupuk Organik Cair,52,Paceklik,300,1575.7,1750,14875000,23635500.0
+2022-09-01,Koperasi Sumber Makmur,Pupuk Urea Granul,76,Paceklik,500,9226.9,10500,81900000,83042100.0
+2022-09-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,76,Paceklik,500,6842.8,7850,61230000,61585200.0
+2022-09-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,76,Paceklik,500,2277.9,2500,21250000,20501100.0
+2022-09-01,Koperasi Sumber Makmur,Pupuk ZA,76,Paceklik,500,2523.0,2750,23375000,22707000.0
+2022-09-01,Koperasi Sumber Makmur,Pupuk Organik Cair,76,Paceklik,500,2734.3,2950,25075000,41014500.0
+2022-09-01,Koperasi Tani Jaya,Pupuk Urea Granul,82,Paceklik,300,6141.9,5950,46410000,55277100.0
+2022-09-01,Koperasi Tani Jaya,Pupuk NPK Phonska,82,Paceklik,300,3438.1,3750,31875000,30942900.0
+2022-09-01,Koperasi Tani Jaya,Pupuk SP-36 Super,82,Paceklik,300,1371.8,1550,13175000,12346200.0
+2022-09-01,Koperasi Tani Jaya,Pupuk ZA,82,Paceklik,300,1561.9,1500,12750000,14057100.0
+2022-09-01,Koperasi Tani Jaya,Pupuk Organik Cair,82,Paceklik,300,1375.5,1600,13600000,20632500.0
+2022-10-01,Koperasi Sumber Makmur,Pupuk Urea Granul,67,Paceklik,500,10726.3,12100,94380000,96536700.0
+2022-10-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,67,Paceklik,500,5920.9,6700,52260000,53288100.0
+2022-10-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,67,Paceklik,500,2545.9,2600,22100000,22913100.0
+2022-10-01,Koperasi Sumber Makmur,Pupuk ZA,67,Paceklik,500,2604.1,2700,22950000,23436900.0
+2022-10-01,Koperasi Sumber Makmur,Pupuk Organik Cair,67,Paceklik,500,2439.0,2650,22525000,36585000.0
+2022-10-01,Koperasi Tani Jaya,Pupuk Urea Granul,34,Paceklik,300,6487.6,6300,49140000,58388400.0
+2022-10-01,Koperasi Tani Jaya,Pupuk NPK Phonska,34,Paceklik,300,3744.5,3550,30175000,33700500.0
+2022-10-01,Koperasi Tani Jaya,Pupuk SP-36 Super,34,Paceklik,300,1490.6,1450,12325000,13415400.0
+2022-10-01,Koperasi Tani Jaya,Pupuk ZA,34,Paceklik,300,1385.6,1350,11475000,12470400.0
+2022-10-01,Koperasi Tani Jaya,Pupuk Organik Cair,34,Paceklik,300,1544.8,1700,14450000,23172000.0
+2022-11-01,Koperasi Sumber Makmur,Pupuk Urea Granul,232,Rendengan,500,47375.1,48800,341600000,426375900.0
+2022-11-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,232,Rendengan,500,31110.7,30050,210350000,279996300.0
+2022-11-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,232,Rendengan,500,12570.9,13050,101790000,113138100.0
+2022-11-01,Koperasi Sumber Makmur,Pupuk ZA,232,Rendengan,500,13255.3,15200,106400000,119297700.0
+2022-11-01,Koperasi Sumber Makmur,Pupuk Organik Cair,232,Rendengan,500,12640.0,12800,99840000,189600000.0
+2022-11-01,Koperasi Tani Jaya,Pupuk Urea Granul,240,Rendengan,300,30166.2,34650,242550000,271495800.0
+2022-11-01,Koperasi Tani Jaya,Pupuk NPK Phonska,240,Rendengan,300,17151.7,18200,127400000,154365300.0
+2022-11-01,Koperasi Tani Jaya,Pupuk SP-36 Super,240,Rendengan,300,8204.0,8650,67470000,73836000.0
+2022-11-01,Koperasi Tani Jaya,Pupuk ZA,240,Rendengan,300,7694.1,8400,65520000,69246900.0
+2022-11-01,Koperasi Tani Jaya,Pupuk Organik Cair,240,Rendengan,300,7431.8,8000,62400000,111477000.0
+2022-12-01,Koperasi Sumber Makmur,Pupuk Urea Granul,273,Rendengan,500,48842.0,53600,375200000,439578000.0
+2022-12-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,273,Rendengan,500,33845.3,38650,270550000,304607700.0
+2022-12-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,273,Rendengan,500,11394.7,11700,91260000,102552300.0
+2022-12-01,Koperasi Sumber Makmur,Pupuk ZA,273,Rendengan,500,11516.9,11700,91260000,103652100.0
+2022-12-01,Koperasi Sumber Makmur,Pupuk Organik Cair,273,Rendengan,500,11674.2,12600,98280000,175113000.0
+2022-12-01,Koperasi Tani Jaya,Pupuk Urea Granul,232,Rendengan,300,29120.1,31050,217350000,262080900.0
+2022-12-01,Koperasi Tani Jaya,Pupuk NPK Phonska,232,Rendengan,300,17166.5,19650,137550000,154498500.0
+2022-12-01,Koperasi Tani Jaya,Pupuk SP-36 Super,232,Rendengan,300,8229.3,8950,69810000,74063700.0
+2022-12-01,Koperasi Tani Jaya,Pupuk ZA,232,Rendengan,300,7554.1,7650,59670000,67986900.0
+2022-12-01,Koperasi Tani Jaya,Pupuk Organik Cair,232,Rendengan,300,7970.7,8650,67470000,119560500.0
+2023-01-01,Koperasi Sumber Makmur,Pupuk Urea Granul,248,Rendengan,500,46331.9,44700,312900000,416987100.0
+2023-01-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,248,Rendengan,500,34003.3,35150,246050000,306029700.0
+2023-01-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,248,Rendengan,500,12702.9,14400,112320000,114326100.0
+2023-01-01,Koperasi Sumber Makmur,Pupuk ZA,248,Rendengan,500,11456.9,12900,100620000,103112100.0
+2023-01-01,Koperasi Sumber Makmur,Pupuk Organik Cair,248,Rendengan,500,12629.0,12400,96720000,189435000.0
+2023-01-01,Koperasi Tani Jaya,Pupuk Urea Granul,280,Rendengan,300,29258.8,32550,227850000,263329200.0
+2023-01-01,Koperasi Tani Jaya,Pupuk NPK Phonska,280,Rendengan,300,20577.3,20150,141050000,185195700.0
+2023-01-01,Koperasi Tani Jaya,Pupuk SP-36 Super,280,Rendengan,300,7641.2,7850,61230000,68770800.0
+2023-01-01,Koperasi Tani Jaya,Pupuk ZA,280,Rendengan,300,8204.9,9200,71760000,73844100.0
+2023-01-01,Koperasi Tani Jaya,Pupuk Organik Cair,280,Rendengan,300,8007.5,8350,65130000,120112500.0
+2023-02-01,Koperasi Sumber Makmur,Pupuk Urea Granul,254,Rendengan,500,46338.5,44150,309050000,417046500.0
+2023-02-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,254,Rendengan,500,28596.0,31100,217700000,257364000.0
+2023-02-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,254,Rendengan,500,12585.9,13850,108030000,113273100.0
+2023-02-01,Koperasi Sumber Makmur,Pupuk ZA,254,Rendengan,500,13532.9,14450,112710000,121796100.0
+2023-02-01,Koperasi Sumber Makmur,Pupuk Organik Cair,254,Rendengan,500,13065.3,14400,112320000,195979500.0
+2023-02-01,Koperasi Tani Jaya,Pupuk Urea Granul,243,Rendengan,300,28484.1,29650,207550000,256356900.0
+2023-02-01,Koperasi Tani Jaya,Pupuk NPK Phonska,243,Rendengan,300,17359.3,19800,138600000,156233700.0
+2023-02-01,Koperasi Tani Jaya,Pupuk SP-36 Super,243,Rendengan,300,7659.3,7650,59670000,68933700.0
+2023-02-01,Koperasi Tani Jaya,Pupuk ZA,243,Rendengan,300,7757.6,8350,65130000,69818400.0
+2023-02-01,Koperasi Tani Jaya,Pupuk Organik Cair,243,Rendengan,300,7287.2,7100,55380000,109308000.0
+2023-03-01,Koperasi Sumber Makmur,Pupuk Urea Granul,245,Rendengan,500,49981.7,52250,365750000,449835300.0
+2023-03-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,245,Rendengan,500,33321.1,33700,235900000,299889900.0
+2023-03-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,245,Rendengan,500,13291.0,15200,106400000,119619000.0
+2023-03-01,Koperasi Sumber Makmur,Pupuk ZA,245,Rendengan,500,11471.0,12700,99060000,103239000.0
+2023-03-01,Koperasi Sumber Makmur,Pupuk Organik Cair,245,Rendengan,500,12724.9,13300,103740000,190873500.0
+2023-03-01,Koperasi Tani Jaya,Pupuk Urea Granul,247,Rendengan,300,31530.8,33850,236950000,283777200.0
+2023-03-01,Koperasi Tani Jaya,Pupuk NPK Phonska,247,Rendengan,300,19515.3,19350,135450000,175637700.0
+2023-03-01,Koperasi Tani Jaya,Pupuk SP-36 Super,247,Rendengan,300,6954.6,6650,51870000,62591400.0
+2023-03-01,Koperasi Tani Jaya,Pupuk ZA,247,Rendengan,300,7275.9,7750,60450000,65483100.0
+2023-03-01,Koperasi Tani Jaya,Pupuk Organik Cair,247,Rendengan,300,7338.4,7600,59280000,110076000.0
+2023-04-01,Koperasi Sumber Makmur,Pupuk Urea Granul,123,Gadu,500,32968.1,34700,242900000,296712900.0
+2023-04-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,123,Gadu,500,22455.5,23100,161700000,202099500.0
+2023-04-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,123,Gadu,500,8707.5,9750,76050000,78367500.0
+2023-04-01,Koperasi Sumber Makmur,Pupuk ZA,123,Gadu,500,9264.2,9050,70590000,83377800.0
+2023-04-01,Koperasi Sumber Makmur,Pupuk Organik Cair,123,Gadu,500,9225.2,9650,75270000,138378000.0
+2023-04-01,Koperasi Tani Jaya,Pupuk Urea Granul,154,Gadu,300,18630.2,17850,124950000,167671800.0
+2023-04-01,Koperasi Tani Jaya,Pupuk NPK Phonska,154,Gadu,300,13058.1,13300,103740000,117522900.0
+2023-04-01,Koperasi Tani Jaya,Pupuk SP-36 Super,154,Gadu,300,4803.3,5100,39780000,43229700.0
+2023-04-01,Koperasi Tani Jaya,Pupuk ZA,154,Gadu,300,4938.4,5200,40560000,44445600.0
+2023-04-01,Koperasi Tani Jaya,Pupuk Organik Cair,154,Gadu,300,5059.3,5400,42120000,75889500.0
+2023-05-01,Koperasi Sumber Makmur,Pupuk Urea Granul,100,Gadu,500,31544.0,34000,238000000,283896000.0
+2023-05-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,100,Gadu,500,19898.0,20300,142100000,179082000.0
+2023-05-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,100,Gadu,500,9174.5,9600,74880000,82570500.0
+2023-05-01,Koperasi Sumber Makmur,Pupuk ZA,100,Gadu,500,8784.8,8650,67470000,79063200.0
+2023-05-01,Koperasi Sumber Makmur,Pupuk Organik Cair,100,Gadu,500,7976.9,7650,59670000,119653500.0
+2023-05-01,Koperasi Tani Jaya,Pupuk Urea Granul,99,Gadu,300,19767.9,20150,141050000,177911100.0
+2023-05-01,Koperasi Tani Jaya,Pupuk NPK Phonska,99,Gadu,300,11556.1,12250,95550000,104004900.0
+2023-05-01,Koperasi Tani Jaya,Pupuk SP-36 Super,99,Gadu,300,5135.1,5250,40950000,46215900.0
+2023-05-01,Koperasi Tani Jaya,Pupuk ZA,99,Gadu,300,5502.1,5350,41730000,49518900.0
+2023-05-01,Koperasi Tani Jaya,Pupuk Organik Cair,99,Gadu,300,4926.7,5000,39000000,73900500.0
+2023-06-01,Koperasi Sumber Makmur,Pupuk Urea Granul,115,Gadu,500,36036.0,38750,271250000,324324000.0
+2023-06-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,115,Gadu,500,19472.5,21900,153300000,175252500.0
+2023-06-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,115,Gadu,500,9215.5,8850,69030000,82939500.0
+2023-06-01,Koperasi Sumber Makmur,Pupuk ZA,115,Gadu,500,8120.7,9000,70200000,73086300.0
+2023-06-01,Koperasi Sumber Makmur,Pupuk Organik Cair,115,Gadu,500,8922.0,8800,68640000,133830000.0
+2023-06-01,Koperasi Tani Jaya,Pupuk Urea Granul,109,Gadu,300,20549.3,23300,163100000,184943700.0
+2023-06-01,Koperasi Tani Jaya,Pupuk NPK Phonska,109,Gadu,300,12077.1,13300,103740000,108693900.0
+2023-06-01,Koperasi Tani Jaya,Pupuk SP-36 Super,109,Gadu,300,5131.9,5600,43680000,46187100.0
+2023-06-01,Koperasi Tani Jaya,Pupuk ZA,109,Gadu,300,4653.6,4550,38675000,41882400.0
+2023-06-01,Koperasi Tani Jaya,Pupuk Organik Cair,109,Gadu,300,4725.8,5150,40170000,70887000.0
+2023-07-01,Koperasi Sumber Makmur,Pupuk Urea Granul,112,Gadu,500,34079.4,36000,252000000,306714600.0
+2023-07-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,112,Gadu,500,19580.5,20350,142450000,176224500.0
+2023-07-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,112,Gadu,500,8555.4,8550,66690000,76998600.0
+2023-07-01,Koperasi Sumber Makmur,Pupuk ZA,112,Gadu,500,8107.7,8300,64740000,72969300.0
+2023-07-01,Koperasi Sumber Makmur,Pupuk Organik Cair,112,Gadu,500,7684.1,7800,60840000,115261500.0
+2023-07-01,Koperasi Tani Jaya,Pupuk Urea Granul,133,Gadu,300,18724.0,19800,138600000,168516000.0
+2023-07-01,Koperasi Tani Jaya,Pupuk NPK Phonska,133,Gadu,300,12069.7,12300,95940000,108627300.0
+2023-07-01,Koperasi Tani Jaya,Pupuk SP-36 Super,133,Gadu,300,5073.4,5200,40560000,45660600.0
+2023-07-01,Koperasi Tani Jaya,Pupuk ZA,133,Gadu,300,5251.8,5500,42900000,47266200.0
+2023-07-01,Koperasi Tani Jaya,Pupuk Organik Cair,133,Gadu,300,5185.9,5700,44460000,77788500.0
+2023-08-01,Koperasi Sumber Makmur,Pupuk Urea Granul,66,Paceklik,500,10490.9,10850,84630000,94418100.0
+2023-08-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,66,Paceklik,500,5784.5,5800,45240000,52060500.0
+2023-08-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,66,Paceklik,500,2431.5,2600,22100000,21883500.0
+2023-08-01,Koperasi Sumber Makmur,Pupuk ZA,66,Paceklik,500,2535.4,2600,22100000,22818600.0
+2023-08-01,Koperasi Sumber Makmur,Pupuk Organik Cair,66,Paceklik,500,2743.3,2950,25075000,41149500.0
+2023-08-01,Koperasi Tani Jaya,Pupuk Urea Granul,57,Paceklik,300,5409.0,5400,42120000,48681000.0
+2023-08-01,Koperasi Tani Jaya,Pupuk NPK Phonska,57,Paceklik,300,3649.0,3800,32300000,32841000.0
+2023-08-01,Koperasi Tani Jaya,Pupuk SP-36 Super,57,Paceklik,300,1605.2,1550,13175000,14446800.0
+2023-08-01,Koperasi Tani Jaya,Pupuk ZA,57,Paceklik,300,1591.8,1550,13175000,14326200.0
+2023-08-01,Koperasi Tani Jaya,Pupuk Organik Cair,57,Paceklik,300,1602.7,1550,13175000,24040500.0
+2023-09-01,Koperasi Sumber Makmur,Pupuk Urea Granul,50,Paceklik,500,9820.8,11250,87750000,88387200.0
+2023-09-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,50,Paceklik,500,5765.0,5950,46410000,51885000.0
+2023-09-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,50,Paceklik,500,2734.7,3050,25925000,24612300.0
+2023-09-01,Koperasi Sumber Makmur,Pupuk ZA,50,Paceklik,500,2658.5,2650,22525000,23926500.0
+2023-09-01,Koperasi Sumber Makmur,Pupuk Organik Cair,50,Paceklik,500,2335.4,2550,21675000,35031000.0
+2023-09-01,Koperasi Tani Jaya,Pupuk Urea Granul,81,Paceklik,300,6262.1,6600,51480000,56358900.0
+2023-09-01,Koperasi Tani Jaya,Pupuk NPK Phonska,81,Paceklik,300,3732.5,4150,35275000,33592500.0
+2023-09-01,Koperasi Tani Jaya,Pupuk SP-36 Super,81,Paceklik,300,1411.5,1600,13600000,12703500.0
+2023-09-01,Koperasi Tani Jaya,Pupuk ZA,81,Paceklik,300,1563.3,1550,13175000,14069700.0
+2023-09-01,Koperasi Tani Jaya,Pupuk Organik Cair,81,Paceklik,300,1570.9,1650,14025000,23563500.0
+2023-10-01,Koperasi Sumber Makmur,Pupuk Urea Granul,20,Paceklik,500,10221.2,10300,80340000,91990800.0
+2023-10-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,20,Paceklik,500,6351.5,6250,48750000,57163500.0
+2023-10-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,20,Paceklik,500,2490.6,2650,22525000,22415400.0
+2023-10-01,Koperasi Sumber Makmur,Pupuk ZA,20,Paceklik,500,2275.9,2300,19550000,20483100.0
+2023-10-01,Koperasi Sumber Makmur,Pupuk Organik Cair,20,Paceklik,500,2317.2,2250,19125000,34758000.0
+2023-10-01,Koperasi Tani Jaya,Pupuk Urea Granul,68,Paceklik,300,5642.1,6150,47970000,50778900.0
+2023-10-01,Koperasi Tani Jaya,Pupuk NPK Phonska,68,Paceklik,300,3440.9,3350,28475000,30968100.0
+2023-10-01,Koperasi Tani Jaya,Pupuk SP-36 Super,68,Paceklik,300,1350.8,1300,11050000,12157200.0
+2023-10-01,Koperasi Tani Jaya,Pupuk ZA,68,Paceklik,300,1491.9,1600,13600000,13427100.0
+2023-10-01,Koperasi Tani Jaya,Pupuk Organik Cair,68,Paceklik,300,1588.3,1550,13175000,23824500.0
+2023-11-01,Koperasi Sumber Makmur,Pupuk Urea Granul,224,Rendengan,500,53306.2,60950,426650000,479755800.0
+2023-11-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,224,Rendengan,500,28901.9,31700,221900000,260117100.0
+2023-11-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,224,Rendengan,500,13595.9,13400,104520000,122363100.0
+2023-11-01,Koperasi Sumber Makmur,Pupuk ZA,224,Rendengan,500,11416.2,12550,97890000,102745800.0
+2023-11-01,Koperasi Sumber Makmur,Pupuk Organik Cair,224,Rendengan,500,12686.2,14200,110760000,190293000.0
+2023-11-01,Koperasi Tani Jaya,Pupuk Urea Granul,232,Rendengan,300,31967.6,35150,246050000,287708400.0
+2023-11-01,Koperasi Tani Jaya,Pupuk NPK Phonska,232,Rendengan,300,19873.3,22150,155050000,178859700.0
+2023-11-01,Koperasi Tani Jaya,Pupuk SP-36 Super,232,Rendengan,300,7029.6,7000,54600000,63266400.0
+2023-11-01,Koperasi Tani Jaya,Pupuk ZA,232,Rendengan,300,7700.6,8700,67860000,69305400.0
+2023-11-01,Koperasi Tani Jaya,Pupuk Organik Cair,232,Rendengan,300,7224.3,7700,60060000,108364500.0
+2023-12-01,Koperasi Sumber Makmur,Pupuk Urea Granul,237,Rendengan,500,53166.0,55200,386400000,478494000.0
+2023-12-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,237,Rendengan,500,30480.9,31800,222600000,274328100.0
+2023-12-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,237,Rendengan,500,12003.4,13200,102960000,108030600.0
+2023-12-01,Koperasi Sumber Makmur,Pupuk ZA,237,Rendengan,500,12506.8,12450,97110000,112561200.0
+2023-12-01,Koperasi Sumber Makmur,Pupuk Organik Cair,237,Rendengan,500,13498.9,13850,108030000,202483500.0
+2023-12-01,Koperasi Tani Jaya,Pupuk Urea Granul,238,Rendengan,300,27399.7,27300,191100000,246597300.0
+2023-12-01,Koperasi Tani Jaya,Pupuk NPK Phonska,238,Rendengan,300,18910.7,19600,137200000,170196300.0
+2023-12-01,Koperasi Tani Jaya,Pupuk SP-36 Super,238,Rendengan,300,7249.2,7950,62010000,65242800.0
+2023-12-01,Koperasi Tani Jaya,Pupuk ZA,238,Rendengan,300,7790.6,7650,59670000,70115400.0
+2023-12-01,Koperasi Tani Jaya,Pupuk Organik Cair,238,Rendengan,300,8067.9,8450,65910000,121018500.0
+2024-01-01,Koperasi Sumber Makmur,Pupuk Urea Granul,249,Rendengan,500,53938.9,59750,418250000,485450100.0
+2024-01-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,249,Rendengan,500,29073.0,29450,206150000,261657000.0
+2024-01-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,249,Rendengan,500,11871.2,13050,101790000,106840800.0
+2024-01-01,Koperasi Sumber Makmur,Pupuk ZA,249,Rendengan,500,11333.8,12050,93990000,102004200.0
+2024-01-01,Koperasi Sumber Makmur,Pupuk Organik Cair,249,Rendengan,500,13156.1,14800,115440000,197341500.0
+2024-01-01,Koperasi Tani Jaya,Pupuk Urea Granul,257,Rendengan,300,27617.5,29200,204400000,248557500.0
+2024-01-01,Koperasi Tani Jaya,Pupuk NPK Phonska,257,Rendengan,300,18295.6,19050,133350000,164660400.0
+2024-01-01,Koperasi Tani Jaya,Pupuk SP-36 Super,257,Rendengan,300,7655.9,8050,62790000,68903100.0
+2024-01-01,Koperasi Tani Jaya,Pupuk ZA,257,Rendengan,300,7559.8,7900,61620000,68038200.0
+2024-01-01,Koperasi Tani Jaya,Pupuk Organik Cair,257,Rendengan,300,7363.4,8150,63570000,110451000.0
+2024-02-01,Koperasi Sumber Makmur,Pupuk Urea Granul,246,Rendengan,500,51411.5,56000,392000000,462703500.0
+2024-02-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,246,Rendengan,500,31517.0,31550,220850000,283653000.0
+2024-02-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,246,Rendengan,500,12114.2,11950,93210000,109027800.0
+2024-02-01,Koperasi Sumber Makmur,Pupuk ZA,246,Rendengan,500,13521.1,14400,112320000,121689900.0
+2024-02-01,Koperasi Sumber Makmur,Pupuk Organik Cair,246,Rendengan,500,12252.1,12750,99450000,183781500.0
+2024-02-01,Koperasi Tani Jaya,Pupuk Urea Granul,270,Rendengan,300,30689.7,34750,243250000,276207300.0
+2024-02-01,Koperasi Tani Jaya,Pupuk NPK Phonska,270,Rendengan,300,17396.7,16900,118300000,156570300.0
+2024-02-01,Koperasi Tani Jaya,Pupuk SP-36 Super,270,Rendengan,300,7134.0,7800,60840000,64206000.0
+2024-02-01,Koperasi Tani Jaya,Pupuk ZA,270,Rendengan,300,7639.4,7400,57720000,68754600.0
+2024-02-01,Koperasi Tani Jaya,Pupuk Organik Cair,270,Rendengan,300,8128.1,9000,70200000,121921500.0
+2024-03-01,Koperasi Sumber Makmur,Pupuk Urea Granul,256,Rendengan,500,52072.4,51050,357350000,468651600.0
+2024-03-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,256,Rendengan,500,31726.8,34000,238000000,285541200.0
+2024-03-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,256,Rendengan,500,12310.3,13500,105300000,110792700.0
+2024-03-01,Koperasi Sumber Makmur,Pupuk ZA,256,Rendengan,500,13585.9,15400,107800000,122273100.0
+2024-03-01,Koperasi Sumber Makmur,Pupuk Organik Cair,256,Rendengan,500,12377.1,12050,93990000,185656500.0
+2024-03-01,Koperasi Tani Jaya,Pupuk Urea Granul,245,Rendengan,300,27993.1,27650,193550000,251937900.0
+2024-03-01,Koperasi Tani Jaya,Pupuk NPK Phonska,245,Rendengan,300,20015.6,20350,142450000,180140400.0
+2024-03-01,Koperasi Tani Jaya,Pupuk SP-36 Super,245,Rendengan,300,7217.2,7200,56160000,64954800.0
+2024-03-01,Koperasi Tani Jaya,Pupuk ZA,245,Rendengan,300,7661.8,7850,61230000,68956200.0
+2024-03-01,Koperasi Tani Jaya,Pupuk Organik Cair,245,Rendengan,300,7866.4,7800,60840000,117996000.0
+2024-04-01,Koperasi Sumber Makmur,Pupuk Urea Granul,146,Gadu,500,30631.5,31150,218050000,275683500.0
+2024-04-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,146,Gadu,500,20817.2,22000,154000000,187354800.0
+2024-04-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,146,Gadu,500,9213.8,9400,73320000,82924200.0
+2024-04-01,Koperasi Sumber Makmur,Pupuk ZA,146,Gadu,500,8239.8,9050,70590000,74158200.0
+2024-04-01,Koperasi Sumber Makmur,Pupuk Organik Cair,146,Gadu,500,8418.8,8400,65520000,126281999.99999999
+2024-04-01,Koperasi Tani Jaya,Pupuk Urea Granul,138,Gadu,300,22084.0,22100,154700000,198756000.0
+2024-04-01,Koperasi Tani Jaya,Pupuk NPK Phonska,138,Gadu,300,12948.0,12750,99450000,116532000.0
+2024-04-01,Koperasi Tani Jaya,Pupuk SP-36 Super,138,Gadu,300,4624.6,4700,39950000,41621400.0
+2024-04-01,Koperasi Tani Jaya,Pupuk ZA,138,Gadu,300,5386.1,5400,42120000,48474900.0
+2024-04-01,Koperasi Tani Jaya,Pupuk Organik Cair,138,Gadu,300,4814.5,4800,40800000,72217500.0
+2024-05-01,Koperasi Sumber Makmur,Pupuk Urea Granul,138,Gadu,500,31810.6,36350,254450000,286295400.0
+2024-05-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,138,Gadu,500,19756.8,20400,142800000,177811200.0
+2024-05-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,138,Gadu,500,7795.1,8950,69810000,70155900.0
+2024-05-01,Koperasi Sumber Makmur,Pupuk ZA,138,Gadu,500,8503.7,9100,70980000,76533300.0
+2024-05-01,Koperasi Sumber Makmur,Pupuk Organik Cair,138,Gadu,500,7764.0,8550,66690000,116460000.0
+2024-05-01,Koperasi Tani Jaya,Pupuk Urea Granul,153,Gadu,300,21623.1,22050,154350000,194607900.0
+2024-05-01,Koperasi Tani Jaya,Pupuk NPK Phonska,153,Gadu,300,12669.0,13600,106080000,114021000.0
+2024-05-01,Koperasi Tani Jaya,Pupuk SP-36 Super,153,Gadu,300,4975.3,5550,43290000,44777700.0
+2024-05-01,Koperasi Tani Jaya,Pupuk ZA,153,Gadu,300,5189.2,5250,40950000,46702800.0
+2024-05-01,Koperasi Tani Jaya,Pupuk Organik Cair,153,Gadu,300,5318.3,5600,43680000,79774500.0
+2024-06-01,Koperasi Sumber Makmur,Pupuk Urea Granul,143,Gadu,500,33597.2,34600,242200000,302374800.0
+2024-06-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,143,Gadu,500,21503.5,21100,147700000,193531500.0
+2024-06-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,143,Gadu,500,7959.3,8950,69810000,71633700.0
+2024-06-01,Koperasi Sumber Makmur,Pupuk ZA,143,Gadu,500,9258.4,9500,74100000,83325600.0
+2024-06-01,Koperasi Sumber Makmur,Pupuk Organik Cair,143,Gadu,500,8110.3,8750,68250000,121654500.0
+2024-06-01,Koperasi Tani Jaya,Pupuk Urea Granul,154,Gadu,300,21627.1,24800,173600000,194643900.0
+2024-06-01,Koperasi Tani Jaya,Pupuk NPK Phonska,154,Gadu,300,13616.5,15300,107100000,122548500.0
+2024-06-01,Koperasi Tani Jaya,Pupuk SP-36 Super,154,Gadu,300,5006.1,5300,41340000,45054900.0
+2024-06-01,Koperasi Tani Jaya,Pupuk ZA,154,Gadu,300,4849.0,4800,40800000,43641000.0
+2024-06-01,Koperasi Tani Jaya,Pupuk Organik Cair,154,Gadu,300,5105.6,5450,42510000,76584000.0
+2024-07-01,Koperasi Sumber Makmur,Pupuk Urea Granul,146,Gadu,500,36039.4,35500,248500000,324354600.0
+2024-07-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,146,Gadu,500,21899.2,21850,152950000,197092800.0
+2024-07-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,146,Gadu,500,7819.1,7800,60840000,70371900.0
+2024-07-01,Koperasi Sumber Makmur,Pupuk ZA,146,Gadu,500,8877.9,9950,77610000,79901100.0
+2024-07-01,Koperasi Sumber Makmur,Pupuk Organik Cair,146,Gadu,500,9061.4,9350,72930000,135921000.0
+2024-07-01,Koperasi Tani Jaya,Pupuk Urea Granul,131,Gadu,300,18935.6,19550,136850000,170420400.0
+2024-07-01,Koperasi Tani Jaya,Pupuk NPK Phonska,131,Gadu,300,12301.2,11900,92820000,110710800.0
+2024-07-01,Koperasi Tani Jaya,Pupuk SP-36 Super,131,Gadu,300,5235.9,5750,44850000,47123100.0
+2024-07-01,Koperasi Tani Jaya,Pupuk ZA,131,Gadu,300,5455.1,5300,41340000,49095900.0
+2024-07-01,Koperasi Tani Jaya,Pupuk Organik Cair,131,Gadu,300,5484.0,5900,46020000,82260000.0
+2024-08-01,Koperasi Sumber Makmur,Pupuk Urea Granul,37,Paceklik,500,10785.3,12000,93600000,97067700.0
+2024-08-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,37,Paceklik,500,6052.3,6050,47190000,54470700.0
+2024-08-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,37,Paceklik,500,2439.8,2600,22100000,21958200.0
+2024-08-01,Koperasi Sumber Makmur,Pupuk ZA,37,Paceklik,500,2384.0,2550,21675000,21456000.0
+2024-08-01,Koperasi Sumber Makmur,Pupuk Organik Cair,37,Paceklik,500,2454.7,2600,22100000,36820500.0
+2024-08-01,Koperasi Tani Jaya,Pupuk Urea Granul,58,Paceklik,300,6433.3,6400,49920000,57899700.0
+2024-08-01,Koperasi Tani Jaya,Pupuk NPK Phonska,58,Paceklik,300,4105.9,4550,38675000,36953100.0
+2024-08-01,Koperasi Tani Jaya,Pupuk SP-36 Super,58,Paceklik,300,1384.3,1450,12325000,12458700.0
+2024-08-01,Koperasi Tani Jaya,Pupuk ZA,58,Paceklik,300,1645.6,1700,14450000,14810400.0
+2024-08-01,Koperasi Tani Jaya,Pupuk Organik Cair,58,Paceklik,300,1404.6,1450,12325000,21069000.0
+2024-09-01,Koperasi Sumber Makmur,Pupuk Urea Granul,36,Paceklik,500,9537.4,10100,78780000,85836600.0
+2024-09-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,36,Paceklik,500,6416.8,6450,50310000,57751200.0
+2024-09-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,36,Paceklik,500,2319.7,2600,22100000,20877300.0
+2024-09-01,Koperasi Sumber Makmur,Pupuk ZA,36,Paceklik,500,2742.2,2900,24650000,24679800.0
+2024-09-01,Koperasi Sumber Makmur,Pupuk Organik Cair,36,Paceklik,500,2335.8,2350,19975000,35037000.0
+2024-09-01,Koperasi Tani Jaya,Pupuk Urea Granul,35,Paceklik,300,6387.1,6750,52650000,57483900.0
+2024-09-01,Koperasi Tani Jaya,Pupuk NPK Phonska,35,Paceklik,300,3986.3,4200,35700000,35876700.0
+2024-09-01,Koperasi Tani Jaya,Pupuk SP-36 Super,35,Paceklik,300,1370.2,1400,11900000,12331800.0
+2024-09-01,Koperasi Tani Jaya,Pupuk ZA,35,Paceklik,300,1499.2,1650,14025000,13492800.0
+2024-09-01,Koperasi Tani Jaya,Pupuk Organik Cair,35,Paceklik,300,1382.0,1350,11475000,20730000.0
+2024-10-01,Koperasi Sumber Makmur,Pupuk Urea Granul,46,Paceklik,500,10800.0,12150,94770000,97200000.0
+2024-10-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,46,Paceklik,500,6371.8,6800,53040000,57346200.0
+2024-10-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,46,Paceklik,500,2582.5,2550,21675000,23242500.0
+2024-10-01,Koperasi Sumber Makmur,Pupuk ZA,46,Paceklik,500,2707.2,2800,23800000,24364800.0
+2024-10-01,Koperasi Sumber Makmur,Pupuk Organik Cair,46,Paceklik,500,2441.6,2550,21675000,36624000.0
+2024-10-01,Koperasi Tani Jaya,Pupuk Urea Granul,26,Paceklik,300,5599.5,6150,47970000,50395500.0
+2024-10-01,Koperasi Tani Jaya,Pupuk NPK Phonska,26,Paceklik,300,3437.1,3700,31450000,30933900.0
+2024-10-01,Koperasi Tani Jaya,Pupuk SP-36 Super,26,Paceklik,300,1423.6,1450,12325000,12812400.0
+2024-10-01,Koperasi Tani Jaya,Pupuk ZA,26,Paceklik,300,1436.6,1450,12325000,12929400.0
+2024-10-01,Koperasi Tani Jaya,Pupuk Organik Cair,26,Paceklik,300,1565.7,1600,13600000,23485500.0
+2024-11-01,Koperasi Sumber Makmur,Pupuk Urea Granul,254,Rendengan,500,54493.1,56100,392700000,490437900.0
+2024-11-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,254,Rendengan,500,34088.0,33300,233100000,306792000.0
+2024-11-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,254,Rendengan,500,12459.4,12500,97500000,112134600.0
+2024-11-01,Koperasi Sumber Makmur,Pupuk ZA,254,Rendengan,500,12599.6,12400,96720000,113396400.0
+2024-11-01,Koperasi Sumber Makmur,Pupuk Organik Cair,254,Rendengan,500,13353.8,14950,116610000,200307000.0
+2024-11-01,Koperasi Tani Jaya,Pupuk Urea Granul,283,Rendengan,300,30581.1,31100,217700000,275229900.0
+2024-11-01,Koperasi Tani Jaya,Pupuk NPK Phonska,283,Rendengan,300,19765.9,19200,134400000,177893100.0
+2024-11-01,Koperasi Tani Jaya,Pupuk SP-36 Super,283,Rendengan,300,6862.7,7500,58500000,61764300.0
+2024-11-01,Koperasi Tani Jaya,Pupuk ZA,283,Rendengan,300,7493.2,8150,63570000,67438800.0
+2024-11-01,Koperasi Tani Jaya,Pupuk Organik Cair,283,Rendengan,300,7402.2,7400,57720000,111033000.0
+2024-12-01,Koperasi Sumber Makmur,Pupuk Urea Granul,222,Rendengan,500,45777.7,43500,304500000,411999300.0
+2024-12-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,222,Rendengan,500,34173.1,32500,227500000,307557900.0
+2024-12-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,222,Rendengan,500,11507.7,11650,90870000,103569300.0
+2024-12-01,Koperasi Sumber Makmur,Pupuk ZA,222,Rendengan,500,13268.6,15150,106050000,119417400.0
+2024-12-01,Koperasi Sumber Makmur,Pupuk Organik Cair,222,Rendengan,500,13225.0,14400,112320000,198375000.0
+2024-12-01,Koperasi Tani Jaya,Pupuk Urea Granul,273,Rendengan,300,28110.8,29750,208250000,252997200.0
+2024-12-01,Koperasi Tani Jaya,Pupuk NPK Phonska,273,Rendengan,300,20148.5,22100,154700000,181336500.0
+2024-12-01,Koperasi Tani Jaya,Pupuk SP-36 Super,273,Rendengan,300,7959.8,8600,67080000,71638200.0
+2024-12-01,Koperasi Tani Jaya,Pupuk ZA,273,Rendengan,300,7788.4,8700,67860000,70095600.0
+2024-12-01,Koperasi Tani Jaya,Pupuk Organik Cair,273,Rendengan,300,7124.5,7450,58110000,106867500.0
+2025-01-01,Koperasi Sumber Makmur,Pupuk Urea Granul,234,Rendengan,500,51931.8,49850,348950000,467386200.0
+2025-01-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,234,Rendengan,500,32312.0,31000,217000000,290808000.0
+2025-01-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,234,Rendengan,500,12720.7,14650,114270000,114486300.0
+2025-01-01,Koperasi Sumber Makmur,Pupuk ZA,234,Rendengan,500,12639.5,13200,102960000,113755500.0
+2025-01-01,Koperasi Sumber Makmur,Pupuk Organik Cair,234,Rendengan,500,12032.1,11700,91260000,180481500.0
+2025-01-01,Koperasi Tani Jaya,Pupuk Urea Granul,231,Rendengan,300,28784.1,32650,228550000,259056900.0
+2025-01-01,Koperasi Tani Jaya,Pupuk NPK Phonska,231,Rendengan,300,20516.5,23350,163450000,184648500.0
+2025-01-01,Koperasi Tani Jaya,Pupuk SP-36 Super,231,Rendengan,300,7461.3,8350,65130000,67151700.0
+2025-01-01,Koperasi Tani Jaya,Pupuk ZA,231,Rendengan,300,8016.8,8150,63570000,72151200.0
+2025-01-01,Koperasi Tani Jaya,Pupuk Organik Cair,231,Rendengan,300,7993.4,7650,59670000,119901000.0
+2025-02-01,Koperasi Sumber Makmur,Pupuk Urea Granul,250,Rendengan,500,48647.0,51650,361550000,437823000.0
+2025-02-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,250,Rendengan,500,31131.6,35100,245700000,280184400.0
+2025-02-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,250,Rendengan,500,12575.7,13050,101790000,113181300.0
+2025-02-01,Koperasi Sumber Makmur,Pupuk ZA,250,Rendengan,500,12261.2,13050,101790000,110350800.0
+2025-02-01,Koperasi Sumber Makmur,Pupuk Organik Cair,250,Rendengan,500,13259.9,14000,109200000,198898500.0
+2025-02-01,Koperasi Tani Jaya,Pupuk Urea Granul,246,Rendengan,300,28912.5,31100,217700000,260212500.0
+2025-02-01,Koperasi Tani Jaya,Pupuk NPK Phonska,246,Rendengan,300,20197.4,21700,151900000,181776600.0
+2025-02-01,Koperasi Tani Jaya,Pupuk SP-36 Super,246,Rendengan,300,7099.4,6800,53040000,63894600.0
+2025-02-01,Koperasi Tani Jaya,Pupuk ZA,246,Rendengan,300,8055.1,7700,60060000,72495900.0
+2025-02-01,Koperasi Tani Jaya,Pupuk Organik Cair,246,Rendengan,300,8062.1,8500,66300000,120931500.0
+2025-03-01,Koperasi Sumber Makmur,Pupuk Urea Granul,251,Rendengan,500,54325.9,52350,366450000,488933100.0
+2025-03-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,251,Rendengan,500,28184.3,27050,189350000,253658700.0
+2025-03-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,251,Rendengan,500,11471.4,11000,85800000,103242600.0
+2025-03-01,Koperasi Sumber Makmur,Pupuk ZA,251,Rendengan,500,12449.5,13250,103350000,112045500.0
+2025-03-01,Koperasi Sumber Makmur,Pupuk Organik Cair,251,Rendengan,500,11929.2,12300,95940000,178938000.0
+2025-03-01,Koperasi Tani Jaya,Pupuk Urea Granul,254,Rendengan,300,29506.6,30500,213500000,265559400.0
+2025-03-01,Koperasi Tani Jaya,Pupuk NPK Phonska,254,Rendengan,300,19640.9,19600,137200000,176768100.0
+2025-03-01,Koperasi Tani Jaya,Pupuk SP-36 Super,254,Rendengan,300,6915.7,7050,54990000,62241300.0
+2025-03-01,Koperasi Tani Jaya,Pupuk ZA,254,Rendengan,300,7180.9,7250,56550000,64628100.0
+2025-03-01,Koperasi Tani Jaya,Pupuk Organik Cair,254,Rendengan,300,7100.4,6800,53040000,106506000.0
+2025-04-01,Koperasi Sumber Makmur,Pupuk Urea Granul,90,Gadu,500,36790.3,35300,247100000,331112700.0
+2025-04-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,90,Gadu,500,19590.2,20150,141050000,176311800.0
+2025-04-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,90,Gadu,500,7861.5,8950,69810000,70753500.0
+2025-04-01,Koperasi Sumber Makmur,Pupuk ZA,90,Gadu,500,9006.6,9000,70200000,81059400.0
+2025-04-01,Koperasi Sumber Makmur,Pupuk Organik Cair,90,Gadu,500,8650.5,9900,77220000,129757500.0
+2025-04-01,Koperasi Tani Jaya,Pupuk Urea Granul,140,Gadu,300,20811.3,23550,164850000,187301700.0
+2025-04-01,Koperasi Tani Jaya,Pupuk NPK Phonska,140,Gadu,300,13997.4,15400,107800000,125976600.0
+2025-04-01,Koperasi Tani Jaya,Pupuk SP-36 Super,140,Gadu,300,4656.3,4800,40800000,41906700.0
+2025-04-01,Koperasi Tani Jaya,Pupuk ZA,140,Gadu,300,5444.6,5400,42120000,49001400.0
+2025-04-01,Koperasi Tani Jaya,Pupuk Organik Cair,140,Gadu,300,5437.3,5300,41340000,81559500.0
+2025-05-01,Koperasi Sumber Makmur,Pupuk Urea Granul,132,Gadu,500,31800.4,31600,221200000,286203600.0
+2025-05-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,132,Gadu,500,19917.4,22050,154350000,179256600.0
+2025-05-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,132,Gadu,500,8245.2,7950,62010000,74206800.0
+2025-05-01,Koperasi Sumber Makmur,Pupuk ZA,132,Gadu,500,9297.5,10500,81900000,83677500.0
+2025-05-01,Koperasi Sumber Makmur,Pupuk Organik Cair,132,Gadu,500,9227.2,10600,82680000,138408000.0
+2025-05-01,Koperasi Tani Jaya,Pupuk Urea Granul,153,Gadu,300,19976.7,22000,154000000,179790300.0
+2025-05-01,Koperasi Tani Jaya,Pupuk NPK Phonska,153,Gadu,300,13249.9,13000,101400000,119249100.0
+2025-05-01,Koperasi Tani Jaya,Pupuk SP-36 Super,153,Gadu,300,5422.1,5400,42120000,48798900.0
+2025-05-01,Koperasi Tani Jaya,Pupuk ZA,153,Gadu,300,4818.3,5100,39780000,43364700.0
+2025-05-01,Koperasi Tani Jaya,Pupuk Organik Cair,153,Gadu,300,5194.8,5550,43290000,77922000.0
+2025-06-01,Koperasi Sumber Makmur,Pupuk Urea Granul,123,Gadu,500,33710.5,34650,242550000,303394500.0
+2025-06-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,123,Gadu,500,20285.1,21200,148400000,182565900.0
+2025-06-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,123,Gadu,500,7725.4,8650,67470000,69528600.0
+2025-06-01,Koperasi Sumber Makmur,Pupuk ZA,123,Gadu,500,7710.2,7850,61230000,69391800.0
+2025-06-01,Koperasi Sumber Makmur,Pupuk Organik Cair,123,Gadu,500,9233.7,10150,79170000,138505500.0
+2025-06-01,Koperasi Tani Jaya,Pupuk Urea Granul,128,Gadu,300,20026.5,20500,143500000,180238500.0
+2025-06-01,Koperasi Tani Jaya,Pupuk NPK Phonska,128,Gadu,300,12137.4,13300,103740000,109236600.0
+2025-06-01,Koperasi Tani Jaya,Pupuk SP-36 Super,128,Gadu,300,5095.8,4900,41650000,45862200.0
+2025-06-01,Koperasi Tani Jaya,Pupuk ZA,128,Gadu,300,4814.6,5250,40950000,43331400.0
+2025-06-01,Koperasi Tani Jaya,Pupuk Organik Cair,128,Gadu,300,4667.7,5250,40950000,70015500.0
+2025-07-01,Koperasi Sumber Makmur,Pupuk Urea Granul,129,Gadu,500,36603.8,38550,269850000,329434200.0
+2025-07-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,129,Gadu,500,22977.7,24450,171150000,206799300.0
+2025-07-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,129,Gadu,500,8775.6,9300,72540000,78980400.0
+2025-07-01,Koperasi Sumber Makmur,Pupuk ZA,129,Gadu,500,9119.6,10000,78000000,82076400.0
+2025-07-01,Koperasi Sumber Makmur,Pupuk Organik Cair,129,Gadu,500,8536.1,9600,74880000,128041500.0
+2025-07-01,Koperasi Tani Jaya,Pupuk Urea Granul,122,Gadu,300,21830.4,24550,171850000,196473600.0
+2025-07-01,Koperasi Tani Jaya,Pupuk NPK Phonska,122,Gadu,300,13281.3,14850,115830000,119531700.0
+2025-07-01,Koperasi Tani Jaya,Pupuk SP-36 Super,122,Gadu,300,5301.4,5750,44850000,47712600.0
+2025-07-01,Koperasi Tani Jaya,Pupuk ZA,122,Gadu,300,5221.0,5750,44850000,46989000.0
+2025-07-01,Koperasi Tani Jaya,Pupuk Organik Cair,122,Gadu,300,4751.8,5350,41730000,71277000.0
+2025-08-01,Koperasi Sumber Makmur,Pupuk Urea Granul,77,Paceklik,500,9930.9,11200,87360000,89378100.0
+2025-08-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,77,Paceklik,500,5631.4,6250,48750000,50682600.0
+2025-08-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,77,Paceklik,500,2364.3,2700,22950000,21278700.0
+2025-08-01,Koperasi Sumber Makmur,Pupuk ZA,77,Paceklik,500,2250.6,2400,20400000,20255400.0
+2025-08-01,Koperasi Sumber Makmur,Pupuk Organik Cair,77,Paceklik,500,2628.3,2650,22525000,39424500.0
+2025-08-01,Koperasi Tani Jaya,Pupuk Urea Granul,26,Paceklik,300,5744.4,6150,47970000,51699600.0
+2025-08-01,Koperasi Tani Jaya,Pupuk NPK Phonska,26,Paceklik,300,4110.9,4400,37400000,36998100.0
+2025-08-01,Koperasi Tani Jaya,Pupuk SP-36 Super,26,Paceklik,300,1427.9,1550,13175000,12851100.0
+2025-08-01,Koperasi Tani Jaya,Pupuk ZA,26,Paceklik,300,1512.0,1650,14025000,13608000.0
+2025-08-01,Koperasi Tani Jaya,Pupuk Organik Cair,26,Paceklik,300,1382.1,1500,12750000,20731500.0
+2025-09-01,Koperasi Sumber Makmur,Pupuk Urea Granul,29,Paceklik,500,9864.5,11050,86190000,88780500.0
+2025-09-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,29,Paceklik,500,6115.2,6050,47190000,55036800.0
+2025-09-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,29,Paceklik,500,2626.8,2900,24650000,23641200.0
+2025-09-01,Koperasi Sumber Makmur,Pupuk ZA,29,Paceklik,500,2336.9,2600,22100000,21032100.0
+2025-09-01,Koperasi Sumber Makmur,Pupuk Organik Cair,29,Paceklik,500,2723.6,2700,22950000,40854000.0
+2025-09-01,Koperasi Tani Jaya,Pupuk Urea Granul,36,Paceklik,300,5480.8,5850,45630000,49327200.0
+2025-09-01,Koperasi Tani Jaya,Pupuk NPK Phonska,36,Paceklik,300,3634.4,3900,33150000,32709600.0
+2025-09-01,Koperasi Tani Jaya,Pupuk SP-36 Super,36,Paceklik,300,1363.7,1550,13175000,12273300.0
+2025-09-01,Koperasi Tani Jaya,Pupuk ZA,36,Paceklik,300,1642.0,1900,16150000,14778000.0
+2025-09-01,Koperasi Tani Jaya,Pupuk Organik Cair,36,Paceklik,300,1574.9,1550,13175000,23623500.0
+2025-10-01,Koperasi Sumber Makmur,Pupuk Urea Granul,31,Paceklik,500,9049.2,8650,67470000,81442800.0
+2025-10-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,31,Paceklik,500,6029.5,6300,49140000,54265500.0
+2025-10-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,31,Paceklik,500,2635.2,2850,24225000,23716800.0
+2025-10-01,Koperasi Sumber Makmur,Pupuk ZA,31,Paceklik,500,2473.0,2500,21250000,22257000.0
+2025-10-01,Koperasi Sumber Makmur,Pupuk Organik Cair,31,Paceklik,500,2748.6,2850,24225000,41229000.0
+2025-10-01,Koperasi Tani Jaya,Pupuk Urea Granul,37,Paceklik,300,6425.1,6800,53040000,57825900.0
+2025-10-01,Koperasi Tani Jaya,Pupuk NPK Phonska,37,Paceklik,300,3994.4,4050,34425000,35949600.0
+2025-10-01,Koperasi Tani Jaya,Pupuk SP-36 Super,37,Paceklik,300,1602.0,1750,14875000,14418000.0
+2025-10-01,Koperasi Tani Jaya,Pupuk ZA,37,Paceklik,300,1419.0,1400,11900000,12771000.0
+2025-10-01,Koperasi Tani Jaya,Pupuk Organik Cair,37,Paceklik,300,1610.4,1850,15725000,24156000.0
+2025-11-01,Koperasi Sumber Makmur,Pupuk Urea Granul,275,Rendengan,500,49323.3,56150,393050000,443909700.0
+2025-11-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,275,Rendengan,500,30748.3,33150,232050000,276734700.0
+2025-11-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,275,Rendengan,500,12244.0,12300,95940000,110196000.0
+2025-11-01,Koperasi Sumber Makmur,Pupuk ZA,275,Rendengan,500,13709.9,14150,110370000,123389100.0
+2025-11-01,Koperasi Sumber Makmur,Pupuk Organik Cair,275,Rendengan,500,13485.2,13450,104910000,202278000.0
+2025-11-01,Koperasi Tani Jaya,Pupuk Urea Granul,259,Rendengan,300,27186.8,29350,205450000,244681200.0
+2025-11-01,Koperasi Tani Jaya,Pupuk NPK Phonska,259,Rendengan,300,18257.0,20500,143500000,164313000.0
+2025-11-01,Koperasi Tani Jaya,Pupuk SP-36 Super,259,Rendengan,300,7459.8,8550,66690000,67138200.0
+2025-11-01,Koperasi Tani Jaya,Pupuk ZA,259,Rendengan,300,7028.3,7900,61620000,63254700.0
+2025-11-01,Koperasi Tani Jaya,Pupuk Organik Cair,259,Rendengan,300,7914.9,8750,68250000,118723500.0
+2025-12-01,Koperasi Sumber Makmur,Pupuk Urea Granul,265,Rendengan,500,50303.5,47950,335650000,452731500.0
+2025-12-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,265,Rendengan,500,33105.0,33400,233800000,297945000.0
+2025-12-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,265,Rendengan,500,13529.6,15450,108150000,121766400.0
+2025-12-01,Koperasi Sumber Makmur,Pupuk ZA,265,Rendengan,500,11713.6,12200,95160000,105422400.0
+2025-12-01,Koperasi Sumber Makmur,Pupuk Organik Cair,265,Rendengan,500,11253.1,12050,93990000,168796500.0
+2025-12-01,Koperasi Tani Jaya,Pupuk Urea Granul,268,Rendengan,300,28485.2,30250,211750000,256366800.0
+2025-12-01,Koperasi Tani Jaya,Pupuk NPK Phonska,268,Rendengan,300,17720.8,17400,121800000,159487200.0
+2025-12-01,Koperasi Tani Jaya,Pupuk SP-36 Super,268,Rendengan,300,7727.3,7850,61230000,69545700.0
+2025-12-01,Koperasi Tani Jaya,Pupuk ZA,268,Rendengan,300,7635.4,7900,61620000,68718600.0
+2025-12-01,Koperasi Tani Jaya,Pupuk Organik Cair,268,Rendengan,300,8226.5,8050,62790000,123397500.0
+2026-01-01,Koperasi Sumber Makmur,Pupuk Urea Granul,240,Rendengan,500,45724.5,47050,329350000,411520500.0
+2026-01-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,240,Rendengan,500,31124.6,33300,233100000,280121400.0
+2026-01-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,240,Rendengan,500,11979.2,13050,101790000,107812800.0
+2026-01-01,Koperasi Sumber Makmur,Pupuk ZA,240,Rendengan,500,13400.3,14800,115440000,120602700.0
+2026-01-01,Koperasi Sumber Makmur,Pupuk Organik Cair,240,Rendengan,500,11349.0,11850,92430000,170235000.0
+2026-01-01,Koperasi Tani Jaya,Pupuk Urea Granul,248,Rendengan,300,27875.5,27050,189350000,250879500.0
+2026-01-01,Koperasi Tani Jaya,Pupuk NPK Phonska,248,Rendengan,300,19015.9,18150,127050000,171143100.0
+2026-01-01,Koperasi Tani Jaya,Pupuk SP-36 Super,248,Rendengan,300,7473.5,7400,57720000,67261500.0
+2026-01-01,Koperasi Tani Jaya,Pupuk ZA,248,Rendengan,300,7269.0,8050,62790000,65421000.0
+2026-01-01,Koperasi Tani Jaya,Pupuk Organik Cair,248,Rendengan,300,8161.9,7850,61230000,122428500.0
+2026-02-01,Koperasi Sumber Makmur,Pupuk Urea Granul,252,Rendengan,500,45878.7,46800,327600000,412908300.0
+2026-02-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,252,Rendengan,500,28332.5,27350,191450000,254992500.0
+2026-02-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,252,Rendengan,500,12242.3,11950,93210000,110180700.0
+2026-02-01,Koperasi Sumber Makmur,Pupuk ZA,252,Rendengan,500,12668.9,13800,107640000,114020100.0
+2026-02-01,Koperasi Sumber Makmur,Pupuk Organik Cair,252,Rendengan,500,13251.5,13100,102180000,198772500.0
+2026-02-01,Koperasi Tani Jaya,Pupuk Urea Granul,279,Rendengan,300,31022.3,35400,247800000,279200700.0
+2026-02-01,Koperasi Tani Jaya,Pupuk NPK Phonska,279,Rendengan,300,17340.8,19600,137200000,156067200.0
+2026-02-01,Koperasi Tani Jaya,Pupuk SP-36 Super,279,Rendengan,300,7642.2,8200,63960000,68779800.0
+2026-02-01,Koperasi Tani Jaya,Pupuk ZA,279,Rendengan,300,7669.4,7750,60450000,69024600.0
+2026-02-01,Koperasi Tani Jaya,Pupuk Organik Cair,279,Rendengan,300,8152.8,9300,72540000,122292000.0
+2026-03-01,Koperasi Sumber Makmur,Pupuk Urea Granul,247,Rendengan,500,53017.3,53950,377650000,477155700.0
+2026-03-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,247,Rendengan,500,33217.7,32100,224700000,298959300.0
+2026-03-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,247,Rendengan,500,13487.0,14300,111540000,121383000.0
+2026-03-01,Koperasi Sumber Makmur,Pupuk ZA,247,Rendengan,500,13293.2,13850,108030000,119638800.0
+2026-03-01,Koperasi Sumber Makmur,Pupuk Organik Cair,247,Rendengan,500,12858.9,13550,105690000,192883500.0
+2026-03-01,Koperasi Tani Jaya,Pupuk Urea Granul,266,Rendengan,300,29631.6,32450,227150000,266684400.0
+2026-03-01,Koperasi Tani Jaya,Pupuk NPK Phonska,266,Rendengan,300,19099.8,20650,144550000,171898200.0
+2026-03-01,Koperasi Tani Jaya,Pupuk SP-36 Super,266,Rendengan,300,7468.9,8000,62400000,67220100.0
+2026-03-01,Koperasi Tani Jaya,Pupuk ZA,266,Rendengan,300,7243.5,7550,58890000,65191500.0
+2026-03-01,Koperasi Tani Jaya,Pupuk Organik Cair,266,Rendengan,300,7866.4,8850,69030000,117996000.0
+2026-04-01,Koperasi Sumber Makmur,Pupuk Urea Granul,142,Gadu,500,35079.2,36800,257600000,315712800.0
+2026-04-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,142,Gadu,500,21485.3,23500,164500000,193367700.0
+2026-04-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,142,Gadu,500,8038.4,9250,72150000,72345600.0
+2026-04-01,Koperasi Sumber Makmur,Pupuk ZA,142,Gadu,500,9307.1,10050,78390000,83763900.0
+2026-04-01,Koperasi Sumber Makmur,Pupuk Organik Cair,142,Gadu,500,7989.2,8700,67860000,119838000.0
+2026-04-01,Koperasi Tani Jaya,Pupuk Urea Granul,123,Gadu,300,20067.1,19900,139300000,180603900.0
+2026-04-01,Koperasi Tani Jaya,Pupuk NPK Phonska,123,Gadu,300,13618.2,13400,104520000,122563800.0
+2026-04-01,Koperasi Tani Jaya,Pupuk SP-36 Super,123,Gadu,300,5570.0,5750,44850000,50130000.0
+2026-04-01,Koperasi Tani Jaya,Pupuk ZA,123,Gadu,300,5453.2,5850,45630000,49078800.0
+2026-04-01,Koperasi Tani Jaya,Pupuk Organik Cair,123,Gadu,300,5340.1,5900,46020000,80101500.0
+2026-05-01,Koperasi Sumber Makmur,Pupuk Urea Granul,149,Gadu,500,30872.7,34700,242900000,277854300.0
+2026-05-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,149,Gadu,500,21584.4,22400,156800000,194259600.0
+2026-05-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,149,Gadu,500,8882.9,9300,72540000,79946100.0
+2026-05-01,Koperasi Sumber Makmur,Pupuk ZA,149,Gadu,500,9134.8,10300,80340000,82213200.0
+2026-05-01,Koperasi Sumber Makmur,Pupuk Organik Cair,149,Gadu,500,8366.9,8400,65520000,125503500.0
+2026-05-01,Koperasi Tani Jaya,Pupuk Urea Granul,145,Gadu,300,19518.1,19950,139650000,175662900.0
+2026-05-01,Koperasi Tani Jaya,Pupuk NPK Phonska,145,Gadu,300,12453.8,13000,101400000,112084200.0
+2026-05-01,Koperasi Tani Jaya,Pupuk SP-36 Super,145,Gadu,300,5442.7,5450,42510000,48984300.0
+2026-05-01,Koperasi Tani Jaya,Pupuk ZA,145,Gadu,300,5381.5,5550,43290000,48433500.0
+2026-05-01,Koperasi Tani Jaya,Pupuk Organik Cair,145,Gadu,300,5203.9,5600,43680000,78058500.0
+2026-06-01,Koperasi Sumber Makmur,Pupuk Urea Granul,103,Gadu,500,37205.5,36700,256900000,334849500.0
+2026-06-01,Koperasi Sumber Makmur,Pupuk NPK Phonska,103,Gadu,500,22756.1,23850,166950000,204804900.0
+2026-06-01,Koperasi Sumber Makmur,Pupuk SP-36 Super,103,Gadu,500,8070.3,9050,70590000,72632700.0
+2026-06-01,Koperasi Sumber Makmur,Pupuk ZA,103,Gadu,500,8407.0,8850,69030000,75663000.0
+2026-06-01,Koperasi Sumber Makmur,Pupuk Organik Cair,103,Gadu,500,8260.7,8850,69030000,123910500.00000001
+2026-06-01,Koperasi Tani Jaya,Pupuk Urea Granul,100,Gadu,300,21020.7,21300,149100000,189186300.0
+2026-06-01,Koperasi Tani Jaya,Pupuk NPK Phonska,100,Gadu,300,12492.6,14000,109200000,112433400.0
+2026-06-01,Koperasi Tani Jaya,Pupuk SP-36 Super,100,Gadu,300,4599.2,4900,41650000,41392800.0
+2026-06-01,Koperasi Tani Jaya,Pupuk ZA,100,Gadu,300,5200.7,5350,41730000,46806300.0
+2026-06-01,Koperasi Tani Jaya,Pupuk Organik Cair,100,Gadu,300,4831.8,4800,40800000,72477000.0

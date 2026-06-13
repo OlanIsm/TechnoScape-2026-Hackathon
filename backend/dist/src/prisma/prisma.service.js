@@ -16,7 +16,11 @@ const adapter_pg_1 = require("@prisma/adapter-pg");
 const pg_1 = require("pg");
 let PrismaService = class PrismaService extends client_1.PrismaClient {
     constructor() {
-        const pool = new pg_1.Pool({ connectionString: process.env.DATABASE_URL });
+        const databaseUrl = process.env.DATABASE_URL;
+        if (!databaseUrl) {
+            throw new Error('DATABASE_URL is not set. Copy backend/.env.example to backend/.env and fill in your PostgreSQL/Supabase connection string.');
+        }
+        const pool = new pg_1.Pool({ connectionString: databaseUrl });
         const adapter = new adapter_pg_1.PrismaPg(pool);
         super({ adapter });
     }

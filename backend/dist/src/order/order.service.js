@@ -38,8 +38,11 @@ let OrderService = class OrderService {
         const user = await this.prisma.user.findUnique({
             where: { id: userId },
         });
-        if (!user || !user.koperasiId) {
-            throw new common_1.BadRequestException('User tidak terasosiasi dengan Koperasi');
+        if (!user) {
+            throw new common_1.BadRequestException('Sesi Anda telah kedaluwarsa atau User tidak ditemukan. Silakan log out dan masuk kembali.');
+        }
+        if (!user.koperasiId) {
+            throw new common_1.BadRequestException('User Anda tidak terasosiasi dengan Koperasi mana pun di sistem.');
         }
         let product = await this.prisma.product.findFirst({
             where: {
@@ -259,6 +262,53 @@ let OrderService = class OrderService {
                 pool: updatedPool,
             };
         }
+    }
+    async createDistribution(userId, jenisPupuk, quantity, buyerName, tanggal, pricePerKg, notes) {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+        });
+        if (!user) {
+            throw new common_1.BadRequestException('Sesi Anda telah kedaluwarsa atau User tidak ditemukan. Silakan log out dan masuk kembali.');
+        }
+        if (!user.koperasiId) {
+            throw new common_1.BadRequestException('User Anda tidak terasosiasi dengan Koperasi mana pun di sistem.');
+        }
+        let product = await this.prisma.product.findFirst({
+            where: {
+                name: { contains: jenisPupuk, mode: 'insensitive' },
+            },
+        });
+        if (!product) {
+            product = await this.prisma.product.findFirst();
+        }
+        if (!product) {
+            throw new common_1.BadRequestException('Tidak ada produk pupuk terdaftar di sistem');
+        }
+        const totalPrice = quantity * pricePerKg;
+        const parsedDate = new Date(tanggal);
+        const distributionDate = isNaN(parsedDate.getTime()) ? new Date() : parsedDate;
+        const distribution = await this.prisma.distribution.create({
+            data: {
+                koperasiId: user.koperasiId,
+                productId: product.id,
+                quantity,
+                buyerName,
+                tanggal: distributionDate,
+                pricePerKg,
+                totalPrice,
+                notes,
+            },
+        });
+        await this.writeAuditLog('OUTGOING_DISTRIBUTION', JSON.stringify({
+            distributionId: distribution.id,
+            jenisPupuk,
+            quantity,
+            buyerName,
+            totalPrice,
+            pricePerKg,
+            notes,
+        }), userId);
+        return distribution;
     }
     async writeAuditLog(action, details, userId) {
         return this.prisma.auditLog.create({

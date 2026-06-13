@@ -82,7 +82,9 @@ export class AuthService {
       where: { id },
       include: { koperasi: true },
     });
-    if (!user) return null;
+    if (!user) {
+      throw new UnauthorizedException('User tidak ditemukan. Silakan login kembali.');
+    }
     const { password, ...userWithoutPassword } = user;
     return userWithoutPassword;
   }

@@ -25,6 +25,9 @@ let DashboardController = class DashboardController {
         const userId = req.user.sub;
         return this.dashboardService.getDashboardData(userId);
     }
+    async getVolumeMindSummary(query) {
+        return this.dashboardService.getVolumeMindSummary(query);
+    }
 };
 exports.DashboardController = DashboardController;
 __decorate([
@@ -35,6 +38,14 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], DashboardController.prototype, "getDashboard", null);
+__decorate([
+    (0, common_1.UseGuards)(auth_guard_1.AuthGuard),
+    (0, common_1.Get)('volumemind-summary'),
+    __param(0, (0, common_1.Query)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], DashboardController.prototype, "getVolumeMindSummary", null);
 exports.DashboardController = DashboardController = __decorate([
     (0, common_1.Controller)('dashboard'),
     __metadata("design:paramtypes", [dashboard_service_1.DashboardService])

@@ -9,6 +9,9 @@ export declare class DashboardController {
         stokPupukKg: number;
         stokCukupBulan: number;
         akurasiPrediksi: number;
+        totalSoldKg: number;
+        totalRevenue: number;
         rekomendasiVolumeMind: any;
     }>;
+    getVolumeMindSummary(query: any): Promise<any>;
 }

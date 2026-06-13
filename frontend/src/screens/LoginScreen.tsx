@@ -24,9 +24,6 @@ const cardShadow = {
   boxShadow: '0 4px 12px rgba(27, 67, 50, 0.05)',
 } as unknown as ViewStyle;
 
-function getErrorMessage(error: unknown, fallback: string) {
-  return error instanceof Error ? error.message : fallback;
-}
 
 export function LoginScreen({
   onAdminLogin,
@@ -86,7 +83,7 @@ export function LoginScreen({
       setNotice('Sedang masuk...');
       const response = await api.login(email, password);
       setNotice('');
-      
+
       const role = response.user?.role;
       if (role === 'SUPPLIER') {
         onSupplierLogin?.();
