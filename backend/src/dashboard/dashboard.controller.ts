@@ -19,4 +19,3 @@ export class DashboardController {
     return this.dashboardService.getVolumeMindSummary(query);
   }
 }
-

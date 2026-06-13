@@ -3,6 +3,32 @@ import { PrismaService } from '../prisma/prisma.service';
 import { OrderStatus } from '@prisma/client';
 import { VolumemindService } from '../volumemind/volumemind.service';
 
+export interface VolumeMindResponse {
+  recommended_volume_kg: number;
+  recommended_supplier: string;
+  unit_price_per_kg: number;
+  total_cost: number;
+  is_volume_hack: boolean;
+  extra_volume_gained_kg: number;
+  savings_rp: number;
+  explanation: string;
+  predicted_demand_kg: number;
+}
+
+interface VolumeMindRecomState {
+  bulan_1: string;
+  bulan_2: string;
+  angka_kg: number;
+  statusRecom: string;
+  supplierName: string;
+  unitPrice: number;
+  totalCost: number;
+  isVolumeHack: boolean;
+  extraVolumeGained: number;
+  savingsRp: number;
+  explanation: string;
+}
+
 @Injectable()
 export class DashboardService {
   constructor(
@@ -51,7 +77,9 @@ export class DashboardService {
 
         const tiers = item.product.priceTiers;
         if (tiers && tiers.length > 0) {
-          const sortedTiers = [...tiers].sort((a, b) => a.minVolume - b.minVolume);
+          const sortedTiers = [...tiers].sort(
+            (a, b) => a.minVolume - b.minVolume,
+          );
           const retailPrice = sortedTiers[0].pricePerKg; // Harga eceran termahal
           const purchasePrice = item.priceAtPurchase;
 
@@ -78,9 +106,16 @@ export class DashboardService {
     const netStockKg = Math.max(0, totalIncomingKg - totalSoldKg);
 
     // Default values
-    const keuntungan = (orders.length === 0 && distributions.length === 0) ? 2450000 : totalSavings;
-    const angka_kg = (orders.length === 0 && distributions.length === 0) ? 1500 : netStockKg;
-    const angka_bulan = (orders.length === 0 && distributions.length === 0) ? 3 : Math.max(1, Math.ceil(netStockKg / 500)); // asumsi konsumsi 500kg/bulan
+    const keuntungan =
+      orders.length === 0 && distributions.length === 0
+        ? 2450000
+        : totalSavings;
+    const angka_kg =
+      orders.length === 0 && distributions.length === 0 ? 1500 : netStockKg;
+    const angka_bulan =
+      orders.length === 0 && distributions.length === 0
+        ? 3
+        : Math.max(1, Math.ceil(netStockKg / 500)); // asumsi konsumsi 500kg/bulan
 
     // 3. Panggil VolumeMind AI Engine untuk Prediksi & Rekomendasi
     const now = new Date();
@@ -101,15 +136,19 @@ export class DashboardService {
       },
     });
 
-    const fallbackSupplierName = defaultProduct?.supplier?.name ?? 'CV Petrokimia Makmur';
+    const fallbackSupplierName =
+      defaultProduct?.supplier?.name ?? 'CV Petrokimia Makmur';
     const fallbackUnitPrice = defaultProduct?.priceTiers[0]?.pricePerKg ?? 8500;
     const fallbackTotalCost = 4500.0 * fallbackUnitPrice;
 
-    let predictedDemandKg = 4500.0;
-    let accuracy = 76.8; // Akurasi dari retraining model Random Forest
-    let rekomendasiVolumeMind: any = {
+    const accuracy = 76.8; // Akurasi dari retraining model Random Forest
+    let rekomendasiVolumeMind: VolumeMindRecomState = {
       bulan_1: nextMonth.toLocaleString('id-ID', { month: 'long' }),
-      bulan_2: new Date(nextMonth.getFullYear(), nextMonth.getMonth() + 1, 1).toLocaleString('id-ID', { month: 'long' }),
+      bulan_2: new Date(
+        nextMonth.getFullYear(),
+        nextMonth.getMonth() + 1,
+        1,
+      ).toLocaleString('id-ID', { month: 'long' }),
       angka_kg: 4500.0,
       statusRecom: 'PENDING',
       supplierName: fallbackSupplierName,
@@ -133,10 +172,10 @@ export class DashboardService {
       });
 
       const formattedSuppliers = dbSuppliers
-        .filter(s => s.products.length > 0)
-        .map(s => ({
+        .filter((s) => s.products.length > 0)
+        .map((s) => ({
           name: s.name,
-          tiers: s.products[0].priceTiers.map(t => ({
+          tiers: s.products[0].priceTiers.map((t) => ({
             min_volume: t.minVolume,
             max_volume: t.maxVolume ?? null,
             price_per_kg: t.pricePerKg,
@@ -157,7 +196,11 @@ export class DashboardService {
 
         rekomendasiVolumeMind = {
           bulan_1: nextMonth.toLocaleString('id-ID', { month: 'long' }),
-          bulan_2: new Date(nextMonth.getFullYear(), nextMonth.getMonth() + 1, 1).toLocaleString('id-ID', { month: 'long' }),
+          bulan_2: new Date(
+            nextMonth.getFullYear(),
+            nextMonth.getMonth() + 1,
+            1,
+          ).toLocaleString('id-ID', { month: 'long' }),
           angka_kg: recommendResult.recommended_volume_kg,
           statusRecom: 'PENDING',
           supplierName: recommendResult.recommended_supplier,
@@ -168,12 +211,13 @@ export class DashboardService {
           savingsRp: recommendResult.savings_rp,
           explanation: recommendResult.explanation,
         };
-
-        predictedDemandKg = recommendResult.predicted_demand_kg;
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      console.warn('Gagal memanggil VolumeMind AI Engine API, menggunakan simulasi fallback:', message);
+      console.warn(
+        'Gagal memanggil VolumeMind AI Engine API, menggunakan simulasi fallback:',
+        message,
+      );
     }
 
     return {
@@ -183,8 +227,12 @@ export class DashboardService {
       stokPupukKg: angka_kg,
       stokCukupBulan: angka_bulan,
       akurasiPrediksi: accuracy,
-      totalSoldKg: (orders.length === 0 && distributions.length === 0) ? 850 : totalSoldKg,
-      totalRevenue: (orders.length === 0 && distributions.length === 0) ? 7650000 : totalRevenue,
+      totalSoldKg:
+        orders.length === 0 && distributions.length === 0 ? 850 : totalSoldKg,
+      totalRevenue:
+        orders.length === 0 && distributions.length === 0
+          ? 7650000
+          : totalRevenue,
       rekomendasiVolumeMind,
     };
   }
@@ -220,10 +268,10 @@ export class DashboardService {
     });
 
     const formattedSuppliers = dbSuppliers
-      .filter(s => s.products.length > 0)
-      .map(s => ({
+      .filter((s) => s.products.length > 0)
+      .map((s) => ({
         name: s.name,
-        tiers: s.products[0].priceTiers.map(t => ({
+        tiers: s.products[0].priceTiers.map((t) => ({
           min_volume: t.minVolume,
           max_volume: t.maxVolume ?? null,
           price_per_kg: t.pricePerKg,
@@ -241,10 +289,10 @@ export class DashboardService {
         },
       });
       suppliersToUse = allSuppliers
-        .filter(s => s.products.length > 0)
-        .map(s => ({
+        .filter((s) => s.products.length > 0)
+        .map((s) => ({
           name: s.name,
-          tiers: s.products[0].priceTiers.map(t => ({
+          tiers: s.products[0].priceTiers.map((t) => ({
             min_volume: t.minVolume,
             max_volume: t.maxVolume ?? null,
             price_per_kg: t.pricePerKg,
@@ -285,9 +333,9 @@ export class DashboardService {
         isVolumeHack: true,
         extraVolumeGained: 4108,
         savingsRp: 2600000,
-        explanation: 'VOLUME HACK! Beli lebih banyak (25000.0 kg) dari CV Petrokimia Makmur untuk menembus tier harga murah Rp 7000.00/kg (Hemat Rp 2.6Jt).',
+        explanation:
+          'VOLUME HACK! Beli lebih banyak (25000.0 kg) dari CV Petrokimia Makmur untuk menembus tier harga murah Rp 7000.00/kg (Hemat Rp 2.6Jt).',
       },
     };
   }
 }
-

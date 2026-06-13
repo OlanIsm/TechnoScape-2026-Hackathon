@@ -10,4 +10,3 @@ import { VolumemindModule } from '../volumemind/volumemind.module';
   controllers: [DashboardController],
 })
 export class DashboardModule {}
-

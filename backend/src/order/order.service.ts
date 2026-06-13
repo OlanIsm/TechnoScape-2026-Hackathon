@@ -1,13 +1,27 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Order, CollectivePool, AuditLog, OrderStatus, PoolStatus, Prisma } from '@prisma/client';
+import {
+  Order,
+  CollectivePool,
+  AuditLog,
+  OrderStatus,
+  PoolStatus,
+  Prisma,
+} from '@prisma/client';
 
-const FERTILIZER_CATALOG: Record<string, { name: string; aliases: string[]; pricePerKg: number }> = {
+const FERTILIZER_CATALOG: Record<
+  string,
+  { name: string; aliases: string[]; pricePerKg: number }
+> = {
   urea: { name: 'Urea', aliases: ['urea'], pricePerKg: 8500 },
   npk: { name: 'NPK', aliases: ['npk', 'phonska'], pricePerKg: 10000 },
   sp36: { name: 'SP-36', aliases: ['sp-36', 'sp36'], pricePerKg: 9000 },
   za: { name: 'ZA', aliases: ['za'], pricePerKg: 7500 },
-  organik: { name: 'Organik', aliases: ['organik', 'organic'], pricePerKg: 4500 },
+  organik: {
+    name: 'Organik',
+    aliases: ['organik', 'organic'],
+    pricePerKg: 4500,
+  },
 };
 
 @Injectable()
@@ -16,9 +30,11 @@ export class OrderService {
 
   private getFertilizerCatalogEntry(jenisPupuk: string) {
     const normalized = (jenisPupuk || '').toLowerCase();
-    return Object.values(FERTILIZER_CATALOG).find((entry) => {
-      return entry.aliases.some((alias) => normalized.includes(alias));
-    }) ?? FERTILIZER_CATALOG.npk;
+    return (
+      Object.values(FERTILIZER_CATALOG).find((entry) => {
+        return entry.aliases.some((alias) => normalized.includes(alias));
+      }) ?? FERTILIZER_CATALOG.npk
+    );
   }
 
   private async findOrCreateSupplier(name?: string) {
@@ -44,7 +60,9 @@ export class OrderService {
 
   private async findOrCreateProduct(jenisPupuk: string, supplierName?: string) {
     const entry = this.getFertilizerCatalogEntry(jenisPupuk);
-    const searchTerms = Array.from(new Set([entry.name, ...entry.aliases, jenisPupuk].filter(Boolean)));
+    const searchTerms = Array.from(
+      new Set([entry.name, ...entry.aliases, jenisPupuk].filter(Boolean)),
+    );
 
     let product = await this.prisma.product.findFirst({
       where: {
@@ -86,7 +104,9 @@ export class OrderService {
         totalPrice: data.totalPrice,
         status: OrderStatus.PENDING,
         koperasi: { connect: { id: data.koperasiId } },
-        collectivePool: data.collectivePoolId ? { connect: { id: data.collectivePoolId } } : undefined,
+        collectivePool: data.collectivePoolId
+          ? { connect: { id: data.collectivePoolId } }
+          : undefined,
         orderItems: {
           create: data.orderItems as any,
         },
@@ -98,7 +118,7 @@ export class OrderService {
     await this.writeAuditLog(
       'CREATE_ORDER',
       JSON.stringify({ orderId: order.id, totalPrice: order.totalPrice }),
-      undefined
+      undefined,
     );
 
     return order;
@@ -117,11 +137,15 @@ export class OrderService {
     });
 
     if (!user) {
-      throw new BadRequestException('Sesi Anda telah kedaluwarsa atau User tidak ditemukan. Silakan log out dan masuk kembali.');
+      throw new BadRequestException(
+        'Sesi Anda telah kedaluwarsa atau User tidak ditemukan. Silakan log out dan masuk kembali.',
+      );
     }
 
     if (!user.koperasiId) {
-      throw new BadRequestException('User Anda tidak terasosiasi dengan Koperasi mana pun di sistem.');
+      throw new BadRequestException(
+        'User Anda tidak terasosiasi dengan Koperasi mana pun di sistem.',
+      );
     }
 
     // Cari atau buat supplier
@@ -179,7 +203,9 @@ export class OrderService {
     }
 
     if (existingOrder.status === OrderStatus.CONFIRMED) {
-      throw new BadRequestException('Order sudah berstatus CONFIRMED dan tidak dapat diubah (Immutable Ledger)');
+      throw new BadRequestException(
+        'Order sudah berstatus CONFIRMED dan tidak dapat diubah (Immutable Ledger)',
+      );
     }
 
     const updatedOrder = await this.prisma.order.update({
@@ -190,8 +216,12 @@ export class OrderService {
     // Write Audit Log
     await this.writeAuditLog(
       'CONFIRM_ORDER',
-      JSON.stringify({ orderId, statusBefore: existingOrder.status, statusAfter: OrderStatus.CONFIRMED }),
-      userId
+      JSON.stringify({
+        orderId,
+        statusBefore: existingOrder.status,
+        statusAfter: OrderStatus.CONFIRMED,
+      }),
+      userId,
     );
 
     return updatedOrder;
@@ -205,11 +235,17 @@ export class OrderService {
   }
 
   // Collective Pool CRUD
-  async createPool(data: Prisma.CollectivePoolUncheckedCreateInput): Promise<CollectivePool> {
+  async createPool(
+    data: Prisma.CollectivePoolUncheckedCreateInput,
+  ): Promise<CollectivePool> {
     // Verify product exists first
-    const product = await this.prisma.product.findUnique({ where: { id: data.productId } });
+    const product = await this.prisma.product.findUnique({
+      where: { id: data.productId },
+    });
     if (!product) {
-      throw new BadRequestException(`Produk dengan ID '${data.productId}' tidak ditemukan.`);
+      throw new BadRequestException(
+        `Produk dengan ID '${data.productId}' tidak ditemukan.`,
+      );
     }
     return this.prisma.collectivePool.create({
       data: {
@@ -233,7 +269,11 @@ export class OrderService {
   }
 
   // Join pool: Associate order with a pool and calculate new volume/prices
-  async joinPool(poolId: string, orderId: string, userId?: string): Promise<Order> {
+  async joinPool(
+    poolId: string,
+    orderId: string,
+    userId?: string,
+  ): Promise<Order> {
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
       include: { orderItems: true },
@@ -244,7 +284,9 @@ export class OrderService {
     }
 
     if (order.status === OrderStatus.CONFIRMED) {
-      throw new BadRequestException('Tidak bisa bergabung ke pool karena order sudah dikonfirmasi (CONFIRMED)');
+      throw new BadRequestException(
+        'Tidak bisa bergabung ke pool karena order sudah dikonfirmasi (CONFIRMED)',
+      );
     }
 
     const pool = await this.prisma.collectivePool.findUnique({
@@ -280,7 +322,9 @@ export class OrderService {
     }
 
     // Cari price tier yang sesuai
-    const sortedTiers = pool.product.priceTiers.sort((a, b) => b.minVolume - a.minVolume);
+    const sortedTiers = pool.product.priceTiers.sort(
+      (a, b) => b.minVolume - a.minVolume,
+    );
     let activePricePerKg = pool.product.priceTiers[0]?.pricePerKg || 9000;
 
     for (const tier of sortedTiers) {
@@ -353,7 +397,7 @@ export class OrderService {
     }
 
     // Tentukan threshold sukses pool (misalnya 10 Ton)
-    const minTargetVolume = 10000; 
+    const minTargetVolume = 10000;
 
     if (totalVolumeKg >= minTargetVolume) {
       // Sukses: Ubah status pool ke COMPLETED
@@ -388,12 +432,17 @@ export class OrderService {
 
       await this.writeAuditLog(
         'FINALIZE_POOL_FALLBACK_GRACE',
-        JSON.stringify({ poolId, totalVolumeKg, extendedDeadline: newDeadline }),
+        JSON.stringify({
+          poolId,
+          totalVolumeKg,
+          extendedDeadline: newDeadline,
+        }),
       );
 
       return {
         success: false,
-        message: 'Volume target tidak tercapai. Grace period aktif: pool diperpanjang 2 hari.',
+        message:
+          'Volume target tidak tercapai. Grace period aktif: pool diperpanjang 2 hari.',
         pool: updatedPool,
       };
     }
@@ -413,18 +462,24 @@ export class OrderService {
     });
 
     if (!user) {
-      throw new BadRequestException('Sesi Anda telah kedaluwarsa atau User tidak ditemukan. Silakan log out dan masuk kembali.');
+      throw new BadRequestException(
+        'Sesi Anda telah kedaluwarsa atau User tidak ditemukan. Silakan log out dan masuk kembali.',
+      );
     }
 
     if (!user.koperasiId) {
-      throw new BadRequestException('User Anda tidak terasosiasi dengan Koperasi mana pun di sistem.');
+      throw new BadRequestException(
+        'User Anda tidak terasosiasi dengan Koperasi mana pun di sistem.',
+      );
     }
 
     const product = await this.findOrCreateProduct(jenisPupuk);
 
     const totalPrice = quantity * pricePerKg;
     const parsedDate = new Date(tanggal);
-    const distributionDate = isNaN(parsedDate.getTime()) ? new Date() : parsedDate;
+    const distributionDate = isNaN(parsedDate.getTime())
+      ? new Date()
+      : parsedDate;
 
     const distribution = await this.prisma.distribution.create({
       data: {
@@ -457,7 +512,11 @@ export class OrderService {
   }
 
   // Audit Log writer helper
-  async writeAuditLog(action: string, details: string, userId?: string): Promise<AuditLog> {
+  async writeAuditLog(
+    action: string,
+    details: string,
+    userId?: string,
+  ): Promise<AuditLog> {
     return this.prisma.auditLog.create({
       data: {
         action,
@@ -497,7 +556,8 @@ export class OrderService {
       orderBy: { createdAt: 'desc' },
     });
 
-    let csv = 'Order ID,Tanggal Transaksi,Nama Produk,Kuantitas (kg),Harga Satuan (Rp/kg),Total Harga (Rp),Status,Nama Pool Patungan\n';
+    let csv =
+      'Order ID,Tanggal Transaksi,Nama Produk,Kuantitas (kg),Harga Satuan (Rp/kg),Total Harga (Rp),Status,Nama Pool Patungan\n';
 
     for (const order of orders) {
       const dateStr = order.createdAt.toISOString().split('T')[0];

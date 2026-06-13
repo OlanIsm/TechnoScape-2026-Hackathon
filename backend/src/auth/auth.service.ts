@@ -1,7 +1,12 @@
-import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcryptjs';
+import { Role } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -10,7 +15,12 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async register(name: string, email: string, passwordString: string, roleInput?: string) {
+  async register(
+    name: string,
+    email: string,
+    passwordString: string,
+    roleInput?: string,
+  ) {
     const existingUser = await this.prisma.user.findUnique({
       where: { email },
     });
@@ -25,7 +35,7 @@ export class AuthService {
 
     let koperasiId: string | undefined = undefined;
     let supplierId: string | undefined = undefined;
-    let finalRole: any = 'ANGGOTA';
+    let finalRole: Role = Role.ANGGOTA;
 
     if (roleInput === 'supplier' || roleInput === 'SUPPLIER') {
       // Create a default Supplier record
@@ -37,7 +47,7 @@ export class AuthService {
         },
       });
       supplierId = supplier.id;
-      finalRole = 'SUPPLIER';
+      finalRole = Role.SUPPLIER;
     } else {
       // Create a default Koperasi record
       const koperasi = await this.prisma.koperasi.create({
@@ -47,7 +57,7 @@ export class AuthService {
         },
       });
       koperasiId = koperasi.id;
-      finalRole = 'ADMIN_KOPERASI';
+      finalRole = Role.ADMIN_KOPERASI;
     }
 
     // Create User
@@ -63,10 +73,16 @@ export class AuthService {
       include: { koperasi: true, supplier: true },
     });
 
-    const payload = { sub: user.id, email: user.email, name: user.name, role: user.role };
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+    };
     const token = await this.jwtService.signAsync(payload);
 
-    const { password, ...userWithoutPassword } = user;
+    const { password: _, ...userWithoutPassword } = user;
+    void _;
     return {
       user: userWithoutPassword,
       access_token: token,
@@ -88,10 +104,16 @@ export class AuthService {
       throw new UnauthorizedException('Email atau sandi salah');
     }
 
-    const payload = { sub: user.id, email: user.email, name: user.name, role: user.role };
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+    };
     const token = await this.jwtService.signAsync(payload);
 
-    const { password, ...userWithoutPassword } = user;
+    const { password: _, ...userWithoutPassword } = user;
+    void _;
     return {
       user: userWithoutPassword,
       access_token: token,
@@ -104,9 +126,12 @@ export class AuthService {
       include: { koperasi: true, supplier: true },
     });
     if (!user) {
-      throw new UnauthorizedException('User tidak ditemukan. Silakan login kembali.');
+      throw new UnauthorizedException(
+        'User tidak ditemukan. Silakan login kembali.',
+      );
     }
-    const { password, ...userWithoutPassword } = user;
+    const { password: _, ...userWithoutPassword } = user;
+    void _;
     return userWithoutPassword;
   }
 }

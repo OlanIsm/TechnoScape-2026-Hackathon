@@ -10,8 +10,16 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { VolumemindModule } from './volumemind/volumemind.module';
 
 @Module({
-  imports: [PrismaModule, UsersModule, SupplierModule, OrderModule, AuthModule, DashboardModule, VolumemindModule],
+  imports: [
+    PrismaModule,
+    UsersModule,
+    SupplierModule,
+    OrderModule,
+    AuthModule,
+    DashboardModule,
+    VolumemindModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

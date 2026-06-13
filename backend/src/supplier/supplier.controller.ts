@@ -1,4 +1,11 @@
-import { Controller, Post, Get, Body, Param, NotFoundException } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Param,
+  NotFoundException,
+} from '@nestjs/common';
 import { SupplierService } from './supplier.service';
 import { Prisma } from '@prisma/client';
 

@@ -15,6 +15,7 @@ async function main() {
 
   // Clear existing data to avoid key duplicate errors on re-run
   await prisma.auditLog.deleteMany({});
+  await prisma.distribution.deleteMany({});
   await prisma.orderItem.deleteMany({});
   await prisma.order.deleteMany({});
   await prisma.collectivePool.deleteMany({});

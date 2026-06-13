@@ -4,11 +4,11 @@ import { VolumemindService } from './volumemind.service';
 
 @Controller('volumemind')
 export class VolumemindController {
-    constructor(private readonly volumemindService: VolumemindService) { }
+  constructor(private readonly volumemindService: VolumemindService) {}
 
-    @Post('recommendation')
-    async getRecommendation(@Body() body: any) {
-        console.log('body received:', body); // debug
-        return this.volumemindService.getRecommendation(body);
-    }
+  @Post('recommendation')
+  async getRecommendation(@Body() body: any) {
+    console.log('body received:', body); // debug
+    return this.volumemindService.getRecommendation(body);
+  }
 }

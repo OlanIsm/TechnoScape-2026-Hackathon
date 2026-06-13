@@ -1,4 +1,14 @@
-import { Controller, Post, Get, Body, Param, Query, UseGuards, Request, Response } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+  Request,
+  Response,
+} from '@nestjs/common';
 import { OrderService } from './order.service';
 import { Prisma } from '@prisma/client';
 import type { Response as ExpressResponse } from 'express';
@@ -58,10 +68,7 @@ export class OrderController {
   }
 
   @Post(':id/confirm')
-  async confirmOrder(
-    @Param('id') id: string,
-    @Body('userId') userId?: string,
-  ) {
+  async confirmOrder(@Param('id') id: string, @Body('userId') userId?: string) {
     return this.orderService.confirmOrder(id, userId);
   }
 
@@ -105,7 +112,10 @@ export class OrderController {
     const userId = req.user.sub;
     const csvData = await this.orderService.exportOrdersToCsv(userId);
     res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', 'attachment; filename=laporan_transaksi.csv');
+    res.setHeader(
+      'Content-Disposition',
+      'attachment; filename=laporan_transaksi.csv',
+    );
     return res.status(200).send(csvData);
   }
 }
