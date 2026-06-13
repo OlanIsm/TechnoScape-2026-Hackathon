@@ -1,16 +1,18 @@
 import {
+  Image,
   Pressable,
   SafeAreaView,
   ScrollView,
-  Image,
   StyleSheet,
   Text,
   useWindowDimensions,
   View,
   type ViewStyle,
 } from 'react-native-web';
+import growIcon from '../assets/grow_icon.svg';
 import quantityIcon from '../assets/quantity_icon.svg';
 import storeIcon from '../assets/store_icon.svg';
+import upIcon from '../assets/up_icon.svg';
 import { KoperasiBottomNav } from '../components/KoperasiBottomNav';
 import { MainHeader } from '../components/MainHeader';
 import { colors, fonts } from '../theme';
@@ -55,12 +57,14 @@ export function KoperasiDashboardScreen({
             <MetricCard
               accentColor={colors.primary}
               label="Total Belanja"
+              supportingIcon={growIcon}
               supportingText="+12% dari bulan lalu"
               value="Rp 145.5Jt"
             />
             <MetricCard
               accentColor={colors.soilBrown}
               label="Volume Pupuk"
+              supportingIcon={upIcon}
               supportingText="Target pencatatan 85%"
               value="24.5 Ton"
             />
@@ -84,16 +88,20 @@ export function KoperasiDashboardScreen({
 type MetricCardProps = {
   accentColor: string;
   label: string;
+  supportingIcon: string;
   supportingText: string;
   value: string;
 };
 
-function MetricCard({ accentColor, label, supportingText, value }: MetricCardProps) {
+function MetricCard({ accentColor, label, supportingIcon, supportingText, value }: MetricCardProps) {
   return (
     <View style={styles.metricCard}>
       <Text style={styles.metricLabel}>{label}</Text>
       <Text style={[styles.metricValue, { color: accentColor }]}>{value}</Text>
-      <Text style={styles.metricSupporting}>{supportingText}</Text>
+      <View style={styles.metricSupportingRow}>
+        <Image accessibilityElementsHidden resizeMode="contain" source={{ uri: supportingIcon }} style={styles.metricTrendIcon} />
+        <Text style={styles.metricSupporting}>{supportingText}</Text>
+      </View>
     </View>
   );
 }
@@ -113,7 +121,7 @@ function VolumeMindCard() {
 
       <View style={styles.recommendationBox}>
         <View style={styles.recommendationGrid}>
-          <InfoCell icon={storeIcon} label="Rekomendasi Pemasok" value="PT. Agro Nusa" />
+          <InfoCell icon={storeIcon} label="Rekomendasi Pemasok" value="PT Agro Nusa" />
           <InfoCell icon={quantityIcon} label="Kuantitas Optimal" value="12.5 Ton (Urea)" />
           <InfoCell label="Estimasi Biaya" value="Rp 68.750.000" />
           <InfoCell isSaving label="Potensi Penghematan" value="Rp 4.2Jt" />
@@ -252,18 +260,28 @@ const styles = StyleSheet.create({
   },
   metricSupporting: {
     color: colors.successGreen,
+    flexShrink: 1,
     fontFamily: fonts.body,
     fontSize: 11,
     fontWeight: '500',
     lineHeight: 14,
+  },
+  metricSupportingRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 5,
+  },
+  metricTrendIcon: {
+    width: 12,
+    height: 12,
   },
   volumeMindCard: {
     backgroundColor: '#b7dcff',
     borderColor: colors.primary,
     borderRadius: 12,
     borderWidth: 1,
-    gap: 14,
-    padding: 20,
+    gap: 12,
+    padding: 18,
     ...cardShadow,
   },
   volumeMindHeader: {
@@ -278,26 +296,26 @@ const styles = StyleSheet.create({
   volumeTitle: {
     color: colors.onSurface,
     fontFamily: fonts.heading,
-    fontSize: 31,
+    fontSize: 28,
     fontWeight: '800',
-    lineHeight: 38,
+    lineHeight: 34,
   },
   volumeSubtitle: {
     color: colors.onSurface,
     fontFamily: fonts.body,
-    fontSize: 17,
-    lineHeight: 24,
-    marginTop: 4,
+    fontSize: 14,
+    lineHeight: 20,
+    marginTop: 2,
   },
   accuracyBadge: {
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 42,
-    minWidth: 114,
+    minHeight: 40,
+    minWidth: 104,
     backgroundColor: 'rgba(43, 147, 72, 0.34)',
     borderRadius: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
   },
   accuracyText: {
     color: colors.primary,
@@ -309,33 +327,35 @@ const styles = StyleSheet.create({
   recommendationBox: {
     backgroundColor: colors.surfaceCard,
     borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    paddingHorizontal: 13,
+    paddingVertical: 11,
   },
   recommendationGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    rowGap: 22,
+    rowGap: 18,
   },
   infoCell: {
     width: '50%',
+    minWidth: 0,
+    paddingRight: 8,
   },
   infoLabel: {
     color: colors.outline,
     fontFamily: fonts.body,
-    fontSize: 10,
+    fontSize: 8,
     fontWeight: '600',
-    lineHeight: 14,
+    lineHeight: 11,
   },
   infoValueRow: {
     alignItems: 'center',
     flexDirection: 'row',
-    gap: 7,
+    gap: 6,
     marginTop: 6,
   },
   infoIcon: {
-    width: 14,
-    height: 14,
+    width: 13,
+    height: 13,
   },
   savingLabel: {
     color: colors.successGreen,
@@ -343,16 +363,13 @@ const styles = StyleSheet.create({
   infoValue: {
     color: colors.primary,
     fontFamily: fonts.body,
-    fontSize: 20,
+    flexShrink: 1,
+    fontSize: 16,
     fontWeight: '700',
-    lineHeight: 26,
+    lineHeight: 21,
   },
   savingValue: {
     color: colors.successGreen,
-    fontFamily: fonts.heading,
-    fontWeight: '700',
-    fontSize: 32,
-    lineHeight: 40,
   },
   poolSection: {
     gap: 10,
