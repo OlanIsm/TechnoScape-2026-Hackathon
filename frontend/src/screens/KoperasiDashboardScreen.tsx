@@ -2,12 +2,15 @@ import {
   Pressable,
   SafeAreaView,
   ScrollView,
+  Image,
   StyleSheet,
   Text,
   useWindowDimensions,
   View,
   type ViewStyle,
 } from 'react-native-web';
+import quantityIcon from '../assets/quantity_icon.svg';
+import storeIcon from '../assets/store_icon.svg';
 import { KoperasiBottomNav } from '../components/KoperasiBottomNav';
 import { MainHeader } from '../components/MainHeader';
 import { colors, fonts } from '../theme';
@@ -99,61 +102,41 @@ function VolumeMindCard() {
   return (
     <View style={styles.volumeMindCard}>
       <View style={styles.volumeMindHeader}>
-        <View style={styles.volumeMindTitleRow}>
-          <View style={styles.volumeIcon}>
-            <Text style={styles.volumeIconText}>VM</Text>
-          </View>
-          <View>
-            <Text style={styles.volumeTitle}>VolumeMind</Text>
-            <Text style={styles.volumeSubtitle}>Prediksi Kebutuhan Bulan Depan</Text>
-          </View>
+        <View style={styles.volumeMindCopy}>
+          <Text style={styles.volumeTitle}>VolumeMind</Text>
+          <Text style={styles.volumeSubtitle}>Prediksi Kebutuhan Bulan Depan</Text>
         </View>
         <View style={styles.accuracyBadge}>
-          <Text style={styles.accuracyText}>AKURASI</Text>
-          <Text style={styles.accuracyValue}>94%</Text>
+          <Text style={styles.accuracyText}>AKURASI 94%</Text>
         </View>
       </View>
 
       <View style={styles.recommendationBox}>
         <View style={styles.recommendationGrid}>
-          <InfoCell label="Rekomendasi Pemasok" value="PT Agro Nusa" />
-          <InfoCell label="Kuantitas Optimal" value="12.5 Ton (Urea)" />
+          <InfoCell icon={storeIcon} label="Rekomendasi Pemasok" value="PT. Agro Nusa" />
+          <InfoCell icon={quantityIcon} label="Kuantitas Optimal" value="12.5 Ton (Urea)" />
           <InfoCell label="Estimasi Biaya" value="Rp 68.750.000" />
           <InfoCell isSaving label="Potensi Penghematan" value="Rp 4.2Jt" />
         </View>
       </View>
-
-      <Pressable accessibilityRole="button" onPress={() => undefined} style={styles.confirmButton}>
-        <CartIcon />
-        <Text style={styles.confirmText}>KONFIRMASI PEMESANAN</Text>
-      </Pressable>
     </View>
   );
 }
 
 type InfoCellProps = {
+  icon?: string;
   isSaving?: boolean;
   label: string;
   value: string;
 };
 
-function InfoCell({ isSaving = false, label, value }: InfoCellProps) {
+function InfoCell({ icon, isSaving = false, label, value }: InfoCellProps) {
   return (
     <View style={styles.infoCell}>
       <Text style={[styles.infoLabel, isSaving && styles.savingLabel]}>{label}</Text>
-      <Text style={[styles.infoValue, isSaving && styles.savingValue]}>{value}</Text>
-    </View>
-  );
-}
-
-function CartIcon() {
-  return (
-    <View style={styles.cartIcon}>
-      <View style={styles.cartHandle} />
-      <View style={styles.cartBasket} />
-      <View style={styles.cartWheelRow}>
-        <View style={styles.cartWheel} />
-        <View style={styles.cartWheel} />
+      <View style={styles.infoValueRow}>
+        {icon ? <Image accessibilityElementsHidden resizeMode="contain" source={{ uri: icon }} style={styles.infoIcon} /> : null}
+        <Text style={[styles.infoValue, isSaving && styles.savingValue]}>{value}</Text>
       </View>
     </View>
   );
@@ -275,81 +258,64 @@ const styles = StyleSheet.create({
     lineHeight: 14,
   },
   volumeMindCard: {
-    backgroundColor: '#eaf7ff',
-    borderColor: '#d1e7ef',
+    backgroundColor: '#b7dcff',
+    borderColor: colors.primary,
     borderRadius: 12,
     borderWidth: 1,
-    gap: 12,
-    padding: 16,
+    gap: 14,
+    padding: 20,
     ...cardShadow,
   },
   volumeMindHeader: {
-    alignItems: 'flex-start',
+    alignItems: 'center',
     flexDirection: 'row',
+    gap: 12,
     justifyContent: 'space-between',
   },
-  volumeMindTitleRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 10,
-  },
-  volumeIcon: {
-    width: 34,
-    height: 34,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.tertiaryContainer,
-    borderRadius: 17,
-  },
-  volumeIconText: {
-    color: colors.onPrimary,
-    fontFamily: fonts.body,
-    fontSize: 10,
-    fontWeight: '700',
+  volumeMindCopy: {
+    flex: 1,
   },
   volumeTitle: {
-    color: colors.tertiary,
+    color: colors.onSurface,
     fontFamily: fonts.heading,
-    fontSize: 20,
-    fontWeight: '600',
-    lineHeight: 24,
+    fontSize: 31,
+    fontWeight: '800',
+    lineHeight: 38,
   },
   volumeSubtitle: {
-    color: colors.tertiary,
+    color: colors.onSurface,
     fontFamily: fonts.body,
-    fontSize: 11,
-    lineHeight: 14,
+    fontSize: 17,
+    lineHeight: 24,
+    marginTop: 4,
   },
   accuracyBadge: {
-    minWidth: 86,
-    backgroundColor: 'rgba(43, 147, 72, 0.18)',
-    borderRadius: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 42,
+    minWidth: 114,
+    backgroundColor: 'rgba(43, 147, 72, 0.34)',
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
   },
   accuracyText: {
-    color: colors.successGreen,
+    color: colors.primary,
     fontFamily: fonts.body,
-    fontSize: 10,
-    fontWeight: '700',
-    lineHeight: 11,
-  },
-  accuracyValue: {
-    color: colors.successGreen,
-    fontFamily: fonts.body,
-    fontSize: 13,
-    fontWeight: '700',
-    lineHeight: 14,
+    fontSize: 14,
+    fontWeight: '800',
+    lineHeight: 18,
   },
   recommendationBox: {
     backgroundColor: colors.surfaceCard,
-    borderRadius: 8,
-    padding: 14,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
   },
   recommendationGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    rowGap: 12,
+    rowGap: 22,
   },
   infoCell: {
     width: '50%',
@@ -361,81 +327,32 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     lineHeight: 14,
   },
+  infoValueRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 7,
+    marginTop: 6,
+  },
+  infoIcon: {
+    width: 14,
+    height: 14,
+  },
   savingLabel: {
     color: colors.successGreen,
   },
   infoValue: {
     color: colors.primary,
     fontFamily: fonts.body,
-    fontSize: 13,
+    fontSize: 20,
     fontWeight: '700',
-    lineHeight: 18,
-    marginTop: 2,
+    lineHeight: 26,
   },
   savingValue: {
     color: colors.successGreen,
     fontFamily: fonts.heading,
-    fontSize: 20,
-    lineHeight: 28,
-  },
-  confirmButton: {
-    minHeight: 46,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
-    gap: 8,
-    backgroundColor: colors.primary,
-    borderRadius: 8,
-  },
-  cartIcon: {
-    width: 16,
-    height: 16,
-    position: 'relative',
-  },
-  cartHandle: {
-    position: 'absolute',
-    left: 0,
-    top: 2,
-    width: 5,
-    height: 2,
-    backgroundColor: colors.onPrimary,
-    borderRadius: 1,
-    transform: [{ rotate: '28deg' }],
-  },
-  cartBasket: {
-    position: 'absolute',
-    left: 4,
-    top: 5,
-    width: 10,
-    height: 6,
-    borderBottomColor: colors.onPrimary,
-    borderBottomWidth: 2,
-    borderLeftColor: colors.onPrimary,
-    borderLeftWidth: 2,
-    borderRightColor: colors.onPrimary,
-    borderRightWidth: 2,
-    borderRadius: 1,
-  },
-  cartWheelRow: {
-    position: 'absolute',
-    left: 5,
-    bottom: 1,
-    flexDirection: 'row',
-    gap: 4,
-  },
-  cartWheel: {
-    width: 3,
-    height: 3,
-    backgroundColor: colors.onPrimary,
-    borderRadius: 2,
-  },
-  confirmText: {
-    color: colors.onPrimary,
-    fontFamily: fonts.body,
-    fontSize: 12,
     fontWeight: '700',
-    letterSpacing: 0.4,
-    lineHeight: 16,
+    fontSize: 32,
+    lineHeight: 40,
   },
   poolSection: {
     gap: 10,
