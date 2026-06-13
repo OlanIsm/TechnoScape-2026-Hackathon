@@ -222,9 +222,8 @@ def recommend_buy(demand, suppliers, target_month):
 if st.button("🔮 Analisis & Hitung Pengadaan Optimal", use_container_width=True):
     with st.spinner('VolumeMind sedang menganalisis data historis & penawaran supplier...'):
         
-        # Susun dataframe input untuk model ML
+        # Susun dataframe input untuk model ML (tanpa 'tahun' sesuai spesifikasi model baru)
         input_data = pd.DataFrame([{
-            'tahun': tahun,
             'bulan': bulan,
             'id_koperasi': koperasi,
             'jenis_pupuk': pupuk,

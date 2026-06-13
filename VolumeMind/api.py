@@ -91,9 +91,8 @@ def predict_demand(request: PredictRequest):
         except Exception:
             raise HTTPException(status_code=400, detail="Format tanggal salah. Gunakan format YYYY-MM-DD.")
             
-        # Buat dataframe dari request input
+        # Buat dataframe dari request input (tanpa 'tahun' sesuai spesifikasi model baru)
         input_data = pd.DataFrame([{
-            'tahun': tahun,
             'bulan': bulan,
             'id_koperasi': request.id_koperasi,
             'jenis_pupuk': request.jenis_pupuk,

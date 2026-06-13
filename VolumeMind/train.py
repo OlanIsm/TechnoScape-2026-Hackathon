@@ -4,20 +4,20 @@ from sklearn.model_selection import TimeSeriesSplit, cross_val_score
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.metrics import mean_absolute_error, r2_score
 import joblib
 import os
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-print("=== VolumeMind: Menjalankan Pelatihan Model AI (Anti-Overfitting) ===")
+print("=== VolumeMind: Menjalankan Pelatihan Model AI (Optimasi Gradient Boosting) ===")
 
 # 1. Memuat dataset
 print(" Membaca dataset 'volumemate_dataset_final.csv'...")
 df = pd.read_csv('volumemate_dataset_final.csv')
 
-# Ekstraksi tahun dan bulan dari tanggal untuk pelatihan
+# Ekstraksi tahun dan bulan dari tanggal untuk pelatihan dan split
 df['tanggal'] = pd.to_datetime(df['tanggal'])
 df['tahun'] = df['tanggal'].dt.year
 df['bulan'] = df['tanggal'].dt.month
@@ -31,15 +31,16 @@ df['curah_hujan_mm'] = df.apply(
 )
 
 # 3. Menentukan fitur (X) dan target (y)
-X = df[['tahun', 'bulan', 'id_koperasi', 'jenis_pupuk', 'curah_hujan_mm', 'musim_tanam', 'luas_lahan_hektar']]
+# Catatan: Fitur 'tahun' dihapus agar model stabil memprediksi masa depan (mencegah bug ekstrapolasi pohon)
+X = df[['bulan', 'id_koperasi', 'jenis_pupuk', 'curah_hujan_mm', 'musim_tanam', 'luas_lahan_hektar']]
 y = df['volume_kebutuhan_kg']
 
 # 4. Pemisahan data kronologis (Time-Based Split)
 print(" Membagi data menjadi Train (2021-2024) dan Test (2025)...")
-X_train = X[X['tahun'] < 2025]
-y_train = y[X['tahun'] < 2025]
-X_test = X[X['tahun'] == 2025]
-y_test = y[X['tahun'] == 2025]
+X_train = X[df['tahun'] < 2025]
+y_train = y[df['tahun'] < 2025]
+X_test = X[df['tahun'] == 2025]
+y_test = y[df['tahun'] == 2025]
 
 # 5. Pipeline Preprocessing
 categorical_features = ['id_koperasi', 'jenis_pupuk', 'musim_tanam']
@@ -52,15 +53,16 @@ preprocessor = ColumnTransformer(
     remainder='passthrough'
 )
 
-# 6. Pipeline Model dengan regulasi hiperparameter
-print(" Melatih model RandomForestRegressor ter-regulasi...")
+# 6. Pipeline Model dengan GradientBoostingRegressor teroptimasi
+print(" Melatih model GradientBoostingRegressor ter-regulasi...")
 model = Pipeline(steps=[
     ('preprocessor', preprocessor),
-    ('regressor', RandomForestRegressor(
-        n_estimators=100,
-        max_depth=8,
+    ('regressor', GradientBoostingRegressor(
+        n_estimators=200,
+        learning_rate=0.1,
+        max_depth=4,
         min_samples_leaf=4,
-        min_samples_split=10,
+        min_samples_split=2,
         random_state=42
     ))
 ])

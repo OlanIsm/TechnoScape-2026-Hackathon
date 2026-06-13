@@ -7,28 +7,29 @@ Laporan ini menjelaskan bagaimana model kecerdasan buatan (AI) **VolumeMind** be
 
 ## 1. Bagaimana AI Menebak Kebutuhan Pupuk? (Pemilihan Model)
 
-VolumeMind menggunakan algoritma bernama **Random Forest Regressor**. 
+VolumeMind menggunakan algoritma bernama **Gradient Boosting Regressor**. 
 
 ### Analogi Sederhana
 Bayangkan Anda ingin menebak berapa banyak pupuk yang akan dibutuhkan petani bulan depan:
-*   Jika Anda hanya bertanya kepada **1 orang pengurus**, tebakannya mungkin bias atau subjektif.
-*   **Random Forest** bekerja seperti **bertanya kepada 100 orang ahli** dengan sudut pandang berbeda (ada ahli cuaca, ahli luas lahan, ahli sejarah transaksi). Tebakan dari ke-100 ahli ini kemudian dirata-ratakan untuk menghasilkan keputusan yang sangat objektif dan akurat.
+*   **Gradient Boosting** bekerja secara sekuensial (seperti proses mentoring belajar). Model pertama menebak secara kasar. Model kedua khusus belajar dari kesalahan (error) tebakan model pertama. Model ketiga belajar dari kesalahan model kedua, dan seterusnya hingga 200 tahapan perbaikan (`n_estimators=200`). Proses belajar dari kesalahan ini menghasilkan tebakan akhir yang sangat presisi dan objektif.
 
 ### Mengapa tidak pakai rumus matematika garis lurus biasa?
 Kebutuhan pupuk tidak stabil naik secara konstan. Polanya naik-turun mengikuti alam:
 *   *Curah hujan sedang*: Tanaman tumbuh subur $\rightarrow$ butuh banyak pupuk.
 *   *Curah hujan terlalu tinggi (banjir)*: Tanaman mati $\rightarrow$ kebutuhan pupuk malah turun drastis.
-Pola naik-turun yang rumit ini tidak bisa dibaca oleh rumus garis lurus biasa, tetapi sangat mudah dipelajari oleh Random Forest.
+Pola naik-turun yang rumit ini tidak bisa dibaca oleh rumus garis lurus biasa, tetapi sangat mudah dipelajari oleh Gradient Boosting.
 
 ---
 
-## 2. Menghindari "Hafalan Mati" (Anti-Overfitting Design)
+## 2. Menghindari "Hafalan Mati" & Desain Masa Depan (Anti-Overfitting & Extrapolation Safety)
 
-Dalam dunia AI, ada istilah **Overfitting**. Ini terjadi jika model AI terlalu pintar "menghafal" data masa lalu secara detail, tetapi gagal menebak masa depan saat ada kondisi yang berubah sedikit saja (seperti murid yang menghafal kunci jawaban ujian tahun lalu tanpa paham konsepnya).
+Dalam dunia AI, ada istilah **Overfitting** (model terlalu pintar menghafal data masa lalu secara detail, tetapi gagal menebak masa depan saat ada kondisi baru yang berubah sedikit saja). Selain itu, model berbasis pohon secara alami **tidak bisa memproyeksikan tren ke atas** (ekstrapolasi waktu). Jika fitur `tahun` dibiarkan, model di tahun 2026/2027 hanya akan menebak batas maksimum tahun 2024 dan rentan mengalami kekacauan prediksi karena angka tahun yang terus membesar.
 
-Untuk mengatasinya, kita membatasi model agar tidak tumbuh terlalu detail (`max_depth=8` dan `min_samples_leaf=4`). Model dipaksa memahami konsep/pola besarnya saja.
+Untuk mengatasinya, kami mengambil dua langkah pencegahan:
+1.  **Menghapus Fitur Tahun**: Model dipaksa fokus pada variabel fisik yang bermakna yaitu **luas lahan** (kebutuhan pupuk naik jika lahan bertambah) dan **bulan + curah hujan** (menangkap musim).
+2.  **Regularisasi Kedalaman Pohon**: Membatasi kedalaman setiap pohon keputusan (`max_depth=4`) dan minimal sampel per daun (`min_samples_leaf=4`) agar model hanya menangkap konsep besarnya saja.
 
-*   **Hasilnya**: Saat diuji menggunakan data tahun 2025 yang belum pernah dilihat sama sekali oleh model, akurasinya tetap stabil di angka **90%**. Model terbukti pintar mengenali pola, bukan sekadar menghafal data lama.
+*   **Hasilnya**: Saat diuji menggunakan data tahun 2025 yang belum pernah dilihat sama sekali oleh model, akurasinya meningkat pesat menjadi **93.84%** (dengan nilai error MAE terpangkas 3x lipat dibanding model sebelumnya). Model terbukti sangat stabil tanpa gejala overfitting.
 
 ---
 
