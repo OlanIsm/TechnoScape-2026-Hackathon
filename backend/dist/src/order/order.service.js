@@ -13,10 +13,73 @@ exports.OrderService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
 const client_1 = require("@prisma/client");
+const FERTILIZER_CATALOG = {
+    urea: { name: 'Urea', aliases: ['urea'], pricePerKg: 8500 },
+    npk: { name: 'NPK', aliases: ['npk', 'phonska'], pricePerKg: 10000 },
+    sp36: { name: 'SP-36', aliases: ['sp-36', 'sp36'], pricePerKg: 9000 },
+    za: { name: 'ZA', aliases: ['za'], pricePerKg: 7500 },
+    organik: { name: 'Organik', aliases: ['organik', 'organic'], pricePerKg: 4500 },
+};
 let OrderService = class OrderService {
     prisma;
     constructor(prisma) {
         this.prisma = prisma;
+    }
+    getFertilizerCatalogEntry(jenisPupuk) {
+        const normalized = (jenisPupuk || '').toLowerCase();
+        return Object.values(FERTILIZER_CATALOG).find((entry) => {
+            return entry.aliases.some((alias) => normalized.includes(alias));
+        }) ?? FERTILIZER_CATALOG.npk;
+    }
+    async findOrCreateSupplier(name) {
+        const supplierName = name?.trim() || 'Supplier Default VolumeMate';
+        let supplier = await this.prisma.supplier.findFirst({
+            where: {
+                name: { contains: supplierName, mode: 'insensitive' },
+            },
+        });
+        if (!supplier) {
+            supplier = await this.prisma.supplier.create({
+                data: {
+                    name: supplierName,
+                    address: 'Alamat Supplier Manual',
+                    phone: '08123456789',
+                },
+            });
+        }
+        return supplier;
+    }
+    async findOrCreateProduct(jenisPupuk, supplierName) {
+        const entry = this.getFertilizerCatalogEntry(jenisPupuk);
+        const searchTerms = Array.from(new Set([entry.name, ...entry.aliases, jenisPupuk].filter(Boolean)));
+        let product = await this.prisma.product.findFirst({
+            where: {
+                OR: searchTerms.map((term) => ({
+                    name: { contains: term, mode: 'insensitive' },
+                })),
+            },
+        });
+        if (product) {
+            return product;
+        }
+        const supplier = await this.findOrCreateSupplier(supplierName);
+        product = await this.prisma.product.create({
+            data: {
+                name: entry.name,
+                description: `Produk default ${entry.name} untuk pencatatan transaksi VolumeMate.`,
+                supplierId: supplier.id,
+                priceTiers: {
+                    create: [
+                        {
+                            minVolume: 0,
+                            maxVolume: null,
+                            pricePerKg: entry.pricePerKg,
+                        },
+                    ],
+                },
+            },
+        });
+        return product;
     }
     async createOrder(data) {
         const order = await this.prisma.order.create({
@@ -44,31 +107,8 @@ let OrderService = class OrderService {
         if (!user.koperasiId) {
             throw new common_1.BadRequestException('User Anda tidak terasosiasi dengan Koperasi mana pun di sistem.');
         }
-        let product = await this.prisma.product.findFirst({
-            where: {
-                name: { contains: jenisPupuk, mode: 'insensitive' },
-            },
-        });
-        if (!product) {
-            product = await this.prisma.product.findFirst();
-        }
-        if (!product) {
-            throw new common_1.BadRequestException('Tidak ada produk pupuk terdaftar di sistem');
-        }
-        let supplier = await this.prisma.supplier.findFirst({
-            where: {
-                name: { contains: supplierName, mode: 'insensitive' },
-            },
-        });
-        if (!supplier) {
-            supplier = await this.prisma.supplier.create({
-                data: {
-                    name: supplierName,
-                    address: 'Alamat Supplier Manual',
-                    phone: '08123456789',
-                },
-            });
-        }
+        await this.findOrCreateSupplier(supplierName);
+        const product = await this.findOrCreateProduct(jenisPupuk, supplierName);
         const priceAtPurchase = totalPrice / quantity;
         const parsedDate = new Date(tanggal);
         const orderDate = isNaN(parsedDate.getTime()) ? new Date() : parsedDate;
@@ -273,17 +313,7 @@ let OrderService = class OrderService {
         if (!user.koperasiId) {
             throw new common_1.BadRequestException('User Anda tidak terasosiasi dengan Koperasi mana pun di sistem.');
         }
-        let product = await this.prisma.product.findFirst({
-            where: {
-                name: { contains: jenisPupuk, mode: 'insensitive' },
-            },
-        });
-        if (!product) {
-            product = await this.prisma.product.findFirst();
-        }
-        if (!product) {
-            throw new common_1.BadRequestException('Tidak ada produk pupuk terdaftar di sistem');
-        }
+        const product = await this.findOrCreateProduct(jenisPupuk);
         const totalPrice = quantity * pricePerKg;
         const parsedDate = new Date(tanggal);
         const distributionDate = isNaN(parsedDate.getTime()) ? new Date() : parsedDate;

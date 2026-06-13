@@ -3,6 +3,9 @@ import { Order, CollectivePool, AuditLog, Prisma } from '@prisma/client';
 export declare class OrderService {
     private prisma;
     constructor(prisma: PrismaService);
+    private getFertilizerCatalogEntry;
+    private findOrCreateSupplier;
+    private findOrCreateProduct;
     createOrder(data: Prisma.OrderUncheckedCreateInput): Promise<Order>;
     createManualTransaction(userId: string, jenisPupuk: string, quantity: number, supplierName: string, tanggal: string, totalPrice: number): Promise<{
         orderItems: {
