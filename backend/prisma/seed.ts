@@ -115,8 +115,8 @@ async function main() {
     data: [
       { productId: pupukNPK.id, minVolume: 0, maxVolume: 5000, pricePerKg: 10000 },
       { productId: pupukNPK.id, minVolume: 5000, maxVolume: 15000, pricePerKg: 9200 },
-      { productId: pupukNPK.id, minVolume: 15000, maxVolume: 25000, pricePerKg: 8500 },
-      { productId: pupukNPK.id, minVolume: 25000, maxVolume: null, pricePerKg: 7000 },
+      { productId: pupukNPK.id, minVolume: 15000, maxVolume: 20000, pricePerKg: 8500 },
+      { productId: pupukNPK.id, minVolume: 20000, maxVolume: null, pricePerKg: 7000 },
     ],
   });
 
