@@ -4,6 +4,7 @@ import { colors, fonts } from '../theme';
 
 type PoolCardProps = {
   onAction: (message: string) => void;
+  onDetailPress?: (pool: ProcurementPool) => void;
   onJoinPress?: (pool: ProcurementPool) => void;
   pool: ProcurementPool;
 };
@@ -12,7 +13,7 @@ const cardShadow = {
   boxShadow: '0 4px 12px rgba(27, 67, 50, 0.05)',
 } as unknown as ViewStyle;
 
-export function PoolCard({ onAction, onJoinPress, pool }: PoolCardProps) {
+export function PoolCard({ onAction, onDetailPress, onJoinPress, pool }: PoolCardProps) {
   return (
     <View style={styles.poolCard}>
       <View style={styles.poolAccent} />
@@ -52,6 +53,11 @@ export function PoolCard({ onAction, onJoinPress, pool }: PoolCardProps) {
         onPress={() => {
           if (pool.action === 'join' && onJoinPress) {
             onJoinPress(pool);
+            return;
+          }
+
+          if (pool.action === 'detail' && onDetailPress) {
+            onDetailPress(pool);
             return;
           }
 

@@ -6,6 +6,7 @@ import { pools, type ProcurementPool } from './data/pools';
 import { JoinPoolScreen } from './screens/JoinPoolScreen';
 import { KoperasiDashboardScreen } from './screens/KoperasiDashboardScreen';
 import { LoginScreen } from './screens/LoginScreen';
+import { PoolDetailScreen } from './screens/PoolDetailScreen';
 import { SupplierMenuScreen } from './screens/MenuScreen';
 import { RecordTransactionScreen } from './screens/RecordTransactionScreen';
 import { RegisterScreen } from './screens/RegisterScreen';
@@ -18,6 +19,7 @@ type Screen =
   | 'koperasi-dashboard'
   | 'collective-buy'
   | 'join-pool'
+  | 'pool-detail'
   | 'record-transaction'
   | 'audit-log'
   | 'supplier-menu'
@@ -44,6 +46,10 @@ function getInitialScreen(): Screen {
     return 'join-pool';
   }
 
+  if (window.location.hash === '#detail-pool') {
+    return 'pool-detail';
+  }
+
   if (window.location.hash === '#catat') {
     return 'record-transaction';
   }
@@ -67,6 +73,7 @@ export default function App() {
   const [screen, setScreen] = useState<Screen>(getInitialScreen);
   const [joinedPoolIds, setJoinedPoolIds] = useState<number[]>([2]);
   const [selectedJoinPool, setSelectedJoinPool] = useState<ProcurementPool>(pools[0]);
+  const [selectedDetailPool, setSelectedDetailPool] = useState<ProcurementPool>(pools[1]);
   const [collectiveNotice, setCollectiveNotice] = useState('');
   const [collectiveInitialTab, setCollectiveInitialTab] = useState<'open' | 'mine'>('open');
 
@@ -103,6 +110,18 @@ export default function App() {
     setSelectedJoinPool(pool);
     window.location.hash = 'gabung-pool';
     setScreen('join-pool');
+  };
+
+  const goToPoolDetail = (pool: ProcurementPool) => {
+    setSelectedDetailPool(pool);
+    window.location.hash = 'detail-pool';
+    setScreen('pool-detail');
+  };
+
+  const goToMyPools = () => {
+    setCollectiveInitialTab('mine');
+    window.location.hash = 'kolektif';
+    setScreen('collective-buy');
   };
 
   const confirmJoinPool = (poolId: number, contributionTon: number) => {
@@ -164,6 +183,7 @@ export default function App() {
       <CollectiveBuyScreen
         initialTab={collectiveInitialTab}
         joinedPoolIds={joinedPoolIds}
+        onDetailPoolPress={goToPoolDetail}
         onHomePress={goToKoperasiMenu}
         onJoinPoolPress={goToJoinPool}
         onLogPress={goToAuditLog}
@@ -183,6 +203,10 @@ export default function App() {
         pool={selectedJoinPool}
       />
     );
+  }
+
+  if (screen === 'pool-detail') {
+    return <PoolDetailScreen onBackPress={goToMyPools} pool={selectedDetailPool} />;
   }
 
   if (screen === 'record-transaction') {

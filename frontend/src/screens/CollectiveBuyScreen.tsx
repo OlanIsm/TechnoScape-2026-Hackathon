@@ -10,6 +10,7 @@ import { colors, fonts } from '../theme';
 type CollectiveBuyScreenProps = {
   initialTab?: 'open' | 'mine';
   joinedPoolIds: number[];
+  onDetailPoolPress: (pool: ProcurementPool) => void;
   onHomePress: () => void;
   onJoinPoolPress: (pool: ProcurementPool) => void;
   onLogPress: () => void;
@@ -26,6 +27,7 @@ const cardShadow = {
 export function CollectiveBuyScreen({
   initialTab = 'open',
   joinedPoolIds,
+  onDetailPoolPress,
   onHomePress,
   onJoinPoolPress,
   onLogPress,
@@ -57,8 +59,12 @@ export function CollectiveBuyScreen({
     window.setTimeout(() => setNotice(''), 2200);
   };
 
-  const openPools = pools.filter((pool) => !joinedPoolIds.includes(pool.id));
-  const myPools = pools.filter((pool) => joinedPoolIds.includes(pool.id));
+  const openPools = pools
+    .filter((pool) => !joinedPoolIds.includes(pool.id))
+    .map((pool) => ({ ...pool, action: 'join' as const }));
+  const myPools = pools
+    .filter((pool) => joinedPoolIds.includes(pool.id))
+    .map((pool) => ({ ...pool, action: 'detail' as const }));
   const visiblePools = activeTab === 'open' ? openPools : myPools;
 
   return (
@@ -104,7 +110,13 @@ export function CollectiveBuyScreen({
           <View style={styles.poolList}>
             {visiblePools.length ? (
               visiblePools.map((pool) => (
-                <PoolCard key={pool.id} onAction={showDummyNotice} onJoinPress={onJoinPoolPress} pool={pool} />
+                <PoolCard
+                  key={pool.id}
+                  onAction={showDummyNotice}
+                  onDetailPress={onDetailPoolPress}
+                  onJoinPress={onJoinPoolPress}
+                  pool={pool}
+                />
               ))
             ) : (
               <View style={styles.emptyCard}>
