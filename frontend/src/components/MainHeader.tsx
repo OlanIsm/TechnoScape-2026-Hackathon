@@ -25,23 +25,25 @@ export function MainHeader({ onLogoutPress }: MainHeaderProps) {
 
 const styles = StyleSheet.create({
   header: {
-    minHeight: 66,
+    minHeight: 72,
     alignItems: 'center',
+    backgroundColor: colors.surfaceContainerLowest,
+    borderBottomColor: colors.surfaceContainerHigh,
+    borderBottomWidth: 2,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    borderBottomColor: colors.surfaceVariant,
-    borderBottomWidth: 1,
     paddingHorizontal: 16,
+    boxShadow: '0 3px 0 rgba(1, 45, 29, 0.03)',
   },
   logoutButton: {
-    width: 42,
-    height: 42,
+    width: 44,
+    height: 44,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 21,
+    borderRadius: 22,
   },
   logoutIcon: {
-    width: 24,
-    height: 24,
+    width: 26,
+    height: 26,
   },
 });
