@@ -53,8 +53,8 @@ export function RegisterScreen({ onBackPress, onLoginPress }: RegisterScreenProp
       setTimeout(() => {
         onLoginPress?.();
       }, 1500);
-    } catch (err: any) {
-      setNotice(err.message || 'Registrasi gagal. Email mungkin sudah terdaftar.');
+    } catch (err: unknown) {
+      setNotice(getErrorMessage(err, 'Registrasi gagal. Email mungkin sudah terdaftar.'));
     }
   };
 
@@ -191,6 +191,10 @@ export function RegisterScreen({ onBackPress, onLoginPress }: RegisterScreenProp
       </View>
     </SafeAreaView>
   );
+}
+
+function getErrorMessage(err: unknown, fallback: string) {
+  return err instanceof Error ? err.message : fallback;
 }
 
 type RoleOptionProps = {

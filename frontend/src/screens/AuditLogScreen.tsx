@@ -28,6 +28,13 @@ type PoolLog = {
   status: 'SUKSES' | 'GAGAL' | 'DIBATALKAN';
 };
 
+type AuditLog = {
+  action: string;
+  createdAt: string;
+  details: string;
+  id: string;
+};
+
 const poolLogs: PoolLog[] = [
   {
     date: '21 Okt',
@@ -61,7 +68,7 @@ export function AuditLogScreen({
 }: AuditLogScreenProps) {
   const { height } = useWindowDimensions();
   const [activeTab, setActiveTab] = useState<'manual' | 'pool'>('manual');
-  const [logs, setLogs] = useState<any[]>([]);
+  const [logs, setLogs] = useState<AuditLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [notice, setNotice] = useState('');
 
@@ -69,10 +76,10 @@ export function AuditLogScreen({
     async function loadLogs() {
       try {
         setIsLoading(true);
-        const data = await api.getAuditLogs();
+        const data = (await api.getAuditLogs()) as AuditLog[];
         setLogs(data);
-      } catch (err: any) {
-        setNotice(err.message || 'Gagal memuat log audit.');
+      } catch (err: unknown) {
+        setNotice(getErrorMessage(err, 'Gagal memuat log audit.'));
       } finally {
         setIsLoading(false);
       }
@@ -95,21 +102,7 @@ export function AuditLogScreen({
   return (
     <SafeAreaView style={[styles.safeArea, { minHeight: height }]}>
       <View style={[styles.shell, { height }]}>
-<<<<<<< HEAD
-        <View style={styles.topBar}>
-          <View style={styles.brandRow}>
-            <View style={styles.brandIcon}>
-              <BrandMark size={26} />
-            </View>
-            <Text style={styles.brandText}>VolumeMate</Text>
-          </View>
-          <Pressable accessibilityRole="button" onPress={handleLogout} style={styles.logoutButton}>
-            <Text style={styles.logoutText}>Keluar</Text>
-          </Pressable>
-        </View>
-=======
-        <MainHeader onLogoutPress={onLogoutPress} />
->>>>>>> f53dd0f77fb50e4b647bf08268e7b5ad2c6a65fb
+        <MainHeader onLogoutPress={handleLogout} />
 
         <ScrollView
           contentContainerStyle={styles.scrollContent}
@@ -187,7 +180,7 @@ export function AuditLogScreen({
   );
 }
 
-function ManualLogList({ logs }: { logs: any[] }) {
+function ManualLogList({ logs }: { logs: AuditLog[] }) {
   if (logs.length === 0) {
     return (
       <View style={{ padding: 24, alignItems: 'center' }}>
@@ -205,7 +198,7 @@ function ManualLogList({ logs }: { logs: any[] }) {
   );
 }
 
-function ManualLogCard({ log }: { log: any }) {
+function ManualLogCard({ log }: { log: AuditLog }) {
   const dateStr = new Date(log.createdAt).toLocaleDateString('id-ID', {
     day: 'numeric',
     month: 'short',
@@ -290,7 +283,7 @@ function parseDetails(details: string, action: string) {
       qty: '',
       total: ''
     };
-  } catch (_) {
+  } catch {
     return {
       title: action,
       desc: details,
@@ -298,6 +291,10 @@ function parseDetails(details: string, action: string) {
       total: ''
     };
   }
+}
+
+function getErrorMessage(err: unknown, fallback: string) {
+  return err instanceof Error ? err.message : fallback;
 }
 
 type PoolLogListProps = {

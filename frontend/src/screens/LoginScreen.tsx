@@ -46,8 +46,8 @@ export function LoginScreen({
         await api.login('admin@koperasi.com', 'password123');
         setNotice('');
         onKoperasiLogin?.();
-      } catch (err: any) {
-        setNotice(err.message || 'Login gagal. Pastikan backend aktif.');
+      } catch (err: unknown) {
+        setNotice(getErrorMessage(err, 'Login gagal. Pastikan backend aktif.'));
       }
       return;
     }
@@ -59,8 +59,8 @@ export function LoginScreen({
         await api.login('joko@koperasi.com', 'password123');
         setNotice('');
         onKoperasiLogin?.();
-      } catch (err: any) {
-        setNotice(err.message || 'Login gagal. Pastikan backend aktif.');
+      } catch (err: unknown) {
+        setNotice(getErrorMessage(err, 'Login gagal. Pastikan backend aktif.'));
       }
       return;
     }
@@ -86,11 +86,13 @@ export function LoginScreen({
       const role = response.user?.role;
       if (role === 'ADMIN_KOPERASI' || role === 'ANGGOTA') {
         onKoperasiLogin?.();
+      } else if (role === 'SUPPLIER') {
+        onSupplierLogin?.();
       } else {
         onKoperasiLogin?.();
       }
-    } catch (err: any) {
-      setNotice(err.message || 'Login gagal. Periksa kembali email dan password.');
+    } catch (err: unknown) {
+      setNotice(getErrorMessage(err, 'Login gagal. Periksa kembali email dan password.'));
     }
   };
 
@@ -188,6 +190,10 @@ export function LoginScreen({
       </View>
     </SafeAreaView>
   );
+}
+
+function getErrorMessage(err: unknown, fallback: string) {
+  return err instanceof Error ? err.message : fallback;
 }
 
 const styles = StyleSheet.create({
