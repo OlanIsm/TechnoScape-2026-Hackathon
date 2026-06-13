@@ -16,11 +16,14 @@ import storeIcon from '../assets/store_icon.svg';
 import upIcon from '../assets/up_icon.svg';
 import { KoperasiBottomNav } from '../components/KoperasiBottomNav';
 import { MainHeader } from '../components/MainHeader';
+import { PoolCard } from '../components/PoolCard';
+import type { ProcurementPool } from '../data/pools';
 import { api } from '../services/api';
 import { colors, fonts } from '../theme';
 
 type KoperasiDashboardScreenProps = {
   onCollectivePress: () => void;
+  onDetailPoolPress: (pool: ProcurementPool) => void;
   onLogPress: () => void;
   onLogoutPress: () => void;
   onRecordPress: () => void;
@@ -34,10 +37,15 @@ type BackendPool = {
   currentVolumeKg?: number;
   deadline?: string;
   deadlineAt?: string;
+  id?: string;
   name?: string;
   orders?: PoolOrder[];
   product?: {
     name?: string;
+    priceTiers?: Array<{ pricePerKg?: number }>;
+    supplier?: {
+      name?: string;
+    };
   };
   status?: string;
   targetVolumeKg?: number;
@@ -96,6 +104,7 @@ function detailNumber(details: AuditDetails, key: string, fallback = 0) {
 
 export function KoperasiDashboardScreen({
   onCollectivePress,
+  onDetailPoolPress,
   onLogPress,
   onLogoutPress,
   onRecordPress,
@@ -189,7 +198,7 @@ export function KoperasiDashboardScreen({
                 accuracy={dashboardData?.akurasiPrediksi || 94.2}
                 data={dashboardData?.rekomendasiVolumeMind}
               />
-              <PoolActiveCard onDetailPress={onCollectivePress} pool={currentPool} />
+              <PoolActiveCard onDetailPress={onDetailPoolPress} pool={currentPool} />
             </>
           )}
         </ScrollView>
@@ -364,7 +373,39 @@ function InfoCell({
   );
 }
 
-function PoolActiveCard({ pool, onDetailPress }: { onDetailPress: () => void; pool: BackendPool | null }) {
+function mapDashboardPoolToProcurementPool(pool: BackendPool): ProcurementPool {
+  const totalVolume = pool.targetVolumeKg || 10000;
+  const currentVolume =
+    pool.currentVolumeKg ||
+    pool.orders?.reduce((acc, order) => acc + (order.orderItems?.[0]?.quantity || 0), 0) ||
+    0;
+  const activePrice = pool.product?.priceTiers?.[0]?.pricePerKg;
+  const deadline = pool.deadlineAt || pool.deadline;
+  const progress = Math.min(100, Math.round((currentVolume / totalVolume) * 100));
+
+  return {
+    action: 'detail',
+    currentTon: currentVolume / 1000,
+    deadline: deadline ? new Date(deadline).toLocaleDateString('id-ID') : 'Segera',
+    id: pool.id || pool.name || 'dashboard-active-pool',
+    location: pool.product?.supplier?.name || 'Pemasok Terdaftar',
+    price: activePrice ? `Rp ${(activePrice * 1000).toLocaleString('id-ID')} / Ton` : 'Harga mengikuti pemasok',
+    product: pool.product?.name || 'Pupuk',
+    progress,
+    progressText: `${(currentVolume / 1000).toFixed(1)} / ${(totalVolume / 1000).toFixed(1)} Ton`,
+    supplier: pool.name || `Pool ${pool.product?.name || 'Pupuk'}`,
+    targetTon: totalVolume / 1000,
+    unitPricePerTon: activePrice ? activePrice * 1000 : 0,
+  };
+}
+
+function PoolActiveCard({
+  onDetailPress,
+  pool,
+}: {
+  onDetailPress: (pool: ProcurementPool) => void;
+  pool: BackendPool | null;
+}) {
   if (!pool) {
     return (
       <View style={styles.poolSection}>
@@ -378,58 +419,15 @@ function PoolActiveCard({ pool, onDetailPress }: { onDetailPress: () => void; po
     );
   }
 
-  const totalVolume = pool.targetVolumeKg || 1000;
-  const currentVolume =
-    pool.currentVolumeKg ||
-    pool.orders?.reduce((acc, order) => acc + (order.orderItems?.[0]?.quantity || 0), 0) ||
-    0;
-  const progressPercent = Math.min(100, Math.round((currentVolume / totalVolume) * 100));
-  const deadline = pool.deadlineAt || pool.deadline;
+  const activePool = mapDashboardPoolToProcurementPool(pool);
 
   return (
     <View style={styles.poolSection}>
       <View style={styles.poolHeader}>
         <Text style={styles.poolTitle}>Pool Aktif</Text>
-        <Pressable accessibilityRole="button" onPress={onDetailPress}>
-          <Text style={styles.seeAll}>Lihat Semua &gt;</Text>
-        </Pressable>
       </View>
 
-      <View style={styles.poolCard}>
-        <View style={styles.poolTopRow}>
-          <View style={styles.poolCopy}>
-            <View style={styles.poolMetaRow}>
-              <View style={[styles.pendingBadge, pool.status === 'ACTIVE' && styles.activeBadge]}>
-                <Text style={[styles.pendingText, pool.status === 'ACTIVE' && styles.activeText]}>
-                  {pool.status || 'ACTIVE'}
-                </Text>
-              </View>
-              {deadline ? (
-                <Text style={styles.poolDeadline}>Berakhir: {new Date(deadline).toLocaleDateString('id-ID')}</Text>
-              ) : null}
-            </View>
-            <Text style={styles.poolName}>{pool.name || `Pool ${pool.product?.name || 'Pupuk'}`}</Text>
-          </View>
-          <View style={styles.groupIcon}>
-            <Text style={styles.groupIconText}>OO</Text>
-            <View style={styles.groupDot} />
-          </View>
-        </View>
-
-        <View style={styles.progressMeta}>
-          <Text style={styles.progressLabel}>Progres Terkumpul</Text>
-          <Text style={styles.progressValue}>
-            {progressPercent}% ({(currentVolume / 1000).toFixed(1)}/{(totalVolume / 1000).toFixed(1)} Ton)
-          </Text>
-        </View>
-        <View style={styles.progressTrack}>
-          <View style={[styles.progressFill, { width: `${progressPercent}%` }]} />
-        </View>
-
-        <Pressable accessibilityRole="button" onPress={onDetailPress} style={styles.detailButton}>
-          <Text style={styles.detailButtonText}>IKUTI POOL PATUNGAN</Text>
-        </Pressable>
-      </View>
+      <PoolCard onAction={() => undefined} onDetailPress={onDetailPress} pool={activePool} />
     </View>
   );
 }
@@ -666,13 +664,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     lineHeight: 28,
   },
-  seeAll: {
-    color: colors.secondary,
-    fontFamily: fonts.body,
-    fontSize: 12,
-    fontWeight: '700',
-    lineHeight: 16,
-  },
   poolCard: {
     backgroundColor: colors.surfaceCard,
     borderColor: 'rgba(193, 200, 194, 0.48)',
@@ -691,127 +682,6 @@ const styles = StyleSheet.create({
     fontFamily: fonts.body,
     fontSize: 13,
     textAlign: 'center',
-  },
-  poolTopRow: {
-    alignItems: 'flex-start',
-    flexDirection: 'row',
-    gap: 12,
-    justifyContent: 'space-between',
-  },
-  poolCopy: {
-    flex: 1,
-    minWidth: 0,
-  },
-  poolMetaRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  pendingBadge: {
-    backgroundColor: colors.surfaceVariant,
-    borderRadius: 999,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
-  activeBadge: {
-    backgroundColor: 'rgba(43, 147, 72, 0.18)',
-  },
-  pendingText: {
-    color: colors.onSurfaceVariant,
-    fontFamily: fonts.body,
-    fontSize: 10,
-    fontWeight: '800',
-    lineHeight: 12,
-  },
-  activeText: {
-    color: colors.successGreen,
-  },
-  poolDeadline: {
-    color: colors.outline,
-    fontFamily: fonts.body,
-    fontSize: 11,
-    fontWeight: '600',
-    lineHeight: 14,
-  },
-  poolName: {
-    color: colors.primary,
-    fontFamily: fonts.heading,
-    fontSize: 18,
-    fontWeight: '700',
-    lineHeight: 24,
-    marginTop: 8,
-  },
-  groupIcon: {
-    width: 42,
-    height: 42,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.secondaryContainer,
-    borderRadius: 21,
-    position: 'relative',
-  },
-  groupIconText: {
-    color: colors.secondary,
-    fontFamily: fonts.heading,
-    fontSize: 11,
-    fontWeight: '800',
-  },
-  groupDot: {
-    position: 'absolute',
-    right: 5,
-    bottom: 5,
-    width: 8,
-    height: 8,
-    backgroundColor: colors.successGreen,
-    borderColor: colors.surfaceCard,
-    borderRadius: 4,
-    borderWidth: 1,
-  },
-  progressMeta: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  progressLabel: {
-    color: colors.onSurfaceVariant,
-    fontFamily: fonts.body,
-    fontSize: 11,
-    fontWeight: '500',
-    lineHeight: 14,
-  },
-  progressValue: {
-    color: colors.primary,
-    fontFamily: fonts.body,
-    fontSize: 12,
-    fontWeight: '700',
-    lineHeight: 16,
-  },
-  progressTrack: {
-    height: 8,
-    backgroundColor: colors.surfaceVariant,
-    borderRadius: 999,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: colors.secondary,
-    borderRadius: 999,
-  },
-  detailButton: {
-    minHeight: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.primary,
-    borderRadius: 8,
-  },
-  detailButtonText: {
-    color: colors.onPrimary,
-    fontFamily: fonts.body,
-    fontSize: 12,
-    fontWeight: '800',
-    letterSpacing: 0.4,
-    lineHeight: 16,
   },
   modalOverlay: {
     position: 'absolute',

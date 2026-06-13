@@ -13,6 +13,7 @@ import {
 import plusIcon from '../assets/plus_icon.svg';
 import { KoperasiBottomNav } from '../components/KoperasiBottomNav';
 import { MainHeader } from '../components/MainHeader';
+import { PoolCard } from '../components/PoolCard';
 import type { ProcurementPool } from '../data/pools';
 import { api } from '../services/api';
 import { colors, fonts } from '../theme';
@@ -157,7 +158,7 @@ export function CollectiveBuyScreen({
       price: `Rp ${(activePricePerKg * 1000).toLocaleString('id-ID')} / Ton`,
       progress: Math.min(100, Math.round((currentVolumeKg / targetVolumeKg) * 100)),
       progressText: `${(currentVolumeKg / 1000).toFixed(1)} / ${(targetVolumeKg / 1000).toFixed(0)} Ton`,
-      deadline: bp.deadline ? new Date(bp.deadline).toLocaleDateString('id-ID') : 'Segera',
+      deadline: getDeadlineLabel(bp.deadlineAt || bp.deadline),
     };
   };
 
@@ -297,15 +298,19 @@ export function CollectiveBuyScreen({
                   </Text>
                 </View>
               ) : (
-                visiblePools.map((pool) => (
-                  <BackendPoolCard
-                    key={pool.id}
-                    myKoperasiId={myKoperasiId}
-                    onDetail={() => handleDetailPool(pool)}
-                    onJoin={() => handleJoinPool(pool)}
-                    pool={pool}
-                  />
-                ))
+                visiblePools.map((pool) => {
+                  const isJoined = pool.orders?.some((order) => order.koperasiId === myKoperasiId) || false;
+
+                  return (
+                    <PoolCard
+                      key={pool.id}
+                      onAction={setNotice}
+                      onDetailPress={() => handleDetailPool(pool)}
+                      onJoinPress={() => handleJoinPool(pool)}
+                      pool={mapBackendPoolToProcurementPool(pool, isJoined ? 'detail' : 'join')}
+                    />
+                  );
+                })
               )}
             </View>
           )}
@@ -341,89 +346,6 @@ function getDeadlineLabel(deadline: string | undefined): string {
   if (diffDays === 1) return '1 hari lagi';
   if (diffDays <= 30) return `${diffDays} hari lagi`;
   return new Date(deadline).toLocaleDateString('id-ID');
-}
-
-function BackendPoolCard({
-  myKoperasiId,
-  onDetail,
-  onJoin,
-  pool,
-}: {
-  myKoperasiId: string | null;
-  onDetail: () => void;
-  onJoin: () => void;
-  pool: BackendPool;
-}) {
-  const totalTargetVolume = pool.targetVolumeKg || 10000;
-  const currentVolume =
-    pool.currentVolumeKg ||
-    pool.orders?.reduce((acc, order) => acc + (order.orderItems?.[0]?.quantity || 0), 0) ||
-    0;
-  const progressPercent = Math.min(100, Math.round((currentVolume / totalTargetVolume) * 100));
-  const deadline = pool.deadlineAt || pool.deadline;
-  const deadlineLabel = getDeadlineLabel(deadline);
-  const activePrice = pool.product?.priceTiers?.[0]?.pricePerKg || 9000;
-  const isJoined = pool.orders?.some((order) => order.koperasiId === myKoperasiId);
-
-  return (
-    <View style={styles.poolCard}>
-      <View style={styles.poolAccent} />
-      <View style={styles.poolHeader}>
-        <View style={styles.supplierRow}>
-          <View style={styles.supplierIcon}>
-            <Text style={styles.supplierIconText}>VM</Text>
-          </View>
-          <View style={styles.supplierTextWrap}>
-            <Text style={styles.supplierName}>{pool.name || `Pool ${pool.product?.name || 'Pupuk'}`}</Text>
-            <Text style={styles.locationText}>{pool.product?.supplier?.name || 'Pemasok Terdaftar'}</Text>
-          </View>
-        </View>
-        <View style={styles.deadlineBadge}>
-          <View style={styles.deadlineDot} />
-          <Text style={styles.deadlineText}>{deadlineLabel}</Text>
-        </View>
-      </View>
-
-      <View style={styles.productBox}>
-        <InfoRow label="Produk" value={pool.product?.name || 'Pupuk'} />
-        <InfoRow isPrice label="Harga Tier Aktif" value={`Rp ${activePrice.toLocaleString('id-ID')}/kg`} />
-      </View>
-
-      <View style={styles.progressBlock}>
-        <View style={styles.progressHeader}>
-          <View>
-            <Text style={styles.progressLabel}>Progres Volume</Text>
-            <Text style={styles.progressText}>
-              {(currentVolume / 1000).toFixed(1)} / {(totalTargetVolume / 1000).toFixed(0)} Ton
-            </Text>
-          </View>
-          <Text style={styles.progressPercent}>{progressPercent}%</Text>
-        </View>
-        <View style={styles.progressTrack}>
-          <View style={[styles.progressFill, { width: `${progressPercent}%` }]} />
-        </View>
-      </View>
-
-      <Pressable
-        accessibilityRole="button"
-        onPress={isJoined ? onDetail : onJoin}
-        style={[styles.actionButton, isJoined && styles.secondaryActionButton]}
-      >
-        <Text style={[styles.actionText, isJoined && styles.secondaryActionText]}>
-          {isJoined ? 'Lihat Detail' : 'Gabung Pool Ini'}
-        </Text>
-      </Pressable>
-    </View>
-  );
-}
-
-function InfoRow({ isPrice = false, label, value }: { isPrice?: boolean; label: string; value: string }) {
-  return (
-    <View style={styles.infoRow}>
-      <Text style={styles.infoLabel}>{label}</Text>
-      <Text style={[styles.infoValue, isPrice && styles.priceValue]}>{value}</Text>
-    </View>
-  );
 }
 
 function getErrorMessage(err: unknown, fallback: string) {
@@ -540,185 +462,6 @@ const styles = StyleSheet.create({
     padding: 18,
     position: 'relative',
     ...cardShadow,
-  },
-  poolAccent: {
-    position: 'absolute',
-    right: -24,
-    top: -24,
-    width: 96,
-    height: 96,
-    backgroundColor: 'rgba(174, 238, 203, 0.52)',
-    borderBottomLeftRadius: 96,
-  },
-  poolHeader: {
-    alignItems: 'flex-start',
-    flexDirection: 'row',
-    gap: 10,
-    justifyContent: 'space-between',
-  },
-  supplierRow: {
-    flex: 1,
-    flexDirection: 'row',
-    gap: 10,
-  },
-  supplierIcon: {
-    width: 38,
-    height: 38,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.secondaryContainer,
-    borderRadius: 19,
-  },
-  supplierIconText: {
-    color: colors.secondary,
-    fontFamily: fonts.heading,
-    fontSize: 12,
-    fontWeight: '800',
-  },
-  supplierTextWrap: {
-    flex: 1,
-    minWidth: 0,
-  },
-  supplierName: {
-    color: colors.primary,
-    fontFamily: fonts.heading,
-    fontSize: 18,
-    fontWeight: '700',
-    lineHeight: 24,
-  },
-  locationText: {
-    color: colors.onSurfaceVariant,
-    fontFamily: fonts.body,
-    fontSize: 12,
-    fontWeight: '600',
-    lineHeight: 16,
-    marginTop: 2,
-  },
-  deadlineBadge: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 5,
-    backgroundColor: 'rgba(255, 183, 3, 0.1)',
-    borderColor: 'rgba(255, 183, 3, 0.25)',
-    borderRadius: 999,
-    borderWidth: 1,
-    paddingHorizontal: 9,
-    paddingVertical: 6,
-  },
-  deadlineDot: {
-    width: 6,
-    height: 6,
-    backgroundColor: colors.warningAmber,
-    borderRadius: 3,
-  },
-  deadlineText: {
-    color: colors.warningAmber,
-    fontFamily: fonts.body,
-    fontSize: 10,
-    fontWeight: '700',
-    lineHeight: 12,
-  },
-  productBox: {
-    backgroundColor: colors.surfaceContainerLowest,
-    borderColor: colors.outlineVariant,
-    borderRadius: 10,
-    borderWidth: 1,
-    gap: 8,
-    padding: 12,
-  },
-  infoRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 10,
-    justifyContent: 'space-between',
-  },
-  infoLabel: {
-    color: colors.onSurfaceVariant,
-    fontFamily: fonts.body,
-    fontSize: 11,
-    fontWeight: '500',
-    lineHeight: 14,
-  },
-  infoValue: {
-    color: colors.primary,
-    flex: 1,
-    fontFamily: fonts.body,
-    fontSize: 12,
-    fontWeight: '700',
-    lineHeight: 16,
-    textAlign: 'right',
-  },
-  priceValue: {
-    color: colors.successGreen,
-    fontSize: 13,
-  },
-  progressBlock: {
-    gap: 8,
-  },
-  progressHeader: {
-    alignItems: 'flex-end',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  progressLabel: {
-    color: colors.onSurfaceVariant,
-    fontFamily: fonts.body,
-    fontSize: 11,
-    fontWeight: '500',
-    lineHeight: 14,
-  },
-  progressText: {
-    color: colors.primary,
-    fontFamily: fonts.body,
-    fontSize: 12,
-    fontWeight: '700',
-    lineHeight: 17,
-    marginTop: 2,
-  },
-  progressPercent: {
-    color: colors.secondary,
-    fontFamily: fonts.heading,
-    fontSize: 20,
-    fontWeight: '700',
-    lineHeight: 26,
-  },
-  progressTrack: {
-    height: 8,
-    backgroundColor: colors.surfaceVariant,
-    borderRadius: 999,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: colors.secondary,
-    borderRadius: 999,
-  },
-  actionButton: {
-    minHeight: 46,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.primary,
-    borderRadius: 8,
-  },
-  actionButtonDisabled: {
-    backgroundColor: colors.outline,
-    opacity: 0.7,
-  },
-  secondaryActionButton: {
-    backgroundColor: 'transparent',
-    borderColor: colors.secondary,
-    borderWidth: 1.5,
-  },
-  actionText: {
-    color: colors.onPrimary,
-    fontFamily: fonts.body,
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 0.4,
-    lineHeight: 16,
-  },
-  secondaryActionText: {
-    color: colors.secondary,
   },
   fab: {
     position: 'absolute',

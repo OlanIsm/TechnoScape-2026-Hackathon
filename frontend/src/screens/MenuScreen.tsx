@@ -13,10 +13,13 @@ import {
 import auditLogIcon from '../assets/audit_log_icon.svg';
 import homeIcon from '../assets/home_icon.svg';
 import { MainHeader } from '../components/MainHeader';
+import { PoolCard } from '../components/PoolCard';
+import type { ProcurementPool } from '../data/pools';
 import { colors, fonts } from '../theme';
 
 type SupplierMenuScreenProps = {
   initialMenu?: SupplierMenu;
+  onDetailPoolPress: (pool: ProcurementPool) => void;
   onLogoutPress: () => void;
 };
 
@@ -24,15 +27,6 @@ type PendingProposal = {
   cooperative: string;
   location: string;
   product: string;
-  target: string;
-  value: string;
-};
-
-type RunningPool = {
-  id: string;
-  name: string;
-  progress: number;
-  status: 'TERBUKA UNTUK KOPERASI' | 'MENUNGGU PEMBAYARAN';
   target: string;
   value: string;
 };
@@ -74,22 +68,34 @@ const pendingProposals: PendingProposal[] = [
   },
 ];
 
-const runningPools: RunningPool[] = [
+const runningPools: ProcurementPool[] = [
   {
+    action: 'detail',
+    currentTon: 37.5,
+    deadline: '4 Hari Lagi',
     id: '#PL-2026-11-001',
-    name: 'Pool Urea KUD Blitar',
+    location: 'Blitar, Jawa Timur',
+    price: 'Rp 6.500.000 / Ton',
+    product: 'Urea KUD Blitar',
     progress: 75,
-    status: 'TERBUKA UNTUK KOPERASI',
-    target: '37.500 / 50.000 Kg',
-    value: 'Rp 243.750.000',
+    progressText: '37.5 / 50.0 Ton',
+    supplier: 'Pool Urea KUD Blitar',
+    targetTon: 50,
+    unitPricePerTon: 6500000,
   },
   {
+    action: 'detail',
+    currentTon: 100,
+    deadline: 'Menunggu Pembayaran',
     id: '#PL-2026-10-045',
-    name: 'Pool NPK Jember Raya',
+    location: 'Jember, Jawa Timur',
+    price: 'Rp 8.500.000 / Ton',
+    product: 'NPK Jember Raya',
     progress: 100,
-    status: 'MENUNGGU PEMBAYARAN',
-    target: '100.000 / 100.000 Kg',
-    value: 'Rp 850.000.000',
+    progressText: '100.0 / 100.0 Ton',
+    supplier: 'Pool NPK Jember Raya',
+    targetTon: 100,
+    unitPricePerTon: 8500000,
   },
 ];
 
@@ -140,7 +146,11 @@ const cardShadow = {
   boxShadow: '0 4px 12px rgba(27, 67, 50, 0.05)',
 } as unknown as ViewStyle;
 
-export function SupplierMenuScreen({ initialMenu = 'proposal', onLogoutPress }: SupplierMenuScreenProps) {
+export function SupplierMenuScreen({
+  initialMenu = 'proposal',
+  onDetailPoolPress,
+  onLogoutPress,
+}: SupplierMenuScreenProps) {
   const { height } = useWindowDimensions();
   const [activeTab, setActiveTab] = useState<'pending' | 'running'>('pending');
   const [activeMenu, setActiveMenu] = useState<SupplierMenu>(initialMenu);
@@ -179,6 +189,7 @@ export function SupplierMenuScreen({ initialMenu = 'proposal', onLogoutPress }: 
           {activeMenu === 'proposal' ? (
             <ProposalManagementContent
               activeTab={activeTab}
+              onDetailPoolPress={onDetailPoolPress}
               onAction={showNotice}
               onTabChange={setActiveTab}
             />
@@ -340,10 +351,16 @@ function DownloadIcon() {
 type ProposalManagementContentProps = {
   activeTab: 'pending' | 'running';
   onAction: (message: string) => void;
+  onDetailPoolPress: (pool: ProcurementPool) => void;
   onTabChange: (tab: 'pending' | 'running') => void;
 };
 
-function ProposalManagementContent({ activeTab, onAction, onTabChange }: ProposalManagementContentProps) {
+function ProposalManagementContent({
+  activeTab,
+  onAction,
+  onDetailPoolPress,
+  onTabChange,
+}: ProposalManagementContentProps) {
   return (
     <>
       <View style={styles.heroCard}>
@@ -390,7 +407,7 @@ function ProposalManagementContent({ activeTab, onAction, onTabChange }: Proposa
             <Text style={styles.sectionSubtitle}>Pantau progress pool yang sedang berjalan.</Text>
           </View>
           {runningPools.map((pool) => (
-            <RunningPoolCard key={pool.id} onAction={onAction} pool={pool} />
+            <PoolCard key={pool.id} onAction={onAction} onDetailPress={onDetailPoolPress} pool={pool} />
           ))}
         </View>
       )}
@@ -405,99 +422,52 @@ function PendingProposalCard({
   onAction: (message: string) => void;
   proposal: PendingProposal;
 }) {
+  const pendingPool = mapPendingProposalToPool(proposal);
+
   return (
-    <View style={styles.proposalCard}>
-      <View style={styles.cardHeader}>
-        <View style={styles.coopRow}>
-          <View style={styles.coopIcon}>
-            <Text style={styles.coopIconText}>KT</Text>
-          </View>
-          <View style={styles.coopCopy}>
-            <Text style={styles.coopName}>{proposal.cooperative}</Text>
-            <Text style={styles.locationText}>{proposal.location}</Text>
-          </View>
+    <PoolCard
+      footer={
+        <View style={styles.actionRow}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => onAction(`Dummy: proposal ${proposal.cooperative} ditolak.`)}
+            style={styles.rejectButton}
+          >
+            <Text style={styles.rejectText}>Tolak</Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => onAction(`Dummy: proposal ${proposal.cooperative} diterima.`)}
+            style={styles.acceptButton}
+          >
+            <Text style={styles.acceptButtonText}>Terima</Text>
+          </Pressable>
         </View>
-        <View style={styles.pendingBadge}>
-          <Text style={styles.pendingText}>MENUNGGU</Text>
-        </View>
-      </View>
-
-      <View style={styles.infoGrid}>
-        <InfoBlock label="Jenis Pupuk" value={proposal.product} />
-        <InfoBlock label="Target Volume" value={proposal.target} />
-        <View style={styles.valueBlock}>
-          <Text style={styles.infoLabel}>Estimasi Nilai Pool</Text>
-          <Text style={styles.valueText}>{proposal.value}</Text>
-        </View>
-      </View>
-
-      <View style={styles.actionRow}>
-        <Pressable
-          accessibilityRole="button"
-          onPress={() => onAction(`Dummy: proposal ${proposal.cooperative} ditolak.`)}
-          style={styles.rejectButton}
-        >
-          <Text style={styles.rejectText}>Tolak</Text>
-        </Pressable>
-        <Pressable
-          accessibilityRole="button"
-          onPress={() => onAction(`Dummy: proposal ${proposal.cooperative} diterima.`)}
-          style={styles.acceptButton}
-        >
-          <Text style={styles.acceptButtonText}>Terima</Text>
-        </Pressable>
-      </View>
-    </View>
+      }
+      onAction={onAction}
+      pool={pendingPool}
+      priceLabel="Estimasi Nilai Pool"
+    />
   );
 }
 
-function RunningPoolCard({ onAction, pool }: { onAction: (message: string) => void; pool: RunningPool }) {
-  const isComplete = pool.progress >= 100;
+function mapPendingProposalToPool(proposal: PendingProposal): ProcurementPool {
+  const targetTon = Number(proposal.target.replace(/[^\d]/g, '')) / 1000 || 50;
 
-  return (
-    <View style={[styles.runningCard, isComplete && styles.runningCardComplete]}>
-      <View style={[styles.progressAccent, { width: `${pool.progress}%` }]} />
-      <View style={styles.poolHeader}>
-        <View style={styles.poolTitleWrap}>
-          <Text style={styles.poolId}>ID: {pool.id}</Text>
-          <Text style={styles.poolName}>{pool.name}</Text>
-        </View>
-        <View style={[styles.statusBadge, isComplete && styles.statusBadgeComplete]}>
-          <Text style={[styles.statusText, isComplete && styles.statusTextComplete]}>{pool.status}</Text>
-        </View>
-      </View>
-
-      <View style={styles.poolBody}>
-        <View>
-          <Text style={styles.infoLabel}>Terkumpul</Text>
-          <Text style={styles.poolTarget}>{pool.target}</Text>
-          <Text style={styles.poolValue}>{pool.value}</Text>
-        </View>
-        <View style={styles.progressCircle}>
-          <Text style={styles.progressPercent}>{pool.progress}%</Text>
-        </View>
-      </View>
-
-      <Pressable
-        accessibilityRole="button"
-        onPress={() => onAction(`Dummy: dashboard ${pool.name} akan dibuka nanti.`)}
-        style={styles.outlineButton}
-      >
-        <Text style={styles.outlineButtonText}>
-          {isComplete ? 'Cek Status Pembayaran' : 'Lihat Dashboard Pool'}
-        </Text>
-      </Pressable>
-    </View>
-  );
-}
-
-function InfoBlock({ label, value }: { label: string; value: string }) {
-  return (
-    <View style={styles.infoBlock}>
-      <Text style={styles.infoLabel}>{label}</Text>
-      <Text style={styles.infoValue}>{value}</Text>
-    </View>
-  );
+  return {
+    action: 'detail',
+    currentTon: 0,
+    deadline: 'MENUNGGU',
+    id: proposal.cooperative,
+    location: proposal.location,
+    price: proposal.value,
+    product: proposal.product,
+    progress: 0,
+    progressText: `0 / ${targetTon.toLocaleString('id-ID')} Ton`,
+    supplier: proposal.cooperative,
+    targetTon,
+    unitPricePerTon: 0,
+  };
 }
 
 function getAuditIconText(tone: SupplierAuditLog['statusTone']) {
@@ -682,114 +652,6 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     marginTop: 2,
   },
-  proposalCard: {
-    backgroundColor: colors.surfaceCard,
-    borderColor: colors.surfaceContainerLow,
-    borderRadius: 12,
-    borderWidth: 1,
-    gap: 14,
-    padding: 15,
-    ...cardShadow,
-  },
-  cardHeader: {
-    alignItems: 'flex-start',
-    flexDirection: 'row',
-    gap: 10,
-    justifyContent: 'space-between',
-  },
-  coopRow: {
-    flex: 1,
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 11,
-  },
-  coopIcon: {
-    width: 42,
-    height: 42,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.tertiaryContainer,
-    borderRadius: 21,
-  },
-  coopIconText: {
-    color: colors.onPrimary,
-    fontFamily: fonts.body,
-    fontSize: 12,
-    fontWeight: '800',
-  },
-  coopCopy: {
-    flex: 1,
-    minWidth: 0,
-  },
-  coopName: {
-    color: colors.textMain,
-    fontFamily: fonts.heading,
-    fontSize: 18,
-    fontWeight: '700',
-    lineHeight: 24,
-  },
-  locationText: {
-    color: colors.onSurfaceVariant,
-    fontFamily: fonts.body,
-    fontSize: 11,
-    fontWeight: '600',
-    lineHeight: 15,
-    marginTop: 2,
-  },
-  pendingBadge: {
-    backgroundColor: 'rgba(255, 183, 3, 0.18)',
-    borderRadius: 999,
-    paddingHorizontal: 8,
-    paddingVertical: 5,
-  },
-  pendingText: {
-    color: colors.warningAmber,
-    fontFamily: fonts.body,
-    fontSize: 10,
-    fontWeight: '800',
-    lineHeight: 12,
-  },
-  infoGrid: {
-    backgroundColor: colors.background,
-    borderColor: colors.surfaceContainerHigh,
-    borderRadius: 10,
-    borderWidth: 1,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    rowGap: 11,
-    padding: 12,
-  },
-  infoBlock: {
-    width: '50%',
-  },
-  infoLabel: {
-    color: colors.onSurfaceVariant,
-    fontFamily: fonts.body,
-    fontSize: 11,
-    fontWeight: '600',
-    lineHeight: 14,
-    marginBottom: 4,
-  },
-  infoValue: {
-    color: colors.primary,
-    fontFamily: fonts.body,
-    fontSize: 12,
-    fontWeight: '800',
-    lineHeight: 16,
-  },
-  valueBlock: {
-    width: '100%',
-    borderTopColor: colors.surfaceContainerHigh,
-    borderTopWidth: 1,
-    paddingTop: 10,
-  },
-  valueText: {
-    color: colors.secondary,
-    fontFamily: fonts.heading,
-    fontSize: 21,
-    fontWeight: '700',
-    lineHeight: 28,
-  },
   actionRow: {
     flexDirection: 'row',
     gap: 10,
@@ -821,123 +683,6 @@ const styles = StyleSheet.create({
   },
   acceptButtonText: {
     color: colors.onPrimary,
-    fontFamily: fonts.body,
-    fontSize: 12,
-    fontWeight: '800',
-    lineHeight: 16,
-  },
-  runningCard: {
-    backgroundColor: colors.surfaceCard,
-    borderColor: 'rgba(193, 200, 194, 0.52)',
-    borderLeftColor: colors.tertiaryContainer,
-    borderLeftWidth: 4,
-    borderRadius: 12,
-    borderWidth: 1,
-    gap: 14,
-    overflow: 'hidden',
-    padding: 15,
-    position: 'relative',
-    ...cardShadow,
-  },
-  runningCardComplete: {
-    borderLeftColor: colors.successGreen,
-  },
-  progressAccent: {
-    position: 'absolute',
-    left: 0,
-    bottom: 0,
-    height: 4,
-    backgroundColor: colors.successGreen,
-  },
-  poolHeader: {
-    alignItems: 'flex-start',
-    flexDirection: 'row',
-    gap: 10,
-    justifyContent: 'space-between',
-  },
-  poolTitleWrap: {
-    flex: 1,
-  },
-  poolId: {
-    color: colors.onSurfaceVariant,
-    fontFamily: fonts.body,
-    fontSize: 11,
-    lineHeight: 14,
-  },
-  poolName: {
-    color: colors.textMain,
-    fontFamily: fonts.heading,
-    fontSize: 18,
-    fontWeight: '700',
-    lineHeight: 24,
-    marginTop: 3,
-  },
-  statusBadge: {
-    backgroundColor: 'rgba(0, 63, 99, 0.1)',
-    borderRadius: 999,
-    paddingHorizontal: 8,
-    paddingVertical: 5,
-  },
-  statusBadgeComplete: {
-    backgroundColor: 'rgba(43, 147, 72, 0.16)',
-  },
-  statusText: {
-    color: colors.tertiaryContainer,
-    fontFamily: fonts.body,
-    fontSize: 9,
-    fontWeight: '800',
-    lineHeight: 11,
-  },
-  statusTextComplete: {
-    color: colors.successGreen,
-  },
-  poolBody: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  poolTarget: {
-    color: colors.primary,
-    fontFamily: fonts.heading,
-    fontSize: 19,
-    fontWeight: '700',
-    lineHeight: 26,
-  },
-  poolValue: {
-    color: colors.onSurfaceVariant,
-    fontFamily: fonts.body,
-    fontSize: 12,
-    lineHeight: 16,
-    marginTop: 2,
-  },
-  progressCircle: {
-    width: 54,
-    height: 54,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.surfaceContainerLow,
-    borderColor: colors.successGreen,
-    borderRadius: 27,
-    borderWidth: 4,
-  },
-  progressPercent: {
-    color: colors.primary,
-    fontFamily: fonts.body,
-    fontSize: 11,
-    fontWeight: '800',
-    lineHeight: 14,
-  },
-  outlineButton: {
-    minHeight: 42,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.background,
-    borderColor: colors.outlineVariant,
-    borderRadius: 9,
-    borderWidth: 1,
-  },
-  outlineButtonText: {
-    color: colors.textMain,
     fontFamily: fonts.body,
     fontSize: 12,
     fontWeight: '800',

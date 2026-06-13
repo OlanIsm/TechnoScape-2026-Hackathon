@@ -1,19 +1,29 @@
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native-web';
+import type { ReactNode } from 'react';
 import type { ProcurementPool } from '../data/pools';
 import { colors, fonts } from '../theme';
 
 type PoolCardProps = {
+  footer?: ReactNode;
   onAction: (message: string) => void;
   onDetailPress?: (pool: ProcurementPool) => void;
   onJoinPress?: (pool: ProcurementPool) => void;
   pool: ProcurementPool;
+  priceLabel?: string;
 };
 
 const cardShadow = {
   boxShadow: '0 4px 12px rgba(27, 67, 50, 0.05)',
 } as unknown as ViewStyle;
 
-export function PoolCard({ onAction, onDetailPress, onJoinPress, pool }: PoolCardProps) {
+export function PoolCard({
+  footer,
+  onAction,
+  onDetailPress,
+  onJoinPress,
+  pool,
+  priceLabel = 'Harga Target',
+}: PoolCardProps) {
   return (
     <View style={styles.poolCard}>
       <View style={styles.poolAccent} />
@@ -32,7 +42,7 @@ export function PoolCard({ onAction, onDetailPress, onJoinPress, pool }: PoolCar
 
       <View style={styles.productBox}>
         <InfoRow label="Produk" value={pool.product} />
-        <InfoRow isPrice label="Harga Target" value={pool.price} />
+        <InfoRow isPrice label={priceLabel} value={pool.price} />
       </View>
 
       <View style={styles.progressBlock}>
@@ -48,31 +58,33 @@ export function PoolCard({ onAction, onDetailPress, onJoinPress, pool }: PoolCar
         </View>
       </View>
 
-      <Pressable
-        accessibilityRole="button"
-        onPress={() => {
-          if (pool.action === 'join' && onJoinPress) {
-            onJoinPress(pool);
-            return;
-          }
+      {footer || (
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => {
+            if (pool.action === 'join' && onJoinPress) {
+              onJoinPress(pool);
+              return;
+            }
 
-          if (pool.action === 'detail' && onDetailPress) {
-            onDetailPress(pool);
-            return;
-          }
+            if (pool.action === 'detail' && onDetailPress) {
+              onDetailPress(pool);
+              return;
+            }
 
-          onAction(
-            pool.action === 'join'
-              ? `Dummy: kamu memilih gabung ke ${pool.supplier}.`
-              : `Dummy: detail ${pool.supplier} akan dibuka nanti.`,
-          );
-        }}
-        style={[styles.actionButton, pool.action === 'detail' && styles.secondaryActionButton]}
-      >
-        <Text style={[styles.actionText, pool.action === 'detail' && styles.secondaryActionText]}>
-          {pool.action === 'join' ? 'Gabung Pool Ini' : 'Lihat Detail'}
-        </Text>
-      </Pressable>
+            onAction(
+              pool.action === 'join'
+                ? `Dummy: kamu memilih gabung ke ${pool.supplier}.`
+                : `Dummy: detail ${pool.supplier} akan dibuka nanti.`,
+            );
+          }}
+          style={[styles.actionButton, pool.action === 'detail' && styles.secondaryActionButton]}
+        >
+          <Text style={[styles.actionText, pool.action === 'detail' && styles.secondaryActionText]}>
+            {pool.action === 'join' ? 'Gabung Pool Ini' : 'Lihat Detail'}
+          </Text>
+        </Pressable>
+      )}
     </View>
   );
 }

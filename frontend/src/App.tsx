@@ -211,6 +211,7 @@ export default function App() {
     return (
       <KoperasiDashboardScreen
         onCollectivePress={goToCollectiveBuy}
+        onDetailPoolPress={goToPoolDetail}
         onLogPress={goToAuditLog}
         onLogoutPress={goToLogin}
         onRecordPress={goToRecordTransaction}
@@ -272,11 +273,11 @@ export default function App() {
   }
 
   if (screen === 'supplier-proposal') {
-    return <SupplierMenuScreen initialMenu="proposal" onLogoutPress={goToLogin} />;
+    return <SupplierMenuScreen initialMenu="proposal" onDetailPoolPress={goToPoolDetail} onLogoutPress={goToLogin} />;
   }
 
   if (screen === 'supplier-audit') {
-    return <SupplierMenuScreen initialMenu="audit" onLogoutPress={goToLogin} />;
+    return <SupplierMenuScreen initialMenu="audit" onDetailPoolPress={goToPoolDetail} onLogoutPress={goToLogin} />;
   }
 
   if (screen === 'admin') {
