@@ -173,7 +173,7 @@ export function AuditLogScreen({
             </View>
           ) : null}
 
-          {activeTab === 'manual' ? <ManualLogList /> : <PoolLogList onDetailPress={showNotice} />}
+          {activeTab === 'manual' ? <ManualLogList /> : <PoolLogList />}
         </ScrollView>
 
         <KoperasiBottomNav
@@ -228,11 +228,7 @@ function ManualLogCard({ item }: { item: ManualLog }) {
   );
 }
 
-type PoolLogListProps = {
-  onDetailPress: (message: string) => void;
-};
-
-function PoolLogList({ onDetailPress }: PoolLogListProps) {
+function PoolLogList() {
   return (
     <View style={styles.poolList}>
       {poolLogs.map((log) => (
@@ -250,13 +246,6 @@ function PoolLogList({ onDetailPress }: PoolLogListProps) {
           <Text style={styles.poolDescription}>{log.description}</Text>
           <View style={styles.poolFooter}>
             <Text style={styles.proposerLabel}>Pengaju: {log.proposingKoperasi}</Text>
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => onDetailPress(`Dummy: detail ${log.id} akan dibuka nanti.`)}
-              style={styles.detailButton}
-            >
-              <Text style={styles.detailText}>Lihat Detail</Text>
-            </Pressable>
           </View>
         </View>
       ))}
@@ -683,22 +672,10 @@ const styles = StyleSheet.create({
     borderTopColor: colors.surfaceVariant,
     borderTopWidth: 1,
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
     paddingTop: 11,
   },
   proposerLabel: {
-    color: colors.secondary,
-    fontFamily: fonts.body,
-    fontSize: 12,
-    fontWeight: '700',
-    lineHeight: 16,
-  },
-  detailButton: {
-    minHeight: 34,
-    justifyContent: 'center',
-    paddingHorizontal: 4,
-  },
-  detailText: {
     color: colors.secondary,
     fontFamily: fonts.body,
     fontSize: 12,
