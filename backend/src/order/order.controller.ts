@@ -4,7 +4,6 @@ import {
   Get,
   Body,
   Param,
-  Query,
   UseGuards,
   Request,
   Response,
@@ -26,14 +25,14 @@ export class OrderController {
   @UseGuards(AuthGuard)
   @Post('manual')
   async createManual(
-    @Request() req,
+    @Request() req: { user: { sub: string } },
     @Body('jenisPupuk') jenisPupuk: string,
     @Body('quantity') quantity: number,
     @Body('supplierName') supplierName: string,
     @Body('tanggal') tanggal: string,
     @Body('totalPrice') totalPrice: number,
   ) {
-    const userId = req.user.sub;
+    const userId: string = req.user.sub;
     return this.orderService.createManualTransaction(
       userId,
       jenisPupuk,
@@ -47,7 +46,7 @@ export class OrderController {
   @UseGuards(AuthGuard)
   @Post('distribution')
   async createDistribution(
-    @Request() req,
+    @Request() req: { user: { sub: string } },
     @Body('jenisPupuk') jenisPupuk: string,
     @Body('quantity') quantity: number,
     @Body('buyerName') buyerName: string,
@@ -55,7 +54,7 @@ export class OrderController {
     @Body('pricePerKg') pricePerKg: number,
     @Body('notes') notes?: string,
   ) {
-    const userId = req.user.sub;
+    const userId: string = req.user.sub;
     return this.orderService.createDistribution(
       userId,
       jenisPupuk,
@@ -97,7 +96,7 @@ export class OrderController {
   }
 
   @Post('pools/:poolId/finalize')
-  async finalizePool(@Param('poolId') poolId: string) {
+  async finalizePool(@Param('poolId') poolId: string): Promise<any> {
     return this.orderService.finalizePool(poolId);
   }
 
@@ -108,8 +107,11 @@ export class OrderController {
 
   @UseGuards(AuthGuard)
   @Get('export-csv')
-  async exportCsv(@Request() req, @Response() res: ExpressResponse) {
-    const userId = req.user.sub;
+  async exportCsv(
+    @Request() req: { user: { sub: string } },
+    @Response() res: ExpressResponse,
+  ) {
+    const userId: string = req.user.sub;
     const csvData = await this.orderService.exportOrdersToCsv(userId);
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader(

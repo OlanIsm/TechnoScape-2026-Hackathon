@@ -108,7 +108,7 @@ export class OrderService {
           ? { connect: { id: data.collectivePoolId } }
           : undefined,
         orderItems: {
-          create: data.orderItems as any,
+          create: data.orderItems as Prisma.OrderItemCreateWithoutOrderInput[],
         },
       },
       include: { orderItems: true },

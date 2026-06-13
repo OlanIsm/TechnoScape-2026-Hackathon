@@ -36,7 +36,7 @@ export class AuthController {
 
   @UseGuards(AuthGuard)
   @Get('me')
-  async getProfile(@Request() req) {
+  async getProfile(@Request() req: { user: { sub: string } }) {
     const userId = req.user.sub;
     return this.authService.validateUserById(userId);
   }
