@@ -5,55 +5,55 @@ export declare class AuthController {
     register(name: string, email: string, passwordString: string): Promise<{
         user: {
             koperasi: {
-                name: string;
                 id: string;
+                name: string;
+                address: string;
                 createdAt: Date;
                 updatedAt: Date;
-                address: string;
             } | null;
-            name: string;
             id: string;
+            name: string;
+            createdAt: Date;
+            updatedAt: Date;
             email: string;
             role: import("@prisma/client").$Enums.Role;
             koperasiId: string | null;
-            createdAt: Date;
-            updatedAt: Date;
         };
         access_token: string;
     }>;
     login(email: string, passwordString: string): Promise<{
         user: {
             koperasi: {
-                name: string;
                 id: string;
+                name: string;
+                address: string;
                 createdAt: Date;
                 updatedAt: Date;
-                address: string;
             } | null;
-            name: string;
             id: string;
+            name: string;
+            createdAt: Date;
+            updatedAt: Date;
             email: string;
             role: import("@prisma/client").$Enums.Role;
             koperasiId: string | null;
-            createdAt: Date;
-            updatedAt: Date;
         };
         access_token: string;
     }>;
     getProfile(req: any): Promise<{
         koperasi: {
-            name: string;
             id: string;
+            name: string;
+            address: string;
             createdAt: Date;
             updatedAt: Date;
-            address: string;
         } | null;
-        name: string;
         id: string;
+        name: string;
+        createdAt: Date;
+        updatedAt: Date;
         email: string;
         role: import("@prisma/client").$Enums.Role;
         koperasiId: string | null;
-        createdAt: Date;
-        updatedAt: Date;
     } | null>;
 }

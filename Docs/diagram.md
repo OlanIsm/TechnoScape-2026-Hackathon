@@ -2,8 +2,11 @@
 
 This document describes the updated VolumeMate flow with:
 
+- mobile-only web/PWA MVP direction,
 - Admin manual approval for Koperasi and Supplier registration,
+- Admin account manually created in database,
 - Supplier active account,
+- VolumeMind AI forecast and recommended buy shown only on Dashboard,
 - Koperasi pool proposal,
 - Supplier accept/reject,
 - Supplier deadline setting,
@@ -18,12 +21,25 @@ This document describes the updated VolumeMate flow with:
 
 ```mermaid
 flowchart TD
-    A[User Registers as Koperasi or Supplier] --> B[Input Name, KTP Photo, Legal Proof Document]
-    B --> C[Account Status: PENDING_ADMIN_APPROVAL]
-    C --> D[Admin Reviews Documents]
-    D -->|Approve| E[Account Status: ACTIVE]
-    D -->|Reject| F[Account Status: REJECTED]
+    A[User Registers as Koperasi or Supplier] --> B[Input Gmail, Password, Role, Accept Terms of Service]
+    B --> B2[Input Organization Name, Responsible Person, Phone, KTP Photo, Legal Proof PDF]
+    B2 --> C[Account Status: PENDING_ADMIN_APPROVAL]
+    C --> D[Admin Opens Pending Account Approval Menu]
+    D --> D2[Admin Reviews All Registration Inputs Except Password]
+    D2 --> D3[Admin Opens KTP Photo and Legal Proof PDF]
+    D3 -->|Approve| E[Account Status: ACTIVE]
+    D3 -->|Reject| F[Account Status: REJECTED]
     E --> G[User Can Access Role-Based App Features]
+```
+
+Admin account setup:
+
+```mermaid
+flowchart TD
+    TECH[Technical Team] --> DB[Insert Admin User Directly in Database]
+    DB --> ROLE[role = ADMIN]
+    DB --> ACTIVE[status = ACTIVE]
+    ACTIVE --> ADMIN[Admin Can Login to Pending Account Approval Menu]
 ```
 
 ---
@@ -39,6 +55,43 @@ flowchart TD
     S --> I[Input Pool Details: Product, Target Volume, Target Fund, Initial Fund]
     I --> PP[Pool Status: PENDING_SUPPLIER_APPROVAL]
     PP --> SM[Appears in Supplier Pending Menu]
+```
+
+---
+
+## 2a. Dashboard VolumeMind AI Recommendation Flow
+
+```mermaid
+flowchart TD
+    K[Verified Koperasi Opens Dashboard] --> DB[System Reads Koperasi Database Records]
+    DB --> PROFILE[Profile, Location, Member Land Data]
+    DB --> HISTORY[Manual Transactions and Pool History]
+    DB --> TIERS[Supplier Price Tiers]
+    PROFILE --> WEATHER[System Fetches Rainfall Forecast by Location]
+    PROFILE --> SEASON[System Detects Planting Season]
+
+    WEATHER --> AI[VolumeMind AI Engine]
+    SEASON --> AI
+    HISTORY --> AI
+    TIERS --> AI
+    AI --> PREDICT[Forecast Fertilizer Demand]
+    PREDICT --> OPTIMIZE[Recommend Buy Quantity, Supplier, Timing, Saving]
+    OPTIMIZE --> OUTPUT[Show Forecast and Recommended Buy on Dashboard]
+    OUTPUT --> CONFIRM{Koperasi Confirms Recommendation?}
+    CONFIRM -->|Yes| DRAFT[Create Draft Order or Pool Proposal]
+    CONFIRM -->|No| IDLE[Keep Dashboard Recommendation Visible]
+```
+
+Recommended output fields:
+
+```text
+Forecasted fertilizer demand
+Selected supplier
+Recommended quantity
+Estimated total cost
+Potential saving
+Best order window
+Recommendation reason
 ```
 
 ---

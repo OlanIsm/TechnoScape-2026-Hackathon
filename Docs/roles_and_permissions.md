@@ -2,6 +2,14 @@
 
 This document defines the final role behavior for VolumeMate after the latest revision.
 
+Product UI direction:
+
+- VolumeMate MVP is mobile-only.
+- Role menus must be designed for phone-sized screens and bottom navigation.
+- Desktop-specific menus, sidebars, and wide-screen dashboards are not part of MVP.
+- Desktop browsers may be used for development/testing, but they should not define a separate product experience.
+- All user-facing UI copy must be written in Bahasa Indonesia.
+
 Roles:
 
 1. Koperasi
@@ -16,10 +24,14 @@ Koperasi and Supplier cannot directly use the system after registration.
 
 They must submit:
 
+- Gmail/email,
+- password,
+- role selection: `KOPERASI` or `SUPPLIER`,
+- Terms of Service acceptance,
 - official organization/business name,
 - responsible person name,
 - KTP photo,
-- legal/proof document,
+- legal/proof PDF document,
 - phone/contact information.
 
 After registration:
@@ -29,6 +41,8 @@ status = PENDING_ADMIN_APPROVAL
 ```
 
 Admin must manually approve them before they become active.
+
+Admin must be able to review every submitted registration input except password. Passwords must never be displayed to Admin.
 
 Only users with:
 
@@ -47,6 +61,7 @@ can use app features.
 Koperasi uses VolumeMate to:
 
 - monitor procurement dashboard,
+- view VolumeMind AI forecast and recommended buy on Dashboard,
 - create collective buying pool proposals,
 - join open collective buying pools,
 - input manual procurement transactions,
@@ -71,6 +86,7 @@ Allowed contents:
 
 - total procurement spending,
 - total fertilizer volume recorded,
+- VolumeMind forecast and recommended-buy section,
 - chart/insight from transaction data,
 - active/open pool summary.
 
@@ -81,6 +97,39 @@ Do not put these in Home:
 - detailed latest transaction table.
 
 Those belong to Audit Log.
+
+---
+
+### Dashboard VolumeMind Section
+
+VolumeMind is only shown inside Home / Dashboard. It is not a separate menu and it does not have a manual AI input form.
+
+VolumeMind reads the Koperasi's own database records and supporting system data:
+
+```text
+Profil koperasi
+Lokasi koperasi
+Data lahan anggota jika tersedia
+Histori transaksi koperasi
+Histori hasil pool
+Data supplier terverifikasi
+Tier harga supplier
+Curah hujan dari API cuaca
+Musim tanam
+```
+
+Dashboard VolumeMind output:
+
+```text
+Prediksi kebutuhan pupuk
+Supplier Terpilih
+Jumlah yang Harus Dibeli
+Total Biaya
+Potensi Hemat
+Waktu Pemesanan Terbaik
+Alasan Rekomendasi
+Konfirmasi Pemesanan
+```
 
 ---
 
@@ -314,28 +363,35 @@ PAYMENT_WAITING
 
 Admin maintains platform trust and verifies users.
 
-### 4.2 Admin Menus
-
-Suggested menus:
+Admin accounts are not registered through the public registration UI. Admin users must be manually created directly in the database by the technical team:
 
 ```text
-Verification Requests
-Approved Users
-Rejected Users
-User Detail
+role = ADMIN
+status = ACTIVE
+```
+
+### 4.2 Admin Menus
+
+Admin has only one MVP menu:
+
+```text
+Pending Account Approval
 ```
 
 ### 4.3 Admin Permissions
 
 Admin can:
 
-- view new Koperasi registration requests,
-- view new Supplier registration requests,
-- open uploaded KTP and legal documents,
+- view all pending Koperasi registration requests,
+- view all pending Supplier registration requests,
+- open all submitted registration data except password,
+- open uploaded KTP photo,
+- open uploaded legal/proof PDF document,
 - approve accounts,
 - reject accounts,
-- view verification history,
-- suspend abusive or invalid accounts if needed.
+- view selected role,
+- view Terms of Service acceptance status and timestamp,
+- view registration submission timestamp.
 
 Admin should not be required to manage every pool manually. Pool process is handled by Koperasi and Supplier after they are verified.
 
@@ -346,8 +402,14 @@ Admin should not be required to manage every pool manually. Pool process is hand
 | Feature | Koperasi | Supplier | Admin |
 |---|---:|---:|---:|
 | Register account | Yes | Yes | No |
+| Public login after manual DB creation | No | No | Yes |
+| Select role during registration | Yes | Yes | No |
+| Accept Terms of Service | Yes | Yes | No |
 | Upload KTP/legal proof | Yes | Yes | No |
 | Approve/reject account | No | No | Yes |
+| View pending account list | No | No | Yes |
+| View submitted registration data except password | No | No | Yes |
+| View submitted KTP photo/PDF proof | No | No | Yes |
 | View dashboard | Yes | Limited/no | Optional |
 | Propose pool | Yes | No | No |
 | Select supplier for pool | Yes | No | No |
@@ -363,6 +425,7 @@ Admin should not be required to manage every pool manually. Pool process is hand
 | View koperasi audit log | Yes | No | Optional |
 | View supplier audit log | No | Yes | Optional |
 | Export audit records | Yes | Yes | Optional |
+| View Dashboard VolumeMind forecast/recommended buy | Yes | No | Optional |
 
 ---
 
@@ -425,6 +488,10 @@ supplier_payout = total_collected_payment - platform_tax_or_fee
 ---
 
 ## 7. Important Product Decisions
+
+### 7.0 Mobile-Only MVP
+
+VolumeMate MVP is built as a mobile-only web/PWA app. The product should not require or imply a desktop dashboard, desktop sidebar, or wide-screen workflow. All important features must work comfortably on a phone.
 
 ### 7.1 Supplier Does Not Create Offers
 

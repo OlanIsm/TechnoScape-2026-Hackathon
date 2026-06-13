@@ -10,4 +10,5 @@ export declare class OrderService {
     joinPool(poolId: string, orderId: string, userId?: string): Promise<Order>;
     writeAuditLog(action: string, details: string, userId?: string): Promise<AuditLog>;
     getAuditLogs(): Promise<AuditLog[]>;
+    exportOrdersToCsv(userId: string): Promise<string>;
 }

@@ -3,7 +3,15 @@
 
 ## 1. Executive Summary
 
-VolumeMate is a web/PWA-based procurement platform for agricultural cooperatives that manage fertilizer purchasing. The system helps cooperatives compare procurement needs, create collective buying pools, record offline/manual transactions, and maintain clean audit history for completed procurement activities.
+VolumeMate is a **mobile-only web/PWA procurement app** for agricultural cooperatives that manage fertilizer purchasing. The product is designed primarily for Android/mobile browser usage in field conditions, not for desktop workflows. The system helps cooperatives compare procurement needs, create collective buying pools, record offline/manual transactions, and maintain clean audit history for completed procurement activities.
+
+Product direction:
+
+- The MVP interface must be designed and tested as a mobile app experience.
+- Desktop-specific dashboards, sidebars, and wide-screen workflows are out of MVP scope.
+- Desktop browsers may open the app for testing, but they should render the same mobile-first experience or a simple centered mobile shell, not a separate desktop product.
+- All core flows must remain usable on small screens and low-end devices.
+- All user-facing UI copy must be in Bahasa Indonesia for MVP.
 
 The latest product flow uses three active roles:
 
@@ -20,6 +28,7 @@ Koperasi often buys fertilizer without knowing the optimal volume, timing, and s
 VolumeMate solves this by supporting:
 
 - verified cooperative and supplier registration,
+- AI-assisted procurement recommendation through VolumeMind,
 - pool proposal and supplier approval,
 - collective fund raising across cooperatives,
 - transaction recording,
@@ -34,6 +43,7 @@ VolumeMate solves this by supporting:
 Koperasi is the main buyer-side user. Koperasi can:
 
 - view dashboard summary,
+- view AI forecast and recommended buy directly on the Dashboard,
 - browse open collective buying pools,
 - propose a new collective buying pool,
 - join an existing pool with a fund amount,
@@ -59,13 +69,21 @@ Supplier can only use the system after Admin approval.
 
 Admin verifies and manages platform users. Admin can:
 
-- review Koperasi registration documents,
-- review Supplier registration documents,
+- open one menu that lists all pending accounts waiting for approval,
+- review all Koperasi registration inputs except password,
+- review all Supplier registration inputs except password,
 - approve or reject accounts,
-- view uploaded identity/legal proof,
+- view uploaded identity/legal proof, including KTP photo and PDF proof document,
 - monitor user status,
 - ensure supplier names remain unique,
 - maintain platform trust and prevent invalid users.
+
+Admin accounts are not created through public registration. They must be manually created in the database with:
+
+```text
+role = ADMIN
+status = ACTIVE
+```
 
 ## 4. Registration & Manual Admin Verification
 
@@ -73,13 +91,30 @@ Admin verifies and manages platform users. Admin can:
 
 Both Koperasi and Supplier must submit:
 
-- account email and password,
+- Gmail/email,
+- password,
 - role type: `KOPERASI` or `SUPPLIER`,
+- accept Terms of Service,
 - official Koperasi/Supplier name,
 - responsible person name,
 - KTP photo of responsible person,
-- legal/verification document proving they are a real cooperative or supplier,
+- legal/verification PDF document proving they are a real cooperative or supplier,
 - phone number/contact information.
+
+Admin must be able to view every submitted registration field except the raw password/password hash. Admin can view:
+
+- Gmail/email,
+- selected role,
+- Terms of Service acceptance status and timestamp,
+- official Koperasi/Supplier name,
+- responsible person name,
+- phone/contact information,
+- uploaded KTP photo,
+- uploaded legal/verification PDF,
+- registration submission timestamp,
+- current approval status.
+
+Admin must never see the user's password.
 
 ### 4.2 Registration Status
 
@@ -120,9 +155,67 @@ Suggested dashboard contents:
 - total fertilizer volume recorded,
 - current active/open pool summary,
 - procurement insight summary,
+- latest VolumeMind recommendation summary,
 - simple chart based on transaction records.
 
 Final pool history and transaction details belong to Audit Log, not the main dashboard.
+
+### Dashboard VolumeMind Forecast & Recommended Buy
+
+VolumeMind is not a separate menu and does not have its own user input form. The AI recommendation appears only inside Home / Dashboard as a forecast and recommended-buy section.
+
+Koperasi does not manually input AI parameters on a dedicated screen. VolumeMind reads available user and Koperasi data from the database, then enriches it with system data:
+
+- Koperasi profile and location,
+- member or active land profile data if available,
+- saved manual procurement transactions,
+- previous collective-buy pool activity and final outcomes,
+- verified supplier data,
+- supplier price tiers,
+- inferred target usage patterns from transaction and seasonal history,
+- rainfall forecast from BMKG/OpenWeather or equivalent weather API,
+- planting season detected from month and location data.
+
+VolumeMind performs two background calculations for the Dashboard:
+
+1. **Demand forecast**  
+   Estimate upcoming fertilizer demand from the Koperasi's own stored data, seasonal patterns, rainfall forecast, and historical procurement behavior.
+2. **Recommended buy optimization**  
+   Compare forecasted demand against supplier volume-pricing tiers. The AI may recommend rounding the purchase volume upward when a higher volume triggers a cheaper tier and lowers total cost.
+
+Example reasoning:
+
+```text
+Forecast demand: 9,500 kg NPK for the next procurement window.
+Recommended buy: 10,000 kg because the supplier discount tier starts at 10,000 kg.
+Estimated saving: Rp 2,400,000 compared with buying only 9,500 kg at the normal tier.
+```
+
+#### Output Shown on Dashboard
+
+The mobile Dashboard should show a ready-to-use procurement recommendation:
+
+- forecasted fertilizer demand,
+- selected supplier,
+- recommended quantity to buy,
+- estimated total cost,
+- estimated saving from volume-tier optimization,
+- best order window, such as 1-2 months before expected usage,
+- main reason behind the recommendation.
+
+The Koperasi can then tap:
+
+```text
+Konfirmasi Pemesanan
+```
+
+For MVP, confirmation can create a draft order/proposal using mock API data until the backend contract is finalized.
+
+If the user's data is insufficient, the Dashboard should show:
+
+```text
+Data belum cukup untuk rekomendasi AI. Tambahkan transaksi atau data lahan terlebih dahulu.
+```
 
 ### Menu 2 — Collective Buy
 
