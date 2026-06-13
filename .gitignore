@@ -1,14 +1,67 @@
+# OS Junk Files
+.DS_Store
+Thumbs.db
+*.local
+
+# VS Code & Local Settings
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# Antigravity/Agent Cache
 AGENTS.md
 image/
-
-# Vite cache
-frontend/.vite/
-frontend/node_modules/
-
-# Local tool/cache
 .playwright-mcp/
 
-# VS Code local settings
-.vscode/
-.vscode/
-.playwright-mcp/
+# Node/Frontend (Vite/React)
+node_modules/
+dist/
+.vite/
+.eslintcache
+
+# Python Cache & Compiled Files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Python Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Jupyter Notebook Checkpoints
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+
+# Secrets & Environment Variables (CRITICAL: Never push secrets!)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+*.key
